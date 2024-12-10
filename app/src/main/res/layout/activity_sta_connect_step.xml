@@ -1,0 +1,74 @@
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@color/ColorGray">
+
+        <!-- Top status bar -->
+        <RelativeLayout
+            android:id="@+id/status_bar"
+            android:layout_width="match_parent"
+            android:layout_height="?actionBarSize"
+            android:background="@color/colorWhite">
+
+            <!-- Icons back -->
+            <ImageView
+                android:id="@+id/iv_back"
+                android:layout_width="20dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="16dp"
+                android:src="@drawable/ic_back" />
+
+            <!-- Title -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_centerHorizontal="true"
+                android:gravity="center"
+                android:text="STA连接"
+                android:textColor="@color/colorBlack"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+        </RelativeLayout>
+
+
+       <com.king.view.circleprogressview.CircleProgressView
+           android:id="@+id/sta_stpe_cpv"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_gravity="center"
+           android:layout_marginTop="20dp"/>
+
+        <in.co.gorest.grblcontroller.util.FlowViewVertical
+            android:id="@+id/vflow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="10dp"
+            android:paddingRight="10dp"
+            android:paddingTop="10dp"
+            app:v_bgPositionX="40dp"
+            app:v_bg_color="#029dd5"
+            app:v_bg_radius="8dp"
+            app:v_bg_width="4dp"
+            app:v_interval="80dp"
+            app:v_max_step="5"
+            app:v_pro_color="#1e853a"
+            app:v_pro_radius="8dp"
+            app:v_pro_step="3"
+            app:v_pro_width="4dp"
+            app:v_textMoveTop="7dp"
+            app:v_textsize="14dp"
+            android:layout_marginTop="35dp"/>
+
+
+
+    </LinearLayout>
+
+</layout>

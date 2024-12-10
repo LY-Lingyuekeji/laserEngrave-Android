@@ -237,19 +237,19 @@ public class STAModelActivity extends AppCompatActivity {
         tvNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!etSsid.getText().toString().contains("MKS")) {
-
+                if (etPassword.getText().length() < 8) {
+                    tvPasswordTips.setTextColor(Color.parseColor("#ff1135"));
                 } else {
-                    if (etPassword.getText().length() < 8) {
-                        tvPasswordTips.setTextColor(Color.parseColor("#ff1135"));
-                    } else {
-                        tvPasswordTips.setTextColor(Color.parseColor("#000000"));
-                        // 连接WIFI
-                        if (!etSsid.getText().toString().isEmpty() && !etPassword.getText().toString().isEmpty()) {
-                            Log.d(TAG, "SSID=" + etSsid.getText().toString() + "----- Password=" + etPassword.getText().toString());
+                    tvPasswordTips.setTextColor(Color.parseColor("#000000"));
+                    // 连接WIFI
+                    if (!etSsid.getText().toString().isEmpty() && !etPassword.getText().toString().isEmpty()) {
+                        Log.d(TAG, "STA-SSID=" + etSsid.getText().toString() + "----- STA-Password=" + etPassword.getText().toString());
 
-
-                        }
+                        // TODO
+                        Intent intent = new Intent(STAModelActivity.this, STAConnectStepActivity.class);
+                        intent.putExtra("ssid", etSsid.getText().toString());
+                        intent.putExtra("password", etPassword.getText().toString());
+                        startActivity(intent);
                     }
                 }
             }
