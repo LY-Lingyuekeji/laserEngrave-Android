@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="MySeekBar">
+        <attr name="progress_max" format="float|reference" /> <!-- 进度条最大值 -->
+        <attr name="progress_min" format="float|reference" /> <!-- 进度条最小值 -->
+        <attr name="progress_default" format="float|reference" /> <!-- 进度条默认值 -->
+        <attr name="track_left_height" format="dimension|reference" /> <!-- 进度条左边高度 -->
+        <attr name="track_right_height" format="dimension|reference" /> <!-- 进度条右边高度 -->
+        <attr name="track_left_color" format="color|reference" /> <!-- 进度条左边颜色 -->
+        <attr name="track_right_color" format="color|reference" /> <!-- 进度条右边颜色 -->
+        <attr name="thumb_color_default" format="color|reference" /> <!-- 拖动滑块默认颜色 -->
+        <attr name="thumb_radius_default" format="dimension|reference" /> <!-- 拖动滑块半径 -->
+        <attr name="thumb_color_on_dragging" format="color|reference" /> <!-- 拖动滑块拖动中颜色 -->
+        <attr name="thumb_radius_on_dragging" format="dimension|reference" /> <!-- 拖动滑块拖动中半径 -->
+    </declare-styleable>
+    <declare-styleable name="FullscreenAttrs">
+        <attr name="fullscreenBackgroundColor" format="color" />
+        <attr name="fullscreenTextColor" format="color" />
+    </declare-styleable>
+
+</resources>

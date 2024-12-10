@@ -1,0 +1,122 @@
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/ColorGray"
+        android:orientation="vertical">
+
+        <!-- Top status bar -->
+        <RelativeLayout
+            android:id="@+id/status_bar"
+            android:layout_width="match_parent"
+            android:layout_height="?actionBarSize"
+            android:layout_alignParentTop="true"
+            android:background="@color/colorWhite">
+
+            <!-- Icons back -->
+            <ImageView
+                android:id="@+id/iv_back"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="16dp"
+                android:src="@drawable/ic_back" />
+
+            <!-- Title -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_centerHorizontal="true"
+                android:gravity="center"
+                android:text="模式切换"
+                android:textColor="@color/colorBlack"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+
+        </RelativeLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/tv_confirm_change"
+            android:layout_below="@id/status_bar"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+
+            <RadioGroup
+                android:id="@+id/radio_group_model"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+
+                <RadioButton
+                    android:id="@+id/radio_button_simple"
+                    android:layout_width="0dp"
+                    android:layout_height="200dp"
+                    android:padding="10dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/radio_button_selector"
+                    android:button="@null"
+                    android:drawableTop="@mipmap/ic_simple"
+                    android:drawablePadding="20dp"
+                    android:gravity="center"
+                    android:text="简易模式"
+                    android:textColor="@drawable/radio_button_text_selector"
+                    android:textSize="14sp" />
+
+                <RadioButton
+                    android:id="@+id/radio_button_pro"
+                    android:layout_width="0dp"
+                    android:layout_height="200dp"
+                    android:padding="10dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="15dp"
+                    android:background="@drawable/radio_button_selector"
+                    android:button="@null"
+                    android:drawableTop="@mipmap/ic_pro"
+                    android:drawablePadding="20dp"
+                    android:gravity="center"
+                    android:text="专业模式"
+                    android:textColor="@drawable/radio_button_text_selector"
+                    android:textSize="14sp" />
+
+
+            </RadioGroup>
+
+            <TextView
+                android:id="@+id/tv_model_tips"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="45dp"
+                android:text="@string/app_name"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+
+        <TextView
+            android:id="@+id/tv_confirm_change"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_margin="15dp"
+            android:background="@drawable/button_color_selector"
+            android:gravity="center"
+            android:padding="10dp"
+            android:text="确认切换"
+            android:textColor="@color/colorWhite"
+            android:textSize="16sp" />
+
+
+    </RelativeLayout>
+
+</layout>

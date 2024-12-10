@@ -1,0 +1,215 @@
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="machineStatus"
+            type="in.co.gorest.grblcontroller.listeners.MachineStatusListener" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        >
+
+        <!-- Top status bar -->
+        <RelativeLayout
+            android:id="@+id/status_bar"
+            android:layout_width="match_parent"
+            android:layout_height="?actionBarSize"
+            android:background="@color/colorBlue">
+
+            <!-- Icons back -->
+            <ImageView
+                android:id="@+id/iv_back"
+                android:layout_width="20dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="16dp"
+                android:src="@drawable/ic_back" />
+
+            <!-- Title -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_centerHorizontal="true"
+                android:gravity="center"
+                android:text="控制"
+                android:textColor="@color/colorWhite"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+        </RelativeLayout>
+
+        <!-- Main Content -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/view_last_toast"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clickable="false"
+                android:focusable="true"
+                android:foreground="?android:attr/selectableItemBackground"
+                app:cardElevation="4dp">
+
+                <TableLayout
+                    android:id="@+id/view_toast"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:padding="12dp"
+                    android:stretchColumns="0,1,2">
+
+                    <TableRow>
+
+                        <TextView
+                            android:text="@{machineStatus.state}"
+                            android:textColor="@{machineStatus.state.equalsIgnoreCase(machineStatus.STATE_ALARM) ? @color/colorPrimary : @android:color/tertiary_text_dark}" />
+
+                        <TextView
+                            android:text="MPos"
+                            tools:ignore="HardcodedText" />
+
+                        <TextView
+                            android:gravity="end"
+                            android:text="WPos"
+                            tools:ignore="HardcodedText" />
+                    </TableRow>
+
+                    <TableRow>
+
+                        <View
+                            android:layout_width="fill_parent"
+                            android:layout_height="0.2dp"
+                            android:layout_marginTop="4dp"
+                            android:layout_marginBottom="4dp"
+                            android:layout_weight="1"
+                            android:background="@color/colorDivider" />
+                    </TableRow>
+
+                    <TableRow>
+
+                        <TextView
+                            android:text="X"
+                            android:textColor="@{machineStatus.enabledPins.x ? @color/colorPrimary : @android:color/tertiary_text_dark}"
+                            tools:ignore="HardcodedText" />
+
+                        <TextView android:text='@{String.format("%.3f", machineStatus.machinePosition.cordX)}' />
+
+                        <com.joanzapata.iconify.widget.IconTextView
+                            android:id="@+id/wpos_edit_x"
+                            android:gravity="end"
+                            android:tag="X"
+                            android:text='@{String.format("%.3f {fa-edit 16sp}", machineStatus.workPosition.cordX)}' />
+
+                    </TableRow>
+
+                    <TableRow>
+
+                        <View
+                            android:layout_width="fill_parent"
+                            android:layout_height="0.05dp"
+                            android:layout_marginTop="2dp"
+                            android:layout_marginBottom="2dp"
+                            android:layout_weight="1"
+                            android:background="@color/colorDivider" />
+                    </TableRow>
+
+                    <TableRow>
+
+                        <TextView
+                            android:text="Y"
+                            android:textColor="@{machineStatus.enabledPins.y ? @color/colorPrimary : @android:color/tertiary_text_dark}"
+                            tools:ignore="HardcodedText" />
+
+                        <TextView android:text='@{String.format("%.3f", machineStatus.machinePosition.cordY)}' />
+
+                        <com.joanzapata.iconify.widget.IconTextView
+                            android:id="@+id/wpos_edit_y"
+                            android:gravity="end"
+                            android:tag="Y"
+                            android:text='@{String.format("%.3f {fa-edit 16sp}", machineStatus.workPosition.cordY)}' />
+
+                    </TableRow>
+
+                    <TableRow>
+
+                        <View
+                            android:layout_width="fill_parent"
+                            android:layout_height="0.05dp"
+                            android:layout_marginTop="2dp"
+                            android:layout_marginBottom="2dp"
+                            android:layout_weight="1"
+                            android:background="@color/colorDivider" />
+                    </TableRow>
+
+                    <TableRow>
+
+                        <TextView
+                            android:text="Z"
+                            android:textColor="@{machineStatus.enabledPins.z ? @color/colorPrimary : @android:color/tertiary_text_dark}"
+                            tools:ignore="HardcodedText" />
+
+                        <TextView android:text='@{String.format("%.3f", machineStatus.machinePosition.cordZ)}' />
+
+                        <com.joanzapata.iconify.widget.IconTextView
+                            android:id="@+id/wpos_edit_z"
+                            android:gravity="end"
+                            android:tag="Z"
+                            android:text='@{String.format("%.3f {fa-edit 16sp}", machineStatus.workPosition.cordZ)}'
+                            android:textColor="@{(machineStatus.toolLengthOffset != 0) ? @color/colorPrimary : @android:color/tertiary_text_dark}" />
+
+                    </TableRow>
+
+                    <TableRow>
+
+                        <View
+                            android:layout_width="fill_parent"
+                            android:layout_height="0.2dp"
+                            android:layout_marginTop="4dp"
+                            android:layout_marginBottom="4dp"
+                            android:layout_weight="1"
+                            android:background="@color/colorDivider" />
+                    </TableRow>
+
+                    <TableRow>
+                        <TextView android:text='@{machineStatus.parserState.coordinateSystem + " " + machineStatus.parserState.unitSelection + " " + machineStatus.parserState.distanceMode}' />
+
+                        <TextView android:text="@{machineStatus.feedRate.toString()}" />
+
+                        <TextView android:gravity="end" android:text='@{machineStatus.plannerBuffer.toString() + " | " + machineStatus.serialRxBuffer.toString()}' />
+                    </TableRow>
+
+                </TableLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clickable="false"
+                android:focusable="false"
+                android:foreground="?android:attr/selectableItemBackground"
+                app:cardElevation="4dp">
+
+                <FrameLayout
+                    android:id="@+id/fragment_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+            </androidx.cardview.widget.CardView>
+
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</layout>

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="打开激光（弱光）"
+        android:textColor="@color/colorBlack"
+        android:textSize="18sp"
+        android:textStyle="bold"/>
+
+    <RadioGroup
+        android:id="@+id/laser_level"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <RadioButton
+            android:id="@+id/laser_level_10"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="8dp"
+            android:text="10"
+            android:textColor="@color/colorBlack"
+            android:textSize="16sp"
+            android:paddingStart="16dp"/>
+
+        <RadioButton
+            android:id="@+id/laser_level_20"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="8dp"
+            android:text="20"
+            android:textColor="@color/colorBlack"
+            android:textSize="16sp"
+            android:paddingStart="16dp"/>
+
+        <RadioButton
+            android:id="@+id/laser_level_30"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="8dp"
+            android:text="30"
+            android:textColor="@color/colorBlack"
+            android:textSize="16sp"
+            android:paddingStart="16dp"/>
+
+        <RadioButton
+            android:id="@+id/laser_level_40"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="8dp"
+            android:text="40"
+            android:textColor="@color/colorBlack"
+            android:textSize="16sp"
+            android:paddingStart="16dp"/>
+
+        <RadioButton
+            android:id="@+id/laser_level_50"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="8dp"
+            android:text="50"
+            android:textColor="@color/colorBlack"
+            android:textSize="16sp"
+            android:paddingStart="16dp"/>
+
+        <RadioButton
+            android:id="@+id/laser_level_60"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="8dp"
+            android:text="60"
+            android:textColor="@color/colorBlack"
+            android:textSize="16sp"
+            android:paddingStart="16dp"/>
+
+        <RadioButton
+            android:id="@+id/laser_level_70"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="8dp"
+            android:text="70"
+            android:textColor="@color/colorBlack"
+            android:textSize="16sp"
+            android:paddingStart="16dp"/>
+
+        <RadioButton
+            android:id="@+id/laser_level_80"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="8dp"
+            android:text="80"
+            android:textColor="@color/colorBlack"
+            android:textSize="16sp"
+            android:paddingStart="16dp"/>
+
+        <RadioButton
+            android:id="@+id/laser_level_90"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="8dp"
+            android:text="90"
+            android:textColor="@color/colorBlack"
+            android:textSize="16sp"
+            android:paddingStart="16dp"/>
+
+        <RadioButton
+            android:id="@+id/laser_level_100"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="8dp"
+            android:text="100"
+            android:textColor="@color/colorBlack"
+            android:textSize="16sp"
+            android:paddingStart="16dp"/>
+    </RadioGroup>
+
+</LinearLayout>

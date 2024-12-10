@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rl_top"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+
+    <in.co.gorest.grblcontroller.util.ZoomView
+        android:id="@+id/ll_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true">
+
+
+        <ImageView
+            android:id="@+id/iv_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+
+    </in.co.gorest.grblcontroller.util.ZoomView>
+
+    <ImageView
+        android:id="@+id/iv_close"
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+        android:layout_alignStart="@id/ll_container"
+        android:layout_alignTop="@id/ll_container"
+        android:background="@mipmap/icon_close" />
+
+</RelativeLayout>

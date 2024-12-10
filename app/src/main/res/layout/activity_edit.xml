@@ -1,0 +1,480 @@
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@color/ColorGray">
+
+        <!-- Top status bar -->
+        <RelativeLayout
+            android:id="@+id/status_bar"
+            android:layout_width="match_parent"
+            android:layout_height="?actionBarSize"
+            android:background="@color/colorWhite">
+
+            <!-- Icons back -->
+            <ImageView
+                android:id="@+id/iv_back"
+                android:layout_width="20dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="16dp"
+                android:src="@drawable/ic_back" />
+
+            <!-- Title -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_centerHorizontal="true"
+                android:gravity="center"
+                android:text="编辑"
+                android:textColor="@color/colorBlack"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+
+            <Button
+                android:id="@+id/btn_next"
+                android:layout_width="60dp"
+                android:layout_height="30dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="10dp"
+                android:background="@drawable/bg_green_1e853a_r100"
+                android:gravity="center"
+                android:paddingVertical="5dp"
+                android:text="下一步"
+                android:textColor="@color/colorWhite"
+                android:textSize="12sp" />
+
+        </RelativeLayout>
+
+        <!-- main content -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+           >
+
+            <!-- Material -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_above="@+id/ll_bottom_model"
+                android:layout_centerHorizontal="true"
+                android:background="@color/colorWhite">
+
+                <ImageView
+                    android:id="@+id/iv_material"
+                    android:layout_width="200dp"
+                    android:layout_height="200dp"
+                    android:layout_centerInParent="true"
+                    android:scaleType="centerInside" />
+
+                <ImageView
+                    android:id="@+id/iv_mirror"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_gray_5f5f5f_r360"
+                    android:padding="10dp"
+                    android:src="@mipmap/mirror" />
+
+                <ImageView
+                    android:id="@+id/iv_rotate"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginRight="10dp"
+                    android:background="@drawable/bg_gray_5f5f5f_r360"
+                    android:padding="10dp"
+                    android:src="@mipmap/rotate" />
+
+                <ImageView
+                    android:id="@+id/iv_contrast"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentBottom="true"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="@drawable/bg_gray_5f5f5f_r360"
+                    android:padding="10dp"
+                    android:src="@drawable/ic_contrast_w" />
+
+                <ImageView
+                    android:id="@+id/iv_save"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentBottom="true"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="@drawable/bg_gray_5f5f5f_r360"
+                    android:padding="10dp"
+                    android:src="@drawable/ic_download" />
+
+            </RelativeLayout>
+
+            <!-- parameter -->
+            <LinearLayout
+                android:id="@+id/ll_bottom_model"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:background="@color/colorWhite"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <!-- Model tab -->
+                <in.co.gorest.grblcontroller.util.MyTabLayout
+                    android:id="@+id/tab_model"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:background="@color/colorWhite"
+                    app:tabBackground="@color/colorBlack"
+                    app:tabIndicatorHeight="0dp"
+                    app:tabMode="scrollable"
+                    app:tabRippleColor="@color/colorBlack" />
+
+
+                <!-- Contrast -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_gray_e6e6e6_r10"
+                    android:orientation="vertical"
+                    android:padding="10dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/ic_contrast" />
+
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:text="对比度"
+                            android:textColor="@color/colorGreen"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:id="@+id/tv_contrast"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:text="100%"
+                            android:textColor="@color/colorGreen"
+                            android:textSize="14sp" />
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp">
+
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2"
+                            android:gravity="end"
+                            android:text="0%"
+                            android:textColor="@color/colorGreen"
+                            android:textSize="16sp" />
+
+                        <in.co.gorest.grblcontroller.util.MySeekBar
+                            android:id="@+id/seekbar_contrast"
+                            android:layout_width="0dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:layout_marginStart="10dp"
+                            android:layout_weight="6" />
+
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:layout_weight="2"
+                            android:gravity="start"
+                            android:text="100%"
+                            android:textColor="@color/colorGreen"
+                            android:textSize="16sp" />
+
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Brightness -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_gray_e6e6e6_r10"
+                    android:orientation="vertical"
+                    android:padding="10dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/ic_brightness" />
+
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:text="亮度"
+                            android:textColor="@color/colorGreen"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:id="@+id/tv_brightness"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:text="100%"
+                            android:textColor="@color/colorGreen"
+                            android:textSize="14sp" />
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp">
+
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2"
+                            android:gravity="end"
+                            android:text="0%"
+                            android:textColor="@color/colorGreen"
+                            android:textSize="16sp" />
+
+                        <in.co.gorest.grblcontroller.util.MySeekBar
+                            android:id="@+id/seekbar_brightness"
+                            android:layout_width="0dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:layout_marginStart="10dp"
+                            android:layout_weight="6" />
+
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:layout_weight="2"
+                            android:gravity="start"
+                            android:text="100%"
+                            android:textColor="@color/colorGreen"
+                            android:textSize="16sp" />
+
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Sharpening -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_gray_e6e6e6_r10"
+                    android:orientation="vertical"
+                    android:padding="10dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/ic_sharpening" />
+
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:text="锐化"
+                            android:textColor="@color/colorGreen"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:id="@+id/tv_sharpening"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:text="100"
+                            android:textColor="@color/colorGreen"
+                            android:textSize="14sp" />
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp">
+
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2"
+                            android:gravity="end"
+                            android:text="0"
+                            android:textColor="@color/colorGreen"
+                            android:textSize="16sp" />
+
+                        <in.co.gorest.grblcontroller.util.MySeekBar
+                            android:id="@+id/seekbar_sharpening"
+                            android:layout_width="0dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:layout_marginStart="10dp"
+                            android:layout_weight="6" />
+
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:layout_weight="2"
+                            android:gravity="start"
+                            android:text="255"
+                            android:textColor="@color/colorGreen"
+                            android:textSize="16sp" />
+
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- Highlights -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:background="@drawable/bg_gray_e6e6e6_r10"
+                    android:orientation="vertical"
+                    android:padding="10dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/ic_highlights" />
+
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:text="高光"
+                            android:textColor="@color/colorGreen"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:id="@+id/tv_highlights"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:text="100%"
+                            android:textColor="@color/colorGreen"
+                            android:textSize="14sp" />
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="10dp">
+
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2"
+                            android:gravity="end"
+                            android:text="0%"
+                            android:textColor="@color/colorGreen"
+                            android:textSize="16sp" />
+
+                        <in.co.gorest.grblcontroller.util.MySeekBar
+                            android:id="@+id/seekbar_highlights"
+                            android:layout_width="0dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:layout_marginStart="10dp"
+                            android:layout_weight="6" />
+
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:layout_weight="2"
+                            android:gravity="start"
+                            android:text="100%"
+                            android:textColor="@color/colorGreen"
+                            android:textSize="16sp" />
+
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
+
+    </LinearLayout>
+
+</layout>

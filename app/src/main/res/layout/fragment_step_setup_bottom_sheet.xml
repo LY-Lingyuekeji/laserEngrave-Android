@@ -1,0 +1,491 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_white_ffffff_topradius30"
+    android:orientation="vertical"
+    tools:context=".fragment.WifiChooseBottomSheetFragment">
+
+    <!-- back & title & reset -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp">
+
+        <ImageView
+            android:id="@+id/iv_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_arrow_left"
+            android:layout_centerVertical="true"
+            android:layout_alignParentStart="true"/>
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="运动参数"
+            android:textColor="@color/colorBlack"
+            android:textSize="16sp" />
+
+
+        <TextView
+            android:id="@+id/tv_rest"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="重置"
+            android:textSize="12sp"
+            android:textColor="@color/colorWhite"
+            android:background="@drawable/bg_green_1e853a_r10"
+            android:paddingVertical="5dp"
+            android:paddingHorizontal="10dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"/>
+
+    </RelativeLayout>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="15dp"
+        android:background="@color/ColorGray">
+
+
+        <!-- step -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_white_ffffff_r10"
+            android:orientation="vertical"
+            android:padding="10dp">
+
+
+            <RelativeLayout
+                android:id="@+id/rl_step_short"
+                android:layout_width="match_parent"
+                android:layout_height="30dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="步长（短）"
+                    android:textSize="12sp"
+                    android:textColor="@color/colorBlack"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentStart="true"/>
+
+
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentEnd="true"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tv_step_short"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0.1mm"
+                        android:textSize="12sp"
+                        android:textColor="@color/colorBlack"/>
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_arrow_down"
+                        android:layout_marginStart="10dp"/>
+
+
+                </LinearLayout>
+
+
+
+
+            </RelativeLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_marginVertical="10dp"
+                android:layout_height="1dp"
+                android:background="@color/ColorGray"/>
+
+            <RelativeLayout
+                android:id="@+id/rl_step_general"
+                android:layout_width="match_parent"
+                android:layout_height="30dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="步长（常规）"
+                    android:textSize="12sp"
+                    android:textColor="@color/colorBlack"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentStart="true"/>
+
+
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentEnd="true"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tv_step_general"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="1mm"
+                        android:textSize="12sp"
+                        android:textColor="@color/colorBlack"/>
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_arrow_down"
+                        android:layout_marginStart="10dp"/>
+
+
+                </LinearLayout>
+
+
+
+
+            </RelativeLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_marginVertical="10dp"
+                android:layout_height="1dp"
+                android:background="@color/ColorGray"/>
+
+            <RelativeLayout
+                android:id="@+id/rl_step_middle"
+                android:layout_width="match_parent"
+                android:layout_height="30dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="步长（中）"
+                    android:textSize="12sp"
+                    android:textColor="@color/colorBlack"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentStart="true"/>
+
+
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentEnd="true"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tv_step_middle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="5mm"
+                        android:textSize="12sp"
+                        android:textColor="@color/colorBlack"/>
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_arrow_down"
+                        android:layout_marginStart="10dp"/>
+
+
+                </LinearLayout>
+
+
+
+
+            </RelativeLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_marginVertical="10dp"
+                android:layout_height="1dp"
+                android:background="@color/ColorGray"/>
+
+            <RelativeLayout
+                android:id="@+id/rl_step_long"
+                android:layout_width="match_parent"
+                android:layout_height="30dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="步长（长）"
+                    android:textSize="12sp"
+                    android:textColor="@color/colorBlack"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentStart="true"/>
+
+
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentEnd="true"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tv_step_long"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="10mm"
+                        android:textSize="12sp"
+                        android:textColor="@color/colorBlack"/>
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_arrow_down"
+                        android:layout_marginStart="10dp"/>
+
+
+                </LinearLayout>
+
+
+
+
+            </RelativeLayout>
+
+        </LinearLayout>
+
+        <!-- speed -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:background="@drawable/bg_white_ffffff_r10"
+            android:orientation="vertical"
+            android:padding="10dp">
+
+
+            <RelativeLayout
+                android:id="@+id/rl_speed_slow"
+                android:layout_width="match_parent"
+                android:layout_height="30dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="速度（慢）"
+                    android:textSize="12sp"
+                    android:textColor="@color/colorBlack"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentStart="true"/>
+
+
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentEnd="true"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tv_speed_slow"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="2500mm/min"
+                        android:textSize="12sp"
+                        android:textColor="@color/colorBlack"/>
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_arrow_down"
+                        android:layout_marginStart="10dp"/>
+
+
+                </LinearLayout>
+
+
+
+
+            </RelativeLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_marginVertical="10dp"
+                android:layout_height="1dp"
+                android:background="@color/ColorGray"/>
+
+            <RelativeLayout
+                android:id="@+id/rl_speed_middle"
+                android:layout_width="match_parent"
+                android:layout_height="30dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="速度（中等）"
+                    android:textSize="12sp"
+                    android:textColor="@color/colorBlack"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentStart="true"/>
+
+
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentEnd="true"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tv_speed_middle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="5000mm/min"
+                        android:textSize="12sp"
+                        android:textColor="@color/colorBlack"/>
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_arrow_down"
+                        android:layout_marginStart="10dp"/>
+
+
+                </LinearLayout>
+
+
+
+
+            </RelativeLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_marginVertical="10dp"
+                android:layout_height="1dp"
+                android:background="@color/ColorGray"/>
+
+            <RelativeLayout
+                android:id="@+id/rl_speed_fast"
+                android:layout_width="match_parent"
+                android:layout_height="30dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="速度（快）"
+                    android:textSize="12sp"
+                    android:textColor="@color/colorBlack"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentStart="true"/>
+
+
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentEnd="true"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tv_speed_fast"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="7500mm/min"
+                        android:textSize="12sp"
+                        android:textColor="@color/colorBlack"/>
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_arrow_down"
+                        android:layout_marginStart="10dp"/>
+
+
+                </LinearLayout>
+
+
+
+
+            </RelativeLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_marginVertical="10dp"
+                android:layout_height="1dp"
+                android:background="@color/ColorGray"/>
+
+            <RelativeLayout
+                android:id="@+id/rl_speed_prestissimo"
+                android:layout_width="match_parent"
+                android:layout_height="30dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="速度（超快）"
+                    android:textSize="12sp"
+                    android:textColor="@color/colorBlack"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentStart="true"/>
+
+
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentEnd="true"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tv_speed_prestissimo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="10000mm/min"
+                        android:textSize="12sp"
+                        android:textColor="@color/colorBlack"/>
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_arrow_down"
+                        android:layout_marginStart="10dp"/>
+
+
+                </LinearLayout>
+
+
+
+
+            </RelativeLayout>
+
+        </LinearLayout>
+
+
+
+
+    </LinearLayout>
+
+
+</LinearLayout>

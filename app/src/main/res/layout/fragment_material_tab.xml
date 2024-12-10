@@ -1,0 +1,170 @@
+<layout xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <data>
+        <variable name="machineStatus" type="in.co.gorest.grblcontroller.listeners.MachineStatusListener" />
+        <variable name="fileSender" type="in.co.gorest.grblcontroller.listeners.FileSenderListener" />
+    </data>
+
+   <!-- <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_picture"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>-->
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/ll_material"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:padding="15dp"
+                android:orientation="horizontal"
+                android:background="@drawable/bg_blue_8ab7f7_r10">
+
+
+                <ImageView
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:layout_gravity="center"
+                    android:src="@mipmap/ic_launcher"/>
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="素材"
+                    android:textColor="@color/colorWhite"
+                    android:layout_marginStart="15dp"
+                    android:textSize="18sp"/>
+
+
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ll_album"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_weight="1"
+                android:padding="15dp"
+                android:orientation="horizontal"
+                android:background="@drawable/bg_blue_8ab7f7_r10">
+
+
+                <ImageView
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:layout_gravity="center"
+                    android:src="@mipmap/ic_launcher"/>
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="相册"
+                    android:textColor="@color/colorWhite"
+                    android:layout_marginStart="15dp"
+                    android:textSize="18sp"/>
+
+
+
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:padding="15dp"
+                android:orientation="horizontal"
+                android:background="@drawable/bg_blue_8ab7f7_r10">
+
+
+                <ImageView
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:layout_gravity="center"
+                    android:src="@mipmap/ic_launcher"/>
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="二维码"
+                    android:textColor="@color/colorWhite"
+                    android:layout_marginStart="15dp"
+                    android:textSize="18sp"/>
+
+
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:layout_weight="1"
+                android:padding="15dp"
+                android:orientation="horizontal"
+                android:background="@drawable/bg_blue_8ab7f7_r10">
+
+
+                <ImageView
+                    android:layout_width="45dp"
+                    android:layout_height="45dp"
+                    android:layout_gravity="center"
+                    android:src="@mipmap/ic_launcher"/>
+
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="条形码"
+                    android:textColor="@color/colorWhite"
+                    android:layout_marginStart="15dp"
+                    android:textSize="18sp"/>
+
+
+
+
+            </LinearLayout>
+
+
+        </LinearLayout>
+
+
+
+
+
+    </LinearLayout>
+
+
+
+
+</layout>

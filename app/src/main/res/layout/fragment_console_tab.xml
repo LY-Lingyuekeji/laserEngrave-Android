@@ -1,0 +1,235 @@
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+        <variable
+            name="console"
+            type="in.co.gorest.grblcontroller.listeners.ConsoleLoggerListener" />
+        <variable
+            name="machineStatus"
+            type="in.co.gorest.grblcontroller.listeners.MachineStatusListener" />
+    </data>
+
+    <ScrollView
+        android:id="@+id/console_scroll_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:paddingTop="4dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="4dp"
+                android:visibility="visible">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentStart="true"
+                    android:layout_toStartOf="@+id/console_verbose_output"
+                    android:text="@string/text_verbose_output" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                    android:id="@+id/console_verbose_output"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    tools:ignore="TouchTargetSizeCheck" />
+
+            </RelativeLayout>
+
+            <ViewSwitcher
+                android:id="@+id/console_view_switcher"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="4dp">
+
+                    <TextView
+                        android:id="@+id/console_logger"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/rounded_border_edit_text"
+                        android:fadeScrollbars="false"
+                        android:gravity="bottom"
+                        android:maxLines="16"
+                        android:minHeight="220dp"
+                        android:overScrollMode="always"
+                        android:padding="8dp"
+                        android:scrollbarStyle="insideInset"
+                        android:scrollbars="vertical"
+                        android:text="@{console.messages}"
+                        android:textSize="12sp"
+                        tools:ignore="SmallSp" />
+
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="8dp">
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recycler_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="220dp"
+                        android:background="@drawable/rounded_border_edit_text"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp"
+                        android:scrollbars="vertical" />
+
+                </RelativeLayout>
+
+            </ViewSwitcher>
+
+            <TableLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="4dp">
+
+                <TableRow tools:ignore="UselessParent">
+
+                    <EditText
+                        android:id="@+id/command_input"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="0.60"
+                        android:autofillHints=""
+                        android:background="@drawable/rounded_border_edit_text"
+                        android:hint="gcode"
+                        android:inputType="textCapCharacters"
+                        android:maxLength="78"
+                        android:maxLines="1"
+                        android:padding="8dp"
+                        android:textSize="20sp"
+                        tools:ignore="HardcodedText,LabelFor" />
+
+                    <com.joanzapata.iconify.widget.IconButton
+                        android:id="@+id/send_command"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="0.20"
+                        android:gravity="center"
+                        android:padding="16dp"
+                        android:text="{fa-send 24dp @color/colorAccent}"
+                        android:textSize="20sp"
+                        tools:ignore="HardcodedText" />
+
+                    <com.joanzapata.iconify.widget.IconButton
+                        android:id="@+id/console_history"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="0.20"
+                        android:gravity="center"
+                        android:padding="16dp"
+                        android:text="{fa-history 24dp @color/colorAccent}"
+                        android:textSize="20sp"
+                        tools:ignore="HardcodedText" />
+
+                </TableRow>
+
+                <TableRow tools:ignore="UselessParent"
+                    android:layout_marginVertical="5dp">
+
+                    <com.joanzapata.iconify.widget.IconButton
+                        android:id="@+id/send_command_config"
+                        android:text="$$配置"
+                        android:layout_weight="0.25"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:layout_width="0dp"
+                        tools:ignore="HardcodedText" />
+
+                    <com.joanzapata.iconify.widget.IconButton
+                        android:id="@+id/send_command_param"
+                        android:text="$#参数"
+                        android:layout_weight="0.25"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:layout_width="0dp"
+                        tools:ignore="HardcodedText" />
+
+                    <com.joanzapata.iconify.widget.IconButton
+                        android:id="@+id/send_command_state"
+                        android:text="$G状态"
+                        android:layout_weight="0.25"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:layout_width="0dp"
+                        tools:ignore="HardcodedText" />
+
+                    <com.joanzapata.iconify.widget.IconButton
+                        android:id="@+id/send_command_version"
+                        android:text="$I版本"
+                        android:layout_weight="0.25"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:layout_width="0dp"
+                        tools:ignore="HardcodedText" />
+                </TableRow>
+
+                <TableRow tools:ignore="UselessParent">
+
+                    <com.joanzapata.iconify.widget.IconButton
+                        android:id="@+id/send_command_h_config"
+                        android:text="$+参数"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:layout_width="0dp"
+                        tools:ignore="HardcodedText" />
+
+                    <com.joanzapata.iconify.widget.IconButton
+                        android:id="@+id/send_command_reset"
+                        android:text="恢复出厂"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:layout_width="0dp"
+                        tools:ignore="HardcodedText" />
+
+
+                </TableRow>
+
+                <TableRow tools:ignore="UselessParent">
+                    <com.joanzapata.iconify.widget.IconButton
+                        android:id="@+id/send_command_bt"
+                        android:text="蓝牙模式"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:layout_width="0dp"
+                        tools:ignore="HardcodedText" />
+
+                    <com.joanzapata.iconify.widget.IconButton
+                        android:id="@+id/send_command_ap"
+                        android:text="AP模式"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:layout_width="0dp"
+                        tools:ignore="HardcodedText" />
+
+
+                </TableRow>
+
+            </TableLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</layout>
+

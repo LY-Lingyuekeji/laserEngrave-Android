@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="10dp"
+    android:background="@drawable/bg_white_ffffff_r10"
+    android:padding="10dp">
+
+
+    <ImageView
+        android:id="@+id/iv_logo"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:src="@drawable/ic_star" />
+
+
+    <TextView
+        android:id="@+id/tv_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_centerVertical="true"
+        android:layout_toRightOf="@id/iv_logo"
+        android:text="素材库"
+        android:textColor="@color/colorBlack"
+        android:textSize="12sp" />
+    
+    
+    <ImageView
+        android:id="@+id/iv_rank"
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_centerVertical="true"
+        android:layout_alignParentEnd="true"
+        android:src="@drawable/ic_headline_c"/>
+
+
+</RelativeLayout>

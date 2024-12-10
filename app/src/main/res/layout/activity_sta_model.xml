@@ -1,0 +1,186 @@
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- Top status bar -->
+        <RelativeLayout
+            android:id="@+id/status_bar"
+            android:layout_width="match_parent"
+            android:layout_height="?actionBarSize"
+            android:background="@color/colorWhite">
+
+            <!-- Icons back -->
+            <ImageView
+                android:id="@+id/iv_back"
+                android:layout_width="20dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="16dp"
+                android:src="@drawable/ic_back" />
+
+            <!-- Title -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_centerHorizontal="true"
+                android:gravity="center"
+                android:text="STA模式配置"
+                android:textColor="@color/colorBlack"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+        </RelativeLayout>
+
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_above="@+id/tv_next"
+                android:layout_alignParentTop="true"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="选择Wi-Fi"
+                    android:textColor="@color/colorBlack"
+                    android:textSize="26sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="此设备STA模式下请选择名称为 2.4GHz 的Wi-Fi进行连接"
+                    android:textColor="@color/colorBlack"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Wi-Fi名称仅支持英文字符及数字"
+                    android:textColor="#676767"
+                    android:textSize="12sp" />
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:layout_marginTop="50dp"
+                    android:layout_marginBottom="5dp"
+                    android:background="@drawable/bg_gray_e6e6e6_r10"
+                    android:padding="10dp">
+
+                    <EditText
+                        android:id="@+id/et_ssid"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginEnd="15dp"
+                        android:layout_toLeftOf="@+id/tv_choose_wifi"
+                        android:background="@null"
+                        android:hint="请输入Wi-Fi名称"
+                        android:textColor="@color/colorBlack"
+                        android:textColorHint="#676767"
+                        android:textSize="15sp" />
+
+                    <TextView
+                        android:id="@+id/tv_choose_wifi"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:background="@drawable/bg_green_401e853a_r30"
+                        android:padding="10dp"
+                        android:text="选择Wi-Fi"
+                        android:textColor="@color/colorGreen"
+                        android:textSize="12sp" />
+                </RelativeLayout>
+
+                <TextView
+                    android:id="@+id/tv_is5G_tips"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:textColor="#ff1135"
+                    android:textSize="11sp" />
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:layout_marginTop="5dp"
+                    android:background="@drawable/bg_gray_e6e6e6_r10"
+                    android:padding="10dp">
+
+                    <EditText
+                        android:id="@+id/et_password"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginEnd="20dp"
+                        android:layout_toLeftOf="@+id/iv_password_visibility"
+                        android:background="@null"
+                        android:hint="请输入Wi-Fi密码"
+                        android:inputType="textPassword"
+                        android:textColor="@color/colorBlack"
+                        android:textColorHint="#676767"
+                        android:textSize="15sp" />
+
+                    <ImageView
+                        android:id="@+id/iv_password_visibility"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:src="@drawable/ic_password_visibility_off" />
+                </RelativeLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="Wi-Fi密码输入错误是最常见的失败原因之一，请仔细检查Wi-Fi密码"
+                    android:textColor="@color/colorBlack"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tv_password_tips"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="密码必须至少包含8个字符"
+                    android:textColor="@color/colorBlack"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_next"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="20dp"
+                android:background="@drawable/bg_green_1e853a_r10"
+                android:gravity="center"
+                android:padding="10dp"
+                android:text="下一步"
+                android:textColor="@color/colorWhite" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+</layout>

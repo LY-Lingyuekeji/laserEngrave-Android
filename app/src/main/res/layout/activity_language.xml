@@ -1,0 +1,274 @@
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="@color/ColorGray">
+
+        <!-- Top status bar -->
+        <RelativeLayout
+            android:id="@+id/status_bar"
+            android:layout_width="match_parent"
+            android:layout_height="?actionBarSize"
+            android:background="@color/colorWhite">
+
+            <!-- Icons back -->
+            <ImageView
+                android:id="@+id/iv_back"
+                android:layout_width="20dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="16dp"
+                android:src="@drawable/ic_back" />
+
+            <!-- Title -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_centerHorizontal="true"
+                android:gravity="center"
+                android:text="语言"
+                android:textColor="@color/colorBlack"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+        </RelativeLayout>
+
+        <!-- 跟随系统 -->
+        <RelativeLayout
+            android:id="@+id/rl_default"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:layout_marginHorizontal="16dp"
+            android:padding="10dp"
+            android:background="@drawable/bg_white_ffffff_r10">
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_alignParentStart="true"
+                android:text="跟随系统"
+                android:textColor="@color/colorBlack"
+                android:textSize="14sp"/>
+
+
+            <ImageView
+                android:id="@+id/iv_default"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/item_checkbox_selector"/>
+
+
+
+        </RelativeLayout>
+
+        <!-- 中文 -->
+        <RelativeLayout
+            android:id="@+id/rl_zh"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:layout_marginHorizontal="16dp"
+            android:padding="10dp"
+            android:background="@drawable/bg_white_ffffff_r10">
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_alignParentStart="true"
+                android:text="中文"
+                android:textColor="@color/colorBlack"
+                android:textSize="14sp"/>
+
+
+            <ImageView
+                android:id="@+id/iv_zh"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/item_checkbox_selector"/>
+
+
+
+        </RelativeLayout>
+
+        <!-- 英语 -->
+        <RelativeLayout
+            android:id="@+id/rl_en"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:layout_marginHorizontal="16dp"
+            android:padding="10dp"
+            android:background="@drawable/bg_white_ffffff_r10">
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_alignParentStart="true"
+                android:text="英语"
+                android:textColor="@color/colorBlack"
+                android:textSize="14sp"/>
+
+
+            <ImageView
+                android:id="@+id/iv_en"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/item_checkbox_selector"/>
+
+
+
+        </RelativeLayout>
+
+        <!-- 俄语 -->
+        <RelativeLayout
+            android:id="@+id/rl_ru"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:layout_marginHorizontal="16dp"
+            android:padding="10dp"
+            android:background="@drawable/bg_white_ffffff_r10">
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_alignParentStart="true"
+                android:text="俄语"
+                android:textColor="@color/colorBlack"
+                android:textSize="14sp"/>
+
+
+            <ImageView
+                android:id="@+id/iv_ru"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/item_checkbox_selector"/>
+
+
+
+        </RelativeLayout>
+
+        <!-- 西班牙语 -->
+        <RelativeLayout
+            android:id="@+id/rl_es"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:layout_marginHorizontal="16dp"
+            android:padding="10dp"
+            android:background="@drawable/bg_white_ffffff_r10">
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_alignParentStart="true"
+                android:text="西班牙语"
+                android:textColor="@color/colorBlack"
+                android:textSize="14sp"/>
+
+
+            <ImageView
+                android:id="@+id/iv_es"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/item_checkbox_selector"/>
+
+
+
+        </RelativeLayout>
+
+        <!-- 德语 -->
+        <RelativeLayout
+            android:id="@+id/rl_de"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:layout_marginHorizontal="16dp"
+            android:padding="10dp"
+            android:background="@drawable/bg_white_ffffff_r10">
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_alignParentStart="true"
+                android:text="德语"
+                android:textColor="@color/colorBlack"
+                android:textSize="14sp"/>
+
+
+            <ImageView
+                android:id="@+id/iv_de"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/item_checkbox_selector"/>
+
+
+
+        </RelativeLayout>
+
+        <!-- 日语 -->
+        <RelativeLayout
+            android:id="@+id/rl_ja"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:layout_marginHorizontal="16dp"
+            android:padding="10dp"
+            android:background="@drawable/bg_white_ffffff_r10">
+
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_alignParentStart="true"
+                android:text="日语"
+                android:textColor="@color/colorBlack"
+                android:textSize="14sp"/>
+
+
+            <ImageView
+                android:id="@+id/iv_ja"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:src="@drawable/item_checkbox_selector"/>
+
+
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+</layout>

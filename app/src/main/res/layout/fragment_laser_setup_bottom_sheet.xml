@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_white_ffffff_topradius30"
+    android:orientation="vertical"
+    android:paddingHorizontal="10dp"
+    android:paddingVertical="20dp"
+    tools:context=".fragment.WifiChooseBottomSheetFragment">
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="激光功率"
+        android:textSize="14sp"
+        android:textColor="@color/colorBlack"
+        android:gravity="center"/>
+
+
+    <RadioGroup
+        android:id="@+id/rg_laser_level"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:orientation="vertical">
+
+        <RadioButton
+            android:id="@+id/rb_10"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/step_setup_bg_color_selector"
+            android:button="@null"
+            android:gravity="center"
+            android:paddingVertical="10dp"
+            android:text="10%"
+            android:textColor="@drawable/step_setup_text_color_selector"
+            android:textSize="14sp" />
+
+        <RadioButton
+            android:id="@+id/rb_20"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/step_setup_bg_color_selector"
+            android:button="@null"
+            android:gravity="center"
+            android:layout_marginTop="10dp"
+            android:paddingVertical="10dp"
+            android:text="20%"
+            android:textColor="@drawable/step_setup_text_color_selector"
+            android:textSize="14sp" />
+
+        <RadioButton
+            android:id="@+id/rb_30"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/step_setup_bg_color_selector"
+            android:button="@null"
+            android:gravity="center"
+            android:layout_marginTop="10dp"
+            android:paddingVertical="10dp"
+            android:text="30%"
+            android:textColor="@drawable/step_setup_text_color_selector"
+            android:textSize="14sp" />
+
+        <RadioButton
+            android:id="@+id/rb_40"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/step_setup_bg_color_selector"
+            android:button="@null"
+            android:gravity="center"
+            android:layout_marginTop="10dp"
+            android:paddingVertical="10dp"
+            android:text="40%"
+            android:textColor="@drawable/step_setup_text_color_selector"
+            android:textSize="14sp" />
+
+        <RadioButton
+            android:id="@+id/rb_50"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/step_setup_bg_color_selector"
+            android:button="@null"
+            android:gravity="center"
+            android:layout_marginTop="10dp"
+            android:paddingVertical="10dp"
+            android:text="50%"
+            android:textColor="@drawable/step_setup_text_color_selector"
+            android:textSize="14sp" />
+
+    </RadioGroup>
+
+
+
+
+
+
+</LinearLayout>

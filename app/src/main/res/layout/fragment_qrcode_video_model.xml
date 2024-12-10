@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_white_ffffff_r10"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical"
+    android:padding="15dp">
+
+    <ImageView
+        android:id="@+id/iv_qr_code"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_gravity="center"
+        android:src="@mipmap/ic_logo" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="视频链接"
+            android:textColor="@color/colorBlack"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_gray_f6f6f6_r10"
+            android:padding="10dp">
+
+            <EditText
+                android:id="@+id/et_qr_code_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_above="@+id/tv_qr_code_limit"
+                android:background="@null"
+                android:gravity="top"
+                android:hint="您可以输入iCloud、Google drive、dropbox one drive等可以分享视频的网址"
+                android:maxLength="1000"
+                android:text=""
+                android:textColor="@color/colorBlack"
+                android:textColorHint="#bbbbbb"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/tv_qr_code_limit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:gravity="end"
+                android:text="0/1000"
+                android:textColor="#bbbbbb"
+                android:textSize="12sp" />
+        </RelativeLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tv_next"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/bg_green_1e853a_r10"
+        android:gravity="center"
+        android:padding="10dp"
+        android:text="下一步"
+        android:textColor="@color/colorWhite" />
+</LinearLayout>

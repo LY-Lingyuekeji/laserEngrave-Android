@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "874192162418",
+    "project_id": "laserengraving-lingyue",
+    "storage_bucket": "laserengraving-lingyue.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:874192162418:android:7947171a371509b8707ceb",
+        "android_client_info": {
+          "package_name": "com.lingyue.laserengraving"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDUZMWb0ByKUazanxEmixAU901jQnhhcdY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

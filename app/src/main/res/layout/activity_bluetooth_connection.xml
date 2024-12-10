@@ -1,0 +1,822 @@
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="machineStatus"
+            type="in.co.gorest.grblcontroller.listeners.MachineStatusListener" />
+    </data>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- Top status bar -->
+        <RelativeLayout
+            android:id="@+id/status_bar"
+            android:layout_width="match_parent"
+            android:layout_height="?actionBarSize"
+            android:layout_alignParentTop="true"
+            android:background="@color/colorWhite">
+
+            <!-- Icons back -->
+            <ImageView
+                android:id="@+id/iv_back"
+                android:layout_width="20dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="16dp"
+                android:src="@drawable/ic_back" />
+
+            <!-- Title -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_centerHorizontal="true"
+                android:gravity="center"
+                android:text="控制"
+                android:textColor="@color/colorBlack"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+        </RelativeLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_above="@id/ll_command"
+            android:layout_below="@id/status_bar"
+            android:background="@color/ColorGray"
+            android:orientation="vertical"
+            android:padding="10dp">
+
+            <!-- 坐标信息 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="2"
+                android:background="@drawable/bg_white_ffffff_r10"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <!-- status && MPos && WPos -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@{machineStatus.state}"
+                        android:textColor="@{machineStatus.state.equalsIgnoreCase(machineStatus.STATE_ALARM) ? @color/colorPrimary : @android:color/tertiary_text_dark}"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="MPos"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="end"
+                        android:text="WPos"
+                        android:textSize="12sp" />
+
+
+                </LinearLayout>
+
+                <!-- X && MPos-X && WPos-X -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="X"
+                        android:textColor="@{machineStatus.enabledPins.x ? @color/colorPrimary : @android:color/tertiary_text_dark}"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text='@{String.format("%.3f", machineStatus.machinePosition.cordX)}'
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/wpos_edit_x"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="end"
+                        android:tag="X"
+                        android:text='@{String.format("%.3f {fa-edit 16sp}", machineStatus.workPosition.cordX)}'
+                        android:textSize="12sp" />
+
+
+                </LinearLayout>
+
+                <!-- Y && MPos-Y && WPos-Y -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Y"
+                        android:textColor="@{machineStatus.enabledPins.y ? @color/colorPrimary : @android:color/tertiary_text_dark}"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text='@{String.format("%.3f", machineStatus.machinePosition.cordY)}'
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/wpos_edit_y"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="end"
+                        android:tag="X"
+                        android:text='@{String.format("%.3f {fa-edit 16sp}", machineStatus.workPosition.cordY)}'
+                        android:textSize="12sp" />
+
+
+                </LinearLayout>
+
+                <!-- Z && MPos-Z && WPos-Z -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Z"
+                        android:textColor="@{machineStatus.enabledPins.z ? @color/colorPrimary : @android:color/tertiary_text_dark}"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text='@{String.format("%.3f", machineStatus.machinePosition.cordZ)}'
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/wpos_edit_z"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="end"
+                        android:tag="Z"
+                        android:text='@{String.format("%.3f {fa-edit 16sp}", machineStatus.workPosition.cordZ)}'
+                        android:textSize="12sp" />
+
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+            <!-- 控制 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="15dp"
+                android:layout_weight="4">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <RelativeLayout
+                        android:id="@+id/rl_rlrl"
+                        android:layout_width="200dp"
+                        android:layout_height="200dp"
+                        android:background="@drawable/bg_white_ffffff_r100"
+                        android:padding="10dp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintLeft_toLeftOf="parent"
+                        app:layout_constraintRight_toRightOf="parent"
+                        app:layout_constraintTop_toTopOf="parent">
+
+                        <ImageView
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:layout_alignParentTop="true"
+                            android:layout_centerHorizontal="true"
+                            android:src="@drawable/ic_arrow_up" />
+
+                        <ImageView
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:src="@drawable/ic_arrow_right" />
+
+                        <ImageView
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:layout_alignParentBottom="true"
+                            android:layout_centerHorizontal="true"
+                            android:src="@drawable/ic_arrow_down" />
+
+                        <ImageView
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:layout_alignParentStart="true"
+                            android:layout_centerVertical="true"
+                            android:src="@drawable/ic_arrow_left" />
+
+
+                    </RelativeLayout>
+
+                    <View
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:background="@drawable/bg_gray_f8f8f8_r100"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintLeft_toLeftOf="parent"
+                        app:layout_constraintRight_toRightOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <LinearLayout
+                        android:layout_width="90dp"
+                        android:layout_height="90dp"
+                        android:background="@drawable/bg_white_ffffff_r100"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="10dp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintLeft_toLeftOf="parent"
+                        app:layout_constraintRight_toRightOf="parent"
+                        app:layout_constraintTop_toTopOf="parent">
+
+                        <ImageView
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:src="@drawable/ic_home" />
+
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="5dp"
+                            android:text="Home"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="16sp" />
+
+
+                    </LinearLayout>
+
+                    <RelativeLayout
+                        android:layout_width="50dp"
+                        android:layout_height="match_parent"
+                        android:layout_margin="20dp"
+                        android:background="@drawable/bg_white_ffffff_r100"
+                        app:layout_constraintRight_toLeftOf="@+id/rl_rlrl"
+                        app:layout_constraintTop_toTopOf="@id/rl_rlrl">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentTop="true"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginTop="10dp"
+                            android:src="@drawable/ic_a" />
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_centerInParent="true"
+                            android:src="@drawable/ic_b" />
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentBottom="true"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginBottom="10dp"
+                            android:src="@drawable/ic_c" />
+
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:layout_width="50dp"
+                        android:layout_height="match_parent"
+                        android:layout_margin="20dp"
+                        android:background="@drawable/bg_white_ffffff_r100"
+                        app:layout_constraintLeft_toRightOf="@+id/rl_rlrl"
+                        app:layout_constraintTop_toTopOf="@id/rl_rlrl">
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentTop="true"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginTop="10dp"
+                            android:src="@drawable/ic_arrow_up" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerInParent="true"
+                            android:text="Z"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="16sp" />
+
+                        <ImageView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentBottom="true"
+                            android:layout_centerHorizontal="true"
+                            android:layout_marginBottom="10dp"
+                            android:src="@drawable/ic_arrow_down" />
+
+                    </RelativeLayout>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+            </LinearLayout>
+
+
+            <!-- 步长和速度 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="15dp"
+                android:layout_weight="3"
+                android:background="@drawable/bg_white_ffffff_r10"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_alignParentTop="true"
+                        android:layout_marginEnd="15dp"
+                        android:layout_toLeftOf="@id/iv_step_setting"
+                        android:text="步长和速度"
+                        android:textColor="@color/colorBlack"
+                        android:textSize="12sp" />
+
+                    <ImageView
+                        android:id="@+id/iv_step_setting"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:src="@drawable/ic_settings_black_20dp" />
+
+                </RelativeLayout>
+
+                <RadioGroup
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="15dp"
+                    android:orientation="horizontal">
+
+                    <RadioButton
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@drawable/step_button_color_selector"
+                        android:button="@null"
+                        android:gravity="center"
+                        android:padding="10dp"
+                        android:text="0.1mm"
+                        android:textColor="@drawable/step_text_color_selector"
+                        android:textSize="12sp" />
+
+                    <RadioButton
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/step_button_color_selector"
+                        android:button="@null"
+                        android:gravity="center"
+                        android:padding="10dp"
+                        android:text="1mm"
+                        android:textColor="@drawable/step_text_color_selector"
+                        android:textSize="12sp" />
+
+                    <RadioButton
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/step_button_color_selector"
+                        android:button="@null"
+                        android:gravity="center"
+                        android:padding="10dp"
+                        android:text="10mm"
+                        android:textColor="@drawable/step_text_color_selector"
+                        android:textSize="12sp" />
+
+                    <RadioButton
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/step_button_color_selector"
+                        android:button="@null"
+                        android:gravity="center"
+                        android:padding="10dp"
+                        android:text="50mm"
+                        android:textColor="@drawable/step_text_color_selector"
+                        android:textSize="12sp" />
+
+                </RadioGroup>
+
+                <RadioGroup
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="15dp"
+                    android:orientation="horizontal">
+
+                    <RadioButton
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@drawable/step_button_color_selector"
+                        android:button="@null"
+                        android:gravity="center"
+                        android:padding="10dp"
+                        android:text="慢速"
+                        android:textColor="@drawable/step_text_color_selector"
+                        android:textSize="12sp" />
+
+                    <RadioButton
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/step_button_color_selector"
+                        android:button="@null"
+                        android:gravity="center"
+                        android:padding="10dp"
+                        android:text="中速"
+                        android:textColor="@drawable/step_text_color_selector"
+                        android:textSize="12sp" />
+
+                    <RadioButton
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/step_button_color_selector"
+                        android:button="@null"
+                        android:clickable="true"
+                        android:gravity="center"
+                        android:padding="10dp"
+                        android:text="快速"
+                        android:textColor="@drawable/step_text_color_selector"
+                        android:textSize="12sp" />
+
+                    <RadioButton
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/step_button_color_selector"
+                        android:button="@null"
+                        android:gravity="center"
+                        android:padding="10dp"
+                        android:text="极快"
+                        android:textColor="@drawable/step_text_color_selector"
+                        android:textSize="12sp" />
+
+                </RadioGroup>
+
+            </LinearLayout>
+
+
+            <!-- 常用功能 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="15dp"
+                android:layout_weight="3"
+                android:background="@drawable/bg_white_ffffff_r10"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="常用功能"
+                    android:textColor="@color/colorBlack"
+                    android:textSize="12sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="15dp"
+                    android:orientation="horizontal">
+
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_gray_edebee_r100"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="4dp">
+
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_clean_notifi" />
+
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="解除报警"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="9sp" />
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_gray_edebee_r100"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="4dp">
+
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_clean_pos" />
+
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="X轴清零"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="9sp" />
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_gray_edebee_r100"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="4dp">
+
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_clean_pos" />
+
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="Y轴清零"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="9sp" />
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_gray_edebee_r100"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="4dp">
+
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_clean_pos" />
+
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="Z轴清零"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="9sp" />
+
+
+                    </LinearLayout>
+
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="15dp"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_gray_edebee_r100"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="4dp">
+
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_tour" />
+
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="设置起点"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="9sp" />
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_gray_edebee_r100"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="4dp">
+
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_origin" />
+
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="回起点"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="9sp" />
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_gray_edebee_r100"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="4dp">
+
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_laserlight" />
+
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="激光"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="9sp" />
+
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_gray_edebee_r100"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="4dp">
+
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_line_judge" />
+
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="巡边"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="9sp" />
+
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/ll_command"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:background="@color/colorWhite"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingVertical="5dp">
+
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_code" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="命令"
+                android:textColor="@color/colorBlack"
+                android:textSize="12sp" />
+
+
+        </LinearLayout>
+
+    </RelativeLayout>
+
+</layout>

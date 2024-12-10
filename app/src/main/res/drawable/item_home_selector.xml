@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--一定要将选中状态放在未签中的前面，否则不生效-->
+    <item android:drawable="@drawable/ic_home_select" android:state_selected="true"/>
+    <item android:drawable="@drawable/ic_home_unselect" />
+</selector>

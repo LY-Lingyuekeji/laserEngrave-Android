@@ -1,0 +1,141 @@
+buildscript {
+    repositories {
+    }
+
+    dependencies {
+
+    }
+}
+apply plugin: 'com.android.application'
+
+repositories {
+    maven { url 'http://dl.bintray.com/lukaville/maven' }
+}
+
+android {
+    compileSdkVersion 33
+
+    defaultConfig {
+        applicationId "com.lingyue.laserengraving"
+        minSdkVersion 26
+        versionCode 102
+        versionName "1.0.2"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        vectorDrawables.useSupportLibrary = true
+    }
+
+    buildTypes {
+        release {
+            debuggable false
+            minifyEnabled true
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            debuggable true
+            minifyEnabled true
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            // 添加以下代码以在文件名中加入日期
+            applicationVariants.all { variant ->
+                variant.outputs.all {
+                    outputFileName = "iklestar-${variant.versionName}-${new Date().format('yyyyMMdd')}.apk"
+                }
+            }
+        }
+    }
+//    dataBinding {
+//        enabled = true
+//    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    namespace 'in.co.gorest.grblcontroller'
+    buildFeatures {
+        dataBinding = true
+    }
+
+    packagingOptions {
+        exclude 'META-INF/*'
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url "https://www.jitpack.io" }
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.google.firebase:firebase-core:21.1.1'
+    implementation 'com.google.firebase:firebase-messaging:23.1.1'
+    implementation files('libs\\okhttputils-2_6_2.jar')
+    androidTestImplementation('androidx.test.espresso:espresso-core:3.3.0', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+
+    implementation 'androidx.appcompat:appcompat:1.0.2'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'com.google.android.material:material:1.6.0'
+    implementation 'org.apache.commons:commons-collections4:4.4'
+    implementation 'androidx.gridlayout:gridlayout:1.0.0'
+    implementation 'androidx.vectordrawable:vectordrawable:1.1.0'
+    implementation 'androidx.recyclerview:recyclerview:1.2.1'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'androidx.preference:preference:1.2.0'
+    implementation 'org.greenrobot:eventbus:3.3.1'
+    implementation 'com.github.warkiz:IndicatorSeekBar:v2.1.1'
+    implementation 'com.github.felHR85:UsbSerial:6.1.0'
+    implementation 'com.github.nbsp-team:MaterialFilePicker:85292dceb0'
+    implementation 'com.github.satyan:sugar:1.5'
+    implementation 'com.github.GrenderG:Toasty:1.5.2'
+
+    annotationProcessor 'androidx.databinding:databinding-compiler:7.4.0'
+
+    testImplementation 'junit:junit:4.13.2'
+
+
+    // RecyclerView适配器
+    implementation 'com.github.bumptech.glide:glide:4.7.1'
+    // Rx
+    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.3.0'
+    implementation 'io.reactivex.rxjava2:rxandroid:2.0.1'
+    implementation 'io.reactivex.rxjava2:rxjava:2.1.6'
+    // crashsight
+    implementation 'net.crashsight:crashsight-android:4.2.14'
+
+    // XBanner
+    implementation 'com.github.xiaohaibin:XBanner:androidx_v1.2.6'
+
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
+    // 使用最新版本的 ViewModel 和 LiveData
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1'
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.3.1'
+
+    //okhttp3
+    implementation 'com.squareup.okhttp3:okhttp:4.9.3'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.9.3'
+    implementation 'com.squareup.okio:okio:2.0.0'
+
+    // netty
+    implementation 'io.netty:netty-all:4.1.13.Final'
+
+    // easyble
+    implementation 'cn.wandersnail:easyble-x:1.5.0'
+    implementation 'cn.wandersnail:commons-android:1.4.1'
+    // zxing
+    implementation 'com.google.zxing:core:3.4.1'
+    implementation 'com.journeyapps:zxing-android-embedded:4.2.0'
+    // openCV
+    implementation 'org.opencv:opencv:4.10.0-kleidicv'
+    // 颜色选择器
+    implementation 'com.github.shixiuwen:colorpicker:v1.0.5'
+}
+
+apply plugin: 'com.google.gms.google-services'
