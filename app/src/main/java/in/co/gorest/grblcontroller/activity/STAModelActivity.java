@@ -19,6 +19,8 @@ import android.net.wifi.WifiManager;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.method.HideReturnsTransformationMethod;
@@ -44,6 +46,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import in.co.gorest.grblcontroller.R;
@@ -54,6 +57,7 @@ import in.co.gorest.grblcontroller.events.WifiNameEvent;
 import in.co.gorest.grblcontroller.fragment.BtConnetModelFragment;
 import in.co.gorest.grblcontroller.fragment.WiFiConnetModelFragment;
 import in.co.gorest.grblcontroller.fragment.WifiChooseBottomSheetFragment;
+import in.co.gorest.grblcontroller.util.NettyClient;
 
 public class STAModelActivity extends AppCompatActivity {
 
@@ -242,15 +246,34 @@ public class STAModelActivity extends AppCompatActivity {
                 } else {
                     tvPasswordTips.setTextColor(Color.parseColor("#000000"));
                     // 连接WIFI
-                    if (!etSsid.getText().toString().isEmpty() && !etPassword.getText().toString().isEmpty()) {
-                        Log.d(TAG, "STA-SSID=" + etSsid.getText().toString() + "----- STA-Password=" + etPassword.getText().toString());
+//                    if (!etSsid.getText().toString().isEmpty() && !etPassword.getText().toString().isEmpty()) {
+//                        Log.d(TAG, "STA-SSID=" + etSsid.getText().toString() + "----- STA-Password=" + etPassword.getText().toString());
+//                        // TODO 第一步 获取当前模式
+//                        NettyClient.getInstance(new Handler(new Handler.Callback() {
+//                            @Override
+//                            public boolean handleMessage(@NonNull Message msg) {
+//                                Log.d(TAG, "msg = " + msg);
+//                                return false;
+//                            }
+//                        })).sendMsgToServer("$I".getBytes(StandardCharsets.UTF_8),null);
 
-                        // TODO
+                        // TODO 第二步 配置STA模式
+//                        // 发送命令切换成STA模式
+//                        NettyClient.getInstance(null).sendMsgToServer("$50=2".getBytes(StandardCharsets.UTF_8), null);
+//                        // 发送命令配置账号密码
+//                        NettyClient.getInstance(null).sendMsgToServer(("$53=" + etSsid.getText().toString()).getBytes(StandardCharsets.UTF_8), null);
+//                        NettyClient.getInstance(null).sendMsgToServer(("$54=" + etPassword.getText().toString()).getBytes(StandardCharsets.UTF_8), null);
+
+                        // TODO 第三步 重启设备
+                        // 发送命令重启设备
+//                        NettyClient.getInstance(null).sendMsgToServer("$System/Control=RESTART".getBytes(StandardCharsets.UTF_8), null);
+
+                        // TODO 第三步 页面跳转，传递SSID和PASSWORD进行匹配和连接
                         Intent intent = new Intent(STAModelActivity.this, STAConnectStepActivity.class);
                         intent.putExtra("ssid", etSsid.getText().toString());
                         intent.putExtra("password", etPassword.getText().toString());
                         startActivity(intent);
-                    }
+//                    }
                 }
             }
 

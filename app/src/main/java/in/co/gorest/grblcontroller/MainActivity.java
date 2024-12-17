@@ -277,18 +277,18 @@ public class MainActivity extends BaseActivity {
         }
 
         // 自动连接
-        boolean isAutoConnect = sharedPref.getBoolean(getString(R.string.preference_auto_connect), false);
-        if (isAutoConnect) {
-            String ssidStr = sharedPref.getString(getString(R.string.preference_wifi_ssid), "");
-            if (ssidStr != null || !ssidStr.isEmpty()) {
-                Log.d(TAG, "SSID=" + ssidStr);
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    connectToWifiForAndroidQ(this, ssidStr, "12345678");
-                } else {
-                    connectToWifi(this, ssidStr, "12345678");
-                }
-            }
-        }
+//        boolean isAutoConnect = sharedPref.getBoolean(getString(R.string.preference_auto_connect), false);
+//        if (isAutoConnect) {
+//            String ssidStr = sharedPref.getString(getString(R.string.preference_wifi_ssid), "");
+//            if (ssidStr != null || !ssidStr.isEmpty()) {
+//                Log.d(TAG, "SSID=" + ssidStr);
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+//                    connectToWifiForAndroidQ(this, ssidStr, "12345678");
+//                } else {
+//                    connectToWifi(this, ssidStr, "12345678");
+//                }
+//            }
+//        }
     }
 
     /**

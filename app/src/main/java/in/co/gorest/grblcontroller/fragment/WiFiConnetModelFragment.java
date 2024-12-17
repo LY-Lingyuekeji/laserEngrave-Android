@@ -148,15 +148,6 @@ public class WiFiConnetModelFragment extends Fragment {
         initData();
         // 初始化事件监听
         setupListeners();
-
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                scanNetworkInParallel("192.168.31");
-            }
-        }).start();
-
     }
 
     /**

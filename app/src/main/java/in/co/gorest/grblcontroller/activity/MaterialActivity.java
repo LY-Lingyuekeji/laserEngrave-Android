@@ -13,6 +13,7 @@ import android.view.WindowInsetsController;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
@@ -140,9 +141,25 @@ public class MaterialActivity extends AppCompatActivity {
                 intent.putExtra("businessType", businessType);
                 startActivityForResult(intent, businessType == 1 ? ACTIVITY_CODE_FINISH : ACTIVITY_CODE_DATA);
                 Log.d(TAG, PictureList.get(position).getUrl().toString());
-                finish();
+//                finish();
             }
         });
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            switch (requestCode) {
+                case ACTIVITY_CODE_FINISH:
+                    setResult(RESULT_OK);
+                    finish();
+                    break;
+                case ACTIVITY_CODE_DATA:
+                    setResult(RESULT_OK, data);
+                    finish();
+                    break;
+            }
+        }
+    }
 }

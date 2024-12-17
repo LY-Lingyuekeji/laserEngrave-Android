@@ -44,29 +44,92 @@
            android:layout_width="wrap_content"
            android:layout_height="wrap_content"
            android:layout_gravity="center"
-           android:layout_marginTop="20dp"/>
+           android:layout_marginTop="20dp"
+           app:cpvProgressColor="@color/colorGreen"
+           app:cpvLabelTextColor="@color/colorGreen"/>
 
-        <in.co.gorest.grblcontroller.util.FlowViewVertical
-            android:id="@+id/vflow"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="10dp"
-            android:paddingRight="10dp"
-            android:paddingTop="10dp"
-            app:v_bgPositionX="40dp"
-            app:v_bg_color="#029dd5"
-            app:v_bg_radius="8dp"
-            app:v_bg_width="4dp"
-            app:v_interval="80dp"
-            app:v_max_step="5"
-            app:v_pro_color="#1e853a"
-            app:v_pro_radius="8dp"
-            app:v_pro_step="3"
-            app:v_pro_width="4dp"
-            app:v_textMoveTop="7dp"
-            app:v_textsize="14dp"
-            android:layout_marginTop="35dp"/>
+            android:orientation="vertical"
+            android:layout_marginTop="35dp">
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="让设备尽量靠近路由器"
+                android:textSize="16sp"
+                android:textColor="@color/colorBlack"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:orientation="horizontal"
+                android:layout_marginTop="20dp">
+
+               <ImageView
+                   android:layout_width="24dp"
+                   android:layout_height="24dp"
+                   android:src="@drawable/ic_checkbox_select"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="连接设备"
+                    android:textSize="16sp"
+                    android:textColor="#999999"
+                    android:layout_marginStart="10dp"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_checkbox_select"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="传输信息"
+                    android:textSize="16sp"
+                    android:textColor="#999999"
+                    android:layout_marginStart="10dp"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_checkbox_select"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="等待联网"
+                    android:textSize="16sp"
+                    android:textColor="#999999"
+                    android:layout_marginStart="10dp"/>
+
+            </LinearLayout>
+
+
+        </LinearLayout>
 
 
     </LinearLayout>

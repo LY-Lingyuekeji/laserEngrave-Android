@@ -10,8 +10,18 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.Log;
 
+import org.opencv.android.Utils;
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.Scalar;
+import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
+
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class ImageProcess {
 
@@ -110,7 +120,7 @@ public class ImageProcess {
         int newHeight = (int) (printHeight / resol);
         Log.e(TAG, "newWidth=" + newWidth + "==" + newHeight);
 
-        if (newWidth >= 4000 || newHeight >= 4000) {
+        if (newWidth >= 2500 || newHeight >= 2500) {
             Log.e(TAG, "图片尺寸过大，降低质量");
             return imageResize(bm, printWidth, printHeight, 1f / ((1 / resol) - 1));
         }
@@ -342,10 +352,8 @@ public class ImageProcess {
                 if (curve.Kind == PotraceJ.CurveKind.Line) {
                     path.reset();
                     path.moveTo((float) curve.A.X, (float) curve.A.Y);
-                    // path.lineTo((float)curve.B.X, (float)curve.B.Y);
                     path.quadTo((float) curve.A.X, (float) curve.A.Y, (float) curve.B.X, (float) curve.B.Y);
                     canvas.drawPath(path, paint);
-                    //canvas.drawLine((float)curve.A.X, (float)curve.A.Y, (float)curve.B.X, (float)curve.B.Y, paint);
                 } else {
                     path.reset();
                     path.moveTo((float) curve.A.X, (float) curve.A.Y);
@@ -355,9 +363,131 @@ public class ImageProcess {
             }
         }
 
-//        return outlineImage;
         return lean ? imageResize(outlineImage, (int) (resol), (int) (outlineImage.getHeight() * (resol / outlineImage.getWidth()))) : outlineImage;
     }
+
+    public static Bitmap convertToOutlineImage(Bitmap image, float resol, boolean lean, boolean isCenterlineMode) {
+        // 如果是中心线模式，提取中心线
+        if (isCenterlineMode) {
+            // 提取并返回中心线图像
+            return extractCenterlineFromOutline(image);
+        }
+
+        // 否则，进行常规的轮廓提取
+        PotraceJ.turdsize = 2;
+        PotraceJ.alphamax = 0.0;
+        PotraceJ.opttolerance = 0.2;
+        PotraceJ.curveoptimizing = true;
+
+        ArrayList<ArrayList<PotraceJ.Curve>> plist = PotraceJ.PotraceTrace(image);
+
+        // 初始化轮廓图像
+        int[] pixels = new int[image.getWidth() * image.getHeight()];
+        Arrays.fill(pixels, -1);  // 设置为白色
+        Bitmap outlineImage = Bitmap.createBitmap(image.getWidth(), image.getHeight(), Bitmap.Config.RGB_565);
+        outlineImage.setPixels(pixels, 0, image.getWidth(), 0, 0, image.getWidth(), image.getHeight());
+
+        // 创建 Canvas 和 Paint 用于绘制轮廓
+        Canvas canvas = new Canvas(outlineImage);
+        Paint paint = new Paint();
+        paint.setColor(Color.BLACK);
+        paint.setStrokeWidth(1);
+        paint.setStyle(Paint.Style.STROKE);
+        paint.setStrokeJoin(Paint.Join.ROUND);
+        paint.setStrokeCap(Paint.Cap.ROUND);  // 线条结束处绘制一个半圆
+
+        Path path = new Path();
+
+        // 根据potrace提取的曲线数据绘制轮廓
+        for (ArrayList<PotraceJ.Curve> list : plist) {
+            for (int i = 0; i < list.size(); i++) {
+                PotraceJ.Curve curve = list.get(i);
+
+                if (curve.Kind == PotraceJ.CurveKind.Line) {
+                    path.reset();
+                    path.moveTo((float) curve.A.X, (float) curve.A.Y);
+                    path.quadTo((float) curve.A.X, (float) curve.A.Y, (float) curve.B.X, (float) curve.B.Y);
+                    canvas.drawPath(path, paint);
+                } else {
+                    path.reset();
+                    path.moveTo((float) curve.A.X, (float) curve.A.Y);
+                    path.rCubicTo((float) curve.A.X, (float) curve.A.Y, (float) curve.ControlPointA.X, (float) curve.ControlPointA.Y, (float) curve.B.X, (float) curve.B.Y);
+                    canvas.drawPath(path, paint);
+                }
+            }
+        }
+
+        // 如果是需要缩放的模式，进行缩放处理
+        return lean ? imageResize(outlineImage, (int) (resol), (int) (outlineImage.getHeight() * (resol / outlineImage.getWidth()))) : outlineImage;
+    }
+
+    // 提取中心线的函数，将轮廓图转为中心线图像
+    private static Bitmap extractCenterlineFromOutline(Bitmap image) {
+        // 将 Bitmap 转换为 Mat 以便进行 OpenCV 处理
+        Mat mat = new Mat();
+        Utils.bitmapToMat(image, mat);
+
+        // 转换为灰度图像
+        Imgproc.cvtColor(mat, mat, Imgproc.COLOR_BGR2GRAY);
+
+        // 创建二值化图像，确保背景是白色，轮廓是黑色
+        Mat binaryMat = new Mat();
+        Imgproc.threshold(mat, binaryMat, 128, 255, Imgproc.THRESH_BINARY_INV);  // 反转图像，背景白色，轮廓黑色
+
+        // 执行骨架化操作来提取中心线
+        Mat skeleton = new Mat(binaryMat.size(), CvType.CV_8UC1, new Scalar(0));
+        Mat element = Imgproc.getStructuringElement(Imgproc.MORPH_CROSS, new Size(3, 3));
+
+        boolean done;
+        do {
+            // 腐蚀操作
+            Mat eroded = new Mat();
+            Imgproc.erode(binaryMat, eroded, element);
+
+            // 计算骨架化图像
+            Mat temp = new Mat();
+            Core.subtract(binaryMat, eroded, temp);
+            Core.bitwise_or(skeleton, temp, skeleton);
+
+            // 复制腐蚀后的图像
+            eroded.copyTo(binaryMat);
+
+            done = Core.countNonZero(binaryMat) == 0;  // 判断是否已经完成骨架化
+        } while (!done);
+
+        // 将结果转换回 Bitmap，创建带透明背景的 Bitmap
+        Bitmap resultBitmap = Bitmap.createBitmap(skeleton.width(), skeleton.height(), Bitmap.Config.ARGB_8888);
+
+        // 将骨架化的图像转换成 Bitmap，透明部分将保持透明
+        Utils.matToBitmap(skeleton, resultBitmap);
+
+        // 释放资源
+        mat.release();
+        binaryMat.release();
+        skeleton.release();
+        element.release();
+
+        return resultBitmap;
+    }
+
+
+
+    public static Bitmap thresholdImage(Bitmap original) {
+        int width = original.getWidth();
+        int height = original.getHeight();
+        Bitmap thresholded = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int pixelColor = original.getPixel(x, y);
+                int gray = (int) (0.299 * Color.red(pixelColor) + 0.587 * Color.green(pixelColor) + 0.114 * Color.blue(pixelColor));
+                int threshold = gray > 128 ? 255 : 0;  // 这里采用简单的阈值化方法，128为阈值
+                thresholded.setPixel(x, y, Color.rgb(threshold, threshold, threshold));
+            }
+        }
+        return thresholded;
+    }
+
 
     /**
      * 反转黑白图，传进来的bitmap本身需要是黑白图

@@ -18,12 +18,16 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
+
 import com.google.android.material.tabs.TabLayout;
+
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Core;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
@@ -31,6 +35,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import in.co.gorest.grblcontroller.BuildConfig;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.model.EffectBean;
@@ -232,8 +237,6 @@ public class EditActivity extends AppCompatActivity {
         initParameter();
 
 
-
-
         if (!OpenCVLoader.initLocal()) {
             try {
                 System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
@@ -264,20 +267,46 @@ public class EditActivity extends AppCompatActivity {
         btnNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(EditActivity.this, PreViewActivity.class);
+
                 File click_next = ImgUtil.saveBitmap("3_click_next_" + System.currentTimeMillis() + ".png", finalBitmap);
                 Uri imageUris = Uri.fromFile(click_next);
-                intent.putExtra("type", String.valueOf(tabPosition + 1));
-                intent.putExtra("resols", resols);
-                intent.putExtra("Sharp", sharp);
-                intent.putExtra("andReverse", andReverse);
-                intent.putExtra("effectBeans", (Serializable) effectBeans);
-                intent.putExtra(BuildConfig.APPLICATION_ID + ".InputUri", imageUris);
-                intent.putExtra("initedBitmapUri", Uri.fromFile(ImgUtil.saveBitmap("initedBitmap_" + System.currentTimeMillis() + ".png", initedBitmap)));
-                intent.putExtra("bitmapWidth", bitmapWidth);
-                intent.putExtra("bitmapHeight", bitmapHeight);
-                intent.putExtra("aspectRatio", aspectRatio);
-                startActivity(intent);
+
+                Bundle mCropOptionsBundle = new Bundle();
+                mCropOptionsBundle.putString("type", "" + (tabPosition + 1));
+                mCropOptionsBundle.putFloat("resols", resols);
+                mCropOptionsBundle.putInt("Sharp", sharp);
+                mCropOptionsBundle.putBoolean("andReverse", andReverse);
+                mCropOptionsBundle.putSerializable("effectBeans", (Serializable) effectBeans);
+                mCropOptionsBundle.putParcelable(BuildConfig.APPLICATION_ID + ".InputUri", imageUris);
+                mCropOptionsBundle.putParcelable("initedBitmapUri", Uri.fromFile(ImgUtil.saveBitmap("initedBitmap_" + System.currentTimeMillis() + ".png", initedBitmap)));
+                mCropOptionsBundle.putInt("bitmapWidth", bitmapWidth);
+                mCropOptionsBundle.putInt("bitmapHeight", bitmapHeight);
+                mCropOptionsBundle.putFloat("aspectRatio", aspectRatio);
+
+                if (businessType == 1) {
+                    Intent intent = new Intent(EditActivity.this, PreViewActivity.class);
+                    intent.putExtras(mCropOptionsBundle);
+                    startActivityForResult(intent, ACTIVITY_CODE_FINISH);
+                } else {
+                    Intent data = new Intent();
+                    data.putExtra("data", mCropOptionsBundle);
+                    setResult(RESULT_OK, data);
+                    finish();
+                }
+
+
+//                intent.putExtra("type", String.valueOf(tabPosition + 1));
+//                intent.putExtra("resols", resols);
+//                intent.putExtra("Sharp", sharp);
+//                intent.putExtra("andReverse", andReverse);
+//                intent.putExtra("effectBeans", (Serializable) effectBeans);
+//                intent.putExtra(BuildConfig.APPLICATION_ID + ".InputUri", imageUris);
+//                intent.putExtra("initedBitmapUri", Uri.fromFile(ImgUtil.saveBitmap("initedBitmap_" + System.currentTimeMillis() + ".png", initedBitmap)));
+//                intent.putExtra("bitmapWidth", bitmapWidth);
+//                intent.putExtra("bitmapHeight", bitmapHeight);
+//                intent.putExtra("aspectRatio", aspectRatio);
+
+
 
 //                File finalBitmapFile = ImgUtil.saveBitmap("2_finalBitmap_" + System.currentTimeMillis() + ".png", finalBitmap);
 //
@@ -525,9 +554,6 @@ public class EditActivity extends AppCompatActivity {
                         switch (effect) {
                             case 0://灰度图
                                 finalBitmap = ImageProcess.convertToGreyImage(initedBitmap, initedBitmap.getWidth(), initedBitmap.getHeight(), 1);
-                                if (andReverse) {
-                                    finalBitmap = ImageProcess.ReverseBlackAndWhiteImage(finalBitmap);
-                                }
                                 break;
                             case 1://黑白图
                                 finalBitmap = ImageProcess.convertToBlackWhiteImage(initedBitmap, initedBitmap.getWidth(), initedBitmap.getHeight(), 1, sharp);
@@ -536,16 +562,10 @@ public class EditActivity extends AppCompatActivity {
                                 }
                                 break;
                             case 2://轮廓
-                                finalBitmap = ImageProcess.convertToOutlineImage(initedBitmap, ivMaterial.getWidth(), false);
-                                if (andReverse) {
-                                    finalBitmap = ImageProcess.ReverseBlackAndWhiteImage(finalBitmap);
-                                }
+                                finalBitmap = ImageProcess.convertToOutlineImage(initedBitmap, ivMaterial.getWidth(), false,true);
                                 break;
                             case 3://素描
                                 finalBitmap = ImageProcess.ImageDithering(initedBitmap, 1, true);
-                                if (andReverse) {
-                                    finalBitmap = ImageProcess.ReverseBlackAndWhiteImage(finalBitmap);
-                                }
                                 break;
                         }
                         Matrix m = new Matrix();

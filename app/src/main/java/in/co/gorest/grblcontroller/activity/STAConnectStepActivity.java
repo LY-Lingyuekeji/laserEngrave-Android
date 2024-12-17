@@ -37,8 +37,6 @@ public class STAConnectStepActivity extends AppCompatActivity {
 
     // 圆形进度动画控件
     private CircleProgressView staStpeCpv;
-    // 步骤流程指示器
-    private FlowViewVertical vflow;
 
     // 启用矢量图支持，确保在应用中可以正确显示矢量图形
     static {
@@ -79,8 +77,6 @@ public class STAConnectStepActivity extends AppCompatActivity {
         ivBack = findViewById(R.id.iv_back);
         // 圆形进度动画控件
         staStpeCpv = findViewById(R.id.sta_stpe_cpv);
-        // 步骤流程指示器
-        vflow = findViewById(R.id.vflow);
     }
 
     /**
@@ -88,11 +84,9 @@ public class STAConnectStepActivity extends AppCompatActivity {
      */
     private void initData() {
         //显示进度动画，进度，动画时长
-        staStpeCpv.showAnimation(80,3000);
+        staStpeCpv.showAnimation(100,3000);
         //设置当前进度
-        staStpeCpv.setProgress(80);
-        String[] strings = {"111", "222","333", "444","555"};
-        vflow.setProgress(3,5,strings, null);
+        staStpeCpv.setProgress(100);
     }
 
     /**
@@ -106,6 +100,9 @@ public class STAConnectStepActivity extends AppCompatActivity {
                 finish();
             }
         });
+
+
+
     }
 
 }

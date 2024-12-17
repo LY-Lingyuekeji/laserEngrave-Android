@@ -1,602 +1,740 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/ColorGray"
-    android:orientation="vertical"
-    android:tag="layout/activity_preview_0">
+    android:layout_height="match_parent">
 
-    <RelativeLayout
-        android:id="@+id/status_bar"
+
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@color/colorWhite">
+        android:layout_height="match_parent"
+        android:background="@color/ColorGray"
+        android:orientation="vertical">
 
-        <ImageView
-            android:id="@+id/iv_back"
-            android:layout_width="20dp"
-            android:layout_height="match_parent"
-            android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="16dp"
-            android:src="@drawable/ic_back" />
+        <RelativeLayout
+            android:id="@+id/status_bar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/colorWhite">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_centerHorizontal="true"
-            android:gravity="center"
-            android:text="预览"
-            android:textColor="@color/colorBlack"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            <ImageView
+                android:id="@+id/iv_back"
+                android:layout_width="20dp"
+                android:layout_height="match_parent"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="16dp"
+                android:src="@drawable/ic_back" />
 
-        <Button
-            android:id="@+id/btn_engrave"
-            android:layout_width="60dp"
-            android:layout_height="30dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="10dp"
-            android:background="@drawable/bg_green_1e853a_r100"
-            android:gravity="center"
-            android:paddingTop="5dp"
-            android:paddingBottom="5dp"
-            android:text="雕刻"
-            android:textColor="@color/colorWhite"
-            android:textSize="12sp" />
-    </RelativeLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_centerHorizontal="true"
+                android:gravity="center"
+                android:text="预览"
+                android:textColor="@color/colorBlack"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
 
-<!--        <ImageView-->
-<!--            android:id="@+id/iv_preview"-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="match_parent"-->
-<!--            android:layout_above="@+id/setting_tab"-->
-<!--            android:layout_alignParentTop="true" />-->
-        
-        
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:gravity="center"
+                android:layout_marginEnd="10dp"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/iv_add_photo"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_add_photo"
+                    android:layout_marginHorizontal="10dp"/>
+
+                <Button
+                    android:id="@+id/btn_engrave"
+                    android:layout_width="60dp"
+                    android:layout_height="30dp"
+                    android:background="@drawable/bg_green_1e853a_r100"
+                    android:gravity="center"
+                    android:paddingTop="5dp"
+                    android:paddingBottom="5dp"
+                    android:text="雕刻"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="12sp" />
+
+            </LinearLayout>
+
+
+        </RelativeLayout>
+
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_above="@+id/setting_tab"
-            android:layout_alignParentTop="true">
-            
-            <in.co.gorest.grblcontroller.util.ObservableSSScrollView
-                android:id="@+id/my_hsc_view"
+            android:layout_height="match_parent">
+
+            <!--        <ImageView-->
+            <!--            android:id="@+id/iv_preview"-->
+            <!--            android:layout_width="match_parent"-->
+            <!--            android:layout_height="match_parent"-->
+            <!--            android:layout_above="@+id/setting_tab"-->
+            <!--            android:layout_alignParentTop="true" />-->
+
+
+            <RelativeLayout
                 android:layout_width="match_parent"
-                android:layout_height="44dp"
-                android:layout_alignParentBottom="true"
-                android:layout_marginLeft="44dp"
-                android:fadingEdge="horizontal"
-                android:scrollbars="none">
-                
-                <RelativeLayout
+                android:layout_height="match_parent"
+                android:layout_above="@+id/setting_tab"
+                android:layout_alignParentTop="true">
+
+                <in.co.gorest.grblcontroller.util.ObservableSSScrollView
+                    android:id="@+id/my_hsc_view"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-                    
-                    <in.co.gorest.grblcontroller.util.ScaleView
-                        android:id="@+id/sv_cross"
+                    android:layout_height="44dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_marginLeft="44dp"
+                    android:fadingEdge="horizontal"
+                    android:scrollbars="none">
+
+                    <RelativeLayout
                         android:layout_width="match_parent"
-                        android:layout_height="44dp"
-                        android:layout_alignParentBottom="true"/>
-                    
-                </RelativeLayout>
-                
-            </in.co.gorest.grblcontroller.util.ObservableSSScrollView>
-            
-            <TextView
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:layout_alignParentBottom="true"
-                android:layout_marginBottom="10dp"
-                android:gravity="center"
-                android:text="mm"
-                android:textColor="@color/colorBlack"
-                android:textSize="10sp"/>
-            
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_above="@id/my_hsc_view"
-                android:layout_marginRight="10dp"
-                android:layout_marginBottom="3dp"
-                android:orientation="vertical">
+                        android:layout_height="match_parent">
+
+                        <in.co.gorest.grblcontroller.util.ScaleView
+                            android:id="@+id/sv_cross"
+                            android:layout_width="match_parent"
+                            android:layout_height="44dp"
+                            android:layout_alignParentBottom="true"/>
+
+                    </RelativeLayout>
+
+                </in.co.gorest.grblcontroller.util.ObservableSSScrollView>
 
                 <TextView
-                    android:id="@+id/tv_mm"
                     android:layout_width="44dp"
-                    android:layout_height="20dp"
+                    android:layout_height="44dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_marginBottom="10dp"
                     android:gravity="center"
                     android:text="mm"
                     android:textColor="@color/colorBlack"
-                    android:textSize="10sp" />
-                
-                
-                <in.co.gorest.grblcontroller.util.ObservableScrollView
-                    android:id="@+id/sv_grl"
+                    android:textSize="10sp"/>
+
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="5dp"
-                    android:background="@color/colorWhite"
-                    android:scrollbars="none">
+                    android:layout_above="@id/my_hsc_view"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginBottom="3dp"
+                    android:orientation="vertical">
 
-                    <LinearLayout
+                    <TextView
+                        android:id="@+id/tv_mm"
+                        android:layout_width="44dp"
+                        android:layout_height="20dp"
+                        android:gravity="center"
+                        android:text="mm"
+                        android:textColor="@color/colorBlack"
+                        android:textSize="10sp" />
+
+
+                    <in.co.gorest.grblcontroller.util.ObservableScrollView
+                        android:id="@+id/sv_grl"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal">
+                        android:layout_marginTop="5dp"
+                        android:background="@color/colorWhite"
+                        android:scrollbars="none">
 
-                        <in.co.gorest.grblcontroller.util.VerticalScaleView
-                            android:id="@+id/sv_Vertical"
-                            android:layout_width="44dp"
-                            android:layout_height="wrap_content"/>
-
-                        <in.co.gorest.grblcontroller.util.ObservableSSScrollView
-                            android:id="@+id/sh_grl"
+                        <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:scrollbars="none">
+                            android:orientation="horizontal">
 
-                            <FrameLayout
-                                android:id="@+id/ll_grl"
+                            <in.co.gorest.grblcontroller.util.VerticalScaleView
+                                android:id="@+id/sv_Vertical"
+                                android:layout_width="44dp"
+                                android:layout_height="wrap_content"/>
+
+                            <in.co.gorest.grblcontroller.util.ObservableSSScrollView
+                                android:id="@+id/sh_grl"
                                 android:layout_width="match_parent"
-                                android:layout_height="match_parent"
-                                android:layout_marginLeft="3dp"
-                                android:background="@color/colorWhite">
+                                android:layout_height="wrap_content"
+                                android:scrollbars="none">
 
-                                <in.co.gorest.grblcontroller.util.GridRelativeLayout
-                                    android:id="@+id/grl"
+                                <FrameLayout
+                                    android:id="@+id/ll_grl"
                                     android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"/>
+                                    android:layout_height="match_parent"
+                                    android:layout_marginLeft="3dp"
+                                    android:background="@color/colorWhite">
 
-                            </FrameLayout>
+                                    <in.co.gorest.grblcontroller.util.GridRelativeLayout
+                                        android:id="@+id/grl"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"/>
 
-                        </in.co.gorest.grblcontroller.util.ObservableSSScrollView>
+                                </FrameLayout>
 
-                    </LinearLayout>
+                            </in.co.gorest.grblcontroller.util.ObservableSSScrollView>
 
-
-                </in.co.gorest.grblcontroller.util.ObservableScrollView>
-                
-                
-            </LinearLayout>
-            
-        </RelativeLayout>
-
-        <LinearLayout
-            android:id="@+id/setting_tab"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_above="@+id/ll_bottom_sheet_tab"
-            android:layout_marginLeft="10dp"
-            android:layout_marginTop="15dp"
-            android:layout_marginRight="10dp"
-            android:layout_marginBottom="15dp"
-            android:orientation="horizontal">
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:background="@drawable/bg_white_ffffff_r10"
-                android:orientation="vertical"
-                android:padding="10dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="坐标尺寸（mm）"
-                    android:textColor="#cacaca"
-                    android:textSize="10sp" />
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="15dp"
-                    android:orientation="horizontal">
-
-                    <RelativeLayout
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentStart="true"
-                            android:layout_centerVertical="true"
-                            android:text="X"
-                            android:textColor="@color/colorBlack"
-                            android:textSize="14sp" />
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentEnd="true"
-                            android:layout_centerVertical="true"
-                            android:layout_marginStart="5dp"
-                            android:background="@drawable/bg_gray_e6e6e6_r10"
-                            android:padding="5dp">
-
-                            <EditText
-                                android:id="@+id/et_x_pos"
-                                android:layout_width="40dp"
-                                android:layout_height="match_parent"
-                                android:background="@null"
-                                android:inputType="number"
-                                android:text="0"
-                                android:textColor="@color/colorBlack"
-                                android:textSize="12sp" />
                         </LinearLayout>
-                    </RelativeLayout>
 
-                    <RelativeLayout
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_marginStart="10dp"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="horizontal">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentStart="true"
-                            android:layout_centerVertical="true"
-                            android:text="Y"
-                            android:textColor="@color/colorBlack"
-                            android:textSize="14sp" />
+                    </in.co.gorest.grblcontroller.util.ObservableScrollView>
 
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentEnd="true"
-                            android:layout_centerVertical="true"
-                            android:layout_marginStart="5dp"
-                            android:background="@drawable/bg_gray_e6e6e6_r10"
-                            android:padding="5dp">
 
-                            <EditText
-                                android:id="@+id/et_y_pos"
-                                android:layout_width="40dp"
-                                android:layout_height="match_parent"
-                                android:background="@null"
-                                android:inputType="number"
-                                android:text="0"
-                                android:textColor="@color/colorBlack"
-                                android:textSize="12sp" />
-                        </LinearLayout>
-                    </RelativeLayout>
                 </LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="35dp"
-                    android:orientation="horizontal">
-
-                    <RelativeLayout
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentStart="true"
-                            android:layout_centerVertical="true"
-                            android:text="W"
-                            android:textColor="@color/colorBlack"
-                            android:textSize="14sp" />
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentEnd="true"
-                            android:layout_centerVertical="true"
-                            android:layout_marginStart="5dp"
-                            android:background="@drawable/bg_gray_e6e6e6_r10"
-                            android:padding="5dp">
-
-                            <EditText
-                                android:id="@+id/et_width"
-                                android:layout_width="40dp"
-                                android:layout_height="match_parent"
-                                android:background="@null"
-                                android:inputType="number"
-                                android:textColor="@color/colorBlack"
-                                android:textSize="12sp" />
-                        </LinearLayout>
-                    </RelativeLayout>
-
-                    <RelativeLayout
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_marginStart="10dp"
-                        android:layout_weight="1"
-                        android:gravity="center"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentStart="true"
-                            android:layout_centerVertical="true"
-                            android:text="H"
-                            android:textColor="@color/colorBlack"
-                            android:textSize="14sp" />
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentEnd="true"
-                            android:layout_centerVertical="true"
-                            android:layout_marginStart="5dp"
-                            android:background="@drawable/bg_gray_e6e6e6_r10"
-                            android:padding="5dp">
-
-                            <EditText
-                                android:id="@+id/et_height"
-                                android:layout_width="40dp"
-                                android:layout_height="match_parent"
-                                android:background="@null"
-                                android:inputType="number"
-                                android:textColor="@color/colorBlack"
-                                android:textSize="12sp" />
-                        </LinearLayout>
-                    </RelativeLayout>
-                </LinearLayout>
-
-                <in.co.gorest.grblcontroller.util.MySeekBar
-                    android:layout_width="match_parent"
-                    android:layout_height="20dp"
-                    android:layout_gravity="center"
-                    android:layout_marginTop="10dp"
-                    android:visibility="gone" />
-            </LinearLayout>
+            </RelativeLayout>
 
             <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_marginStart="10dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_white_ffffff_r10"
-                android:orientation="vertical"
-                android:padding="10dp">
+                android:id="@+id/setting_tab"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_above="@+id/ll_bottom_sheet_tab"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="15dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginBottom="15dp"
+                android:orientation="horizontal">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="边框预览设置"
-                    android:textColor="#cacaca"
-                    android:textSize="10sp" />
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_marginTop="15dp"
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:orientation="horizontal">
+                    android:background="@drawable/bg_white_ffffff_r10"
+                    android:orientation="vertical"
+                    android:padding="10dp">
 
                     <TextView
-                        android:id="@+id/tv_speed"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentStart="true"
-                        android:layout_centerVertical="true"
-                        android:text="速度"
-                        android:textColor="@color/colorBlack"
-                        android:textSize="12sp" />
+                        android:text="坐标尺寸（mm）"
+                        android:textColor="#cacaca"
+                        android:textSize="10sp" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:layout_centerVertical="true"
-                        android:layout_marginStart="15dp"
-                        android:layout_toRightOf="@+id/tv_speed"
-                        android:background="@drawable/bg_gray_e6e6e6_r10"
-                        android:orientation="horizontal"
-                        android:paddingLeft="10dp"
-                        android:paddingTop="5dp"
-                        android:paddingRight="10dp"
-                        android:paddingBottom="5dp">
+                        android:layout_marginTop="15dp"
+                        android:orientation="horizontal">
 
-                        <EditText
-                            android:id="@+id/et_speedlevel"
+                        <RelativeLayout
                             android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:layout_weight="1"
-                            android:background="@null"
-                            android:gravity="center"
-                            android:inputType="number"
-                            android:text="2500"
-                            android:textColor="@color/colorBlack"
-                            android:textSize="12sp" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="center"
+                            android:layout_height="match_parent"
                             android:layout_weight="1"
                             android:gravity="center"
-                            android:text="mm/min"
-                            android:textColor="@color/colorBlack"
-                            android:textSize="10sp" />
+                            android:orientation="horizontal">
 
-                        <ImageView
-                            android:layout_width="12dp"
-                            android:layout_height="12dp"
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentStart="true"
+                                android:layout_centerVertical="true"
+                                android:text="X"
+                                android:textColor="@color/colorBlack"
+                                android:textSize="14sp" />
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentEnd="true"
+                                android:layout_centerVertical="true"
+                                android:layout_marginStart="5dp"
+                                android:background="@drawable/bg_gray_e6e6e6_r10"
+                                android:padding="5dp">
+
+                                <EditText
+                                    android:id="@+id/et_x_pos"
+                                    android:layout_width="40dp"
+                                    android:layout_height="match_parent"
+                                    android:background="@null"
+                                    android:inputType="number"
+                                    android:text="0"
+                                    android:textColor="@color/colorBlack"
+                                    android:textSize="12sp" />
+                            </LinearLayout>
+                        </RelativeLayout>
+
+                        <RelativeLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
                             android:layout_marginStart="10dp"
-                            android:src="@drawable/ic_arrow_down"
-                            android:visibility="gone" />
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentStart="true"
+                                android:layout_centerVertical="true"
+                                android:text="Y"
+                                android:textColor="@color/colorBlack"
+                                android:textSize="14sp" />
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentEnd="true"
+                                android:layout_centerVertical="true"
+                                android:layout_marginStart="5dp"
+                                android:background="@drawable/bg_gray_e6e6e6_r10"
+                                android:padding="5dp">
+
+                                <EditText
+                                    android:id="@+id/et_y_pos"
+                                    android:layout_width="40dp"
+                                    android:layout_height="match_parent"
+                                    android:background="@null"
+                                    android:inputType="number"
+                                    android:text="0"
+                                    android:textColor="@color/colorBlack"
+                                    android:textSize="12sp" />
+                            </LinearLayout>
+                        </RelativeLayout>
                     </LinearLayout>
-                </RelativeLayout>
-
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_marginTop="10dp"
-                    android:layout_weight="1"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:id="@+id/tv_laserlevel"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentStart="true"
-                        android:layout_centerVertical="true"
-                        android:text="激光功率"
-                        android:textColor="@color/colorBlack"
-                        android:textSize="12sp" />
 
                     <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="35dp"
+                        android:orientation="horizontal">
+
+                        <RelativeLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentStart="true"
+                                android:layout_centerVertical="true"
+                                android:text="W"
+                                android:textColor="@color/colorBlack"
+                                android:textSize="14sp" />
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentEnd="true"
+                                android:layout_centerVertical="true"
+                                android:layout_marginStart="5dp"
+                                android:background="@drawable/bg_gray_e6e6e6_r10"
+                                android:padding="5dp">
+
+                                <EditText
+                                    android:id="@+id/et_width"
+                                    android:layout_width="40dp"
+                                    android:layout_height="match_parent"
+                                    android:background="@null"
+                                    android:inputType="number"
+                                    android:textColor="@color/colorBlack"
+                                    android:textSize="12sp" />
+                            </LinearLayout>
+                        </RelativeLayout>
+
+                        <RelativeLayout
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_marginStart="10dp"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentStart="true"
+                                android:layout_centerVertical="true"
+                                android:text="H"
+                                android:textColor="@color/colorBlack"
+                                android:textSize="14sp" />
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentEnd="true"
+                                android:layout_centerVertical="true"
+                                android:layout_marginStart="5dp"
+                                android:background="@drawable/bg_gray_e6e6e6_r10"
+                                android:padding="5dp">
+
+                                <EditText
+                                    android:id="@+id/et_height"
+                                    android:layout_width="40dp"
+                                    android:layout_height="match_parent"
+                                    android:background="@null"
+                                    android:inputType="number"
+                                    android:textColor="@color/colorBlack"
+                                    android:textSize="12sp" />
+                            </LinearLayout>
+                        </RelativeLayout>
+                    </LinearLayout>
+
+                    <in.co.gorest.grblcontroller.util.MySeekBar
+                        android:layout_width="match_parent"
+                        android:layout_height="20dp"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="10dp"
+                        android:visibility="gone" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="10dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_white_ffffff_r10"
+                    android:orientation="vertical"
+                    android:padding="10dp">
+
+                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:layout_centerVertical="true"
-                        android:layout_marginStart="15dp"
-                        android:layout_toRightOf="@+id/tv_laserlevel"
-                        android:background="@drawable/bg_gray_e6e6e6_r10"
-                        android:orientation="horizontal"
-                        android:paddingLeft="10dp"
-                        android:paddingTop="5dp"
-                        android:paddingRight="10dp"
-                        android:paddingBottom="5dp">
+                        android:text="边框预览设置"
+                        android:textColor="#cacaca"
+                        android:textSize="10sp" />
 
-                        <EditText
-                            android:id="@+id/et_laserlevel"
-                            android:layout_width="0dp"
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_marginTop="15dp"
+                        android:layout_weight="1"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/tv_speed"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:layout_weight="1"
-                            android:background="@null"
-                            android:gravity="center"
-                            android:inputType="number"
-                            android:text="50"
+                            android:layout_alignParentStart="true"
+                            android:layout_centerVertical="true"
+                            android:text="速度"
                             android:textColor="@color/colorBlack"
                             android:textSize="12sp" />
 
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:layout_marginStart="15dp"
+                            android:layout_toRightOf="@+id/tv_speed"
+                            android:background="@drawable/bg_gray_e6e6e6_r10"
+                            android:orientation="horizontal"
+                            android:paddingLeft="10dp"
+                            android:paddingTop="5dp"
+                            android:paddingRight="10dp"
+                            android:paddingBottom="5dp">
+
+                            <EditText
+                                android:id="@+id/et_speedlevel"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:background="@null"
+                                android:gravity="center"
+                                android:inputType="number"
+                                android:text="2500"
+                                android:textColor="@color/colorBlack"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:gravity="center"
+                                android:text="mm/min"
+                                android:textColor="@color/colorBlack"
+                                android:textSize="10sp" />
+
+                            <ImageView
+                                android:layout_width="12dp"
+                                android:layout_height="12dp"
+                                android:layout_marginStart="10dp"
+                                android:src="@drawable/ic_arrow_down"
+                                android:visibility="gone" />
+                        </LinearLayout>
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_marginTop="10dp"
+                        android:layout_weight="1"
+                        android:orientation="horizontal">
+
                         <TextView
+                            android:id="@+id/tv_laserlevel"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_gravity="center"
-                            android:layout_weight="1"
-                            android:gravity="center"
-                            android:text="%"
+                            android:layout_alignParentStart="true"
+                            android:layout_centerVertical="true"
+                            android:text="激光功率"
                             android:textColor="@color/colorBlack"
-                            android:textSize="10sp" />
+                            android:textSize="12sp" />
 
-                        <ImageView
-                            android:layout_width="12dp"
-                            android:layout_height="12dp"
-                            android:layout_marginStart="10dp"
-                            android:src="@drawable/ic_arrow_down"
-                            android:visibility="gone" />
-                    </LinearLayout>
-                </RelativeLayout>
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:layout_marginStart="15dp"
+                            android:layout_toRightOf="@+id/tv_laserlevel"
+                            android:background="@drawable/bg_gray_e6e6e6_r10"
+                            android:orientation="horizontal"
+                            android:paddingLeft="10dp"
+                            android:paddingTop="5dp"
+                            android:paddingRight="10dp"
+                            android:paddingBottom="5dp">
 
-                <TextView
-                    android:id="@+id/tv_line_judge"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="15dp"
-                    android:background="@drawable/bg_green_1e853a_r10"
-                    android:gravity="center"
-                    android:paddingTop="6dp"
-                    android:paddingBottom="6dp"
-                    android:text="描框"
-                    android:textColor="@color/colorWhite"
-                    android:textSize="12sp" />
+                            <EditText
+                                android:id="@+id/et_laserlevel"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:background="@null"
+                                android:gravity="center"
+                                android:inputType="number"
+                                android:text="50"
+                                android:textColor="@color/colorBlack"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:gravity="center"
+                                android:text="%"
+                                android:textColor="@color/colorBlack"
+                                android:textSize="10sp" />
+
+                            <ImageView
+                                android:layout_width="12dp"
+                                android:layout_height="12dp"
+                                android:layout_marginStart="10dp"
+                                android:src="@drawable/ic_arrow_down"
+                                android:visibility="gone" />
+                        </LinearLayout>
+                    </RelativeLayout>
+
+                    <TextView
+                        android:id="@+id/tv_line_judge"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="15dp"
+                        android:background="@drawable/bg_green_1e853a_r10"
+                        android:gravity="center"
+                        android:paddingTop="6dp"
+                        android:paddingBottom="6dp"
+                        android:text="描框"
+                        android:textColor="@color/colorWhite"
+                        android:textSize="12sp" />
+                </LinearLayout>
             </LinearLayout>
-        </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ll_bottom_sheet_tab"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:background="@color/colorWhite"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="5dp"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_settings_input" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="配置"
+                        android:textColor="@color/colorBlack"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ll_control"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="5dp">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_control" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="控制"
+                        android:textColor="@color/colorBlack"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ll_command"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="5dp"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/ic_code" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:text="命令"
+                        android:textColor="@color/colorBlack"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </LinearLayout>
+        </RelativeLayout>
+
+    </LinearLayout>
+
+
+    <RelativeLayout
+        android:id="@+id/rl_add_photo_tab"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+       >
 
         <LinearLayout
-            android:id="@+id/ll_bottom_sheet_tab"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:alpha="0.5"
+            android:background="@color/colorBlack"/>
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:background="@color/colorWhite"
-            android:orientation="horizontal">
+            android:background="@drawable/bg_white_ffffff_topradius30"
+            android:orientation="vertical"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="20dp"
+            android:layout_alignParentBottom="true">
 
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:padding="5dp"
-                android:visibility="gone">
+            <!-- 素材库 -->
+            <RelativeLayout
+                android:id="@+id/rl_material"
+                android:layout_width="match_parent"
+                android:layout_height="70dp"
+                android:background="@drawable/bg_white_ffffff_r10"
+                android:padding="10dp">
 
                 <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/ic_settings_input" />
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/ic_star" />
+
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="5dp"
-                    android:text="配置"
+                    android:layout_centerInParent="true"
+                    android:text="素材库"
                     android:textColor="@color/colorBlack"
-                    android:textSize="12sp" />
-            </LinearLayout>
+                    android:textSize="16sp" />
 
-            <LinearLayout
-                android:id="@+id/ll_control"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:padding="5dp">
+            </RelativeLayout>
+
+            <!-- 相册 -->
+            <RelativeLayout
+                android:id="@+id/rl_photo"
+                android:layout_width="match_parent"
+                android:layout_height="70dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_white_ffffff_r10"
+                android:padding="10dp">
 
                 <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/ic_control" />
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/ic_photo" />
+
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="5dp"
-                    android:text="控制"
+                    android:layout_centerInParent="true"
+                    android:text="相册"
                     android:textColor="@color/colorBlack"
-                    android:textSize="12sp" />
-            </LinearLayout>
+                    android:textSize="16sp" />
 
-            <LinearLayout
-                android:id="@+id/ll_command"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:padding="5dp"
-                android:visibility="gone">
+            </RelativeLayout>
+
+            <!-- 拍照 -->
+            <RelativeLayout
+                android:id="@+id/rl_camera"
+                android:layout_width="match_parent"
+                android:layout_height="70dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_white_ffffff_r10"
+                android:padding="10dp">
 
                 <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/ic_code" />
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/ic_camera" />
+
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="5dp"
-                    android:text="命令"
+                    android:layout_centerInParent="true"
+                    android:text="拍照"
                     android:textColor="@color/colorBlack"
-                    android:textSize="12sp" />
-            </LinearLayout>
+                    android:textSize="16sp" />
+
+            </RelativeLayout>
+
+
         </LinearLayout>
+
+
+
+
     </RelativeLayout>
-</LinearLayout>
+
+
+
+</RelativeLayout>

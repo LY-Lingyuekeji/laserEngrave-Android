@@ -3,15 +3,20 @@ package in.co.gorest.grblcontroller.activity;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -25,11 +30,13 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
 
@@ -39,8 +46,6 @@ import com.zhy.http.okhttp.callback.StringCallback;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -54,9 +59,12 @@ import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.base.BaseActivity;
 import in.co.gorest.grblcontroller.events.ControltoPreViewMessageEvent;
+import in.co.gorest.grblcontroller.fragment.AddPhotoBottomSheetFragment;
 import in.co.gorest.grblcontroller.fragment.CommandBottomSheetFragment;
 import in.co.gorest.grblcontroller.fragment.ControlBottomSheetFragment;
+import in.co.gorest.grblcontroller.fragment.SizeChooseBottomSheetFragment;
 import in.co.gorest.grblcontroller.model.EffectBean;
+import in.co.gorest.grblcontroller.model.GcodesBean;
 import in.co.gorest.grblcontroller.util.FileManager;
 import in.co.gorest.grblcontroller.util.FileUtils;
 import in.co.gorest.grblcontroller.util.GcodeResults;
@@ -86,6 +94,9 @@ import okhttp3.Call;
 public class PreViewActivity extends BaseActivity {
     // 用于日志记录的标签
     private final static String TAG = PreViewActivity.class.getSimpleName();
+    // 页面跳转Code
+    private final static int ACTIVITY_CODE_FINISH = 5000;
+    private final static int ACTIVITY_CODE_DATA = 5001;
     // CompositeDisposable容器
     private static CompositeDisposable mCompositeDisposable;
     // 图片路径
@@ -98,6 +109,16 @@ public class PreViewActivity extends BaseActivity {
     private float aspectRatio;
     // 返回
     private ImageView ivBack;
+    // 添加图片
+    private ImageView ivAddPhoto;
+    // 底部弹窗
+    private RelativeLayout rlAddPhotoTab;
+    // 素材
+    private RelativeLayout rlMaterial;
+    // 相册
+    private RelativeLayout rlPhoto;
+    // 拍照
+    private RelativeLayout rlCamera;
     // 雕刻
     private Button btnEngrave;
     // 素材图片
@@ -211,6 +232,16 @@ public class PreViewActivity extends BaseActivity {
     private void initView() {
         // 返回
         ivBack = findViewById(R.id.iv_back);
+        // 添加图片
+        ivAddPhoto = findViewById(R.id.iv_add_photo);
+        // 添加图片底部弹窗
+        rlAddPhotoTab = findViewById(R.id.rl_add_photo_tab);
+        // 素材
+        rlMaterial = findViewById(R.id.rl_material);
+        // 相册
+        rlPhoto = findViewById(R.id.rl_photo);
+        // 拍照
+        rlCamera = findViewById(R.id.rl_camera);
         // 雕刻
         btnEngrave = findViewById(R.id.btn_engrave);
         // 素材图片
@@ -303,8 +334,8 @@ public class PreViewActivity extends BaseActivity {
                         addDragView(mBitmap, true, type, inputUri, getIntent().getParcelableExtra("initedBitmapUri"));
                     }
                 }));
-
     }
+
 
     /**
      * 初始化监听事件
@@ -315,6 +346,43 @@ public class PreViewActivity extends BaseActivity {
             @Override
             public void onClick(View view) {
                 finish();
+            }
+        });
+        // 添加图片
+        ivAddPhoto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 显示添加图片弹窗
+//                AddPhotoBottomSheetFragment addPhotoBottomSheetFragment = new AddPhotoBottomSheetFragment();
+//                addPhotoBottomSheetFragment.show(getSupportFragmentManager(), "");
+                rlAddPhotoTab.setVisibility(View.VISIBLE);
+            }
+        });
+        // 素材
+        rlMaterial.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                rlAddPhotoTab.setVisibility(View.GONE);
+                Intent intent = new Intent(PreViewActivity.this, MaterialActivity.class);
+                intent.putExtra("businessType", 2);
+                startActivityForResult(intent, ACTIVITY_CODE_DATA);
+            }
+        });
+        // 相册
+        rlPhoto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                rlAddPhotoTab.setVisibility(View.GONE);
+                ImgUtil.openAlbum(PreViewActivity.this);
+            }
+        });
+        // 拍照
+        rlCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                rlAddPhotoTab.setVisibility(View.GONE);
+                //打开相机-兼容7.0
+                ImgUtil.openCamera(PreViewActivity.this);
             }
         });
 
@@ -336,36 +404,109 @@ public class PreViewActivity extends BaseActivity {
                             // Transform 切片弹窗
                             transformData();
 
+
                             // 切片转换
                             Image2Gcode image2Gcode = new Image2Gcode();
-                            Bitmap adjustBitmap = ImageProcess.imageResize(finalBitmap, Integer.valueOf(etWidth.getText().toString()), Integer.valueOf(etHeight.getText().toString()), resols);
-                            strcontent = image2Gcode.image2Gcode(adjustBitmap, resols, Integer.valueOf(etSpeedlevel.getText().toString()), Integer.valueOf(etLaserlevel.getText().toString()) * 10, 0, 0);
-                            FileUtils.writeTxtToFile(strcontent, GrblController.getInstance().getExternalFilesDir(null) + "/laser/", System.currentTimeMillis() + ".nc", new GcodeResults() {
-                                @Override
-                                public void onGcodeResults(String results, File file) {
-                                    Log.d(TAG, "file:" + file.getPath());
-                                    // 隐藏切片弹窗
-                                    runOnUiThread(() -> {
-                                        dialogTransform.dismiss();
-                                    });
+                            GcodesBean gcodesBean = new GcodesBean();
 
-                                    // 开始切片
-                                    if (file != null) {
-                                        uploadFile(file, MAX_RETRY_NUM);
-                                    } else {
-                                        Toast.makeText(PreViewActivity.this, "切片失败，请检查并重试！", Toast.LENGTH_SHORT).show();
+                            for (int i = 0; i < zoomViewBeanslist.size(); i++) {
+
+                                GcodesBean.GcodesItemBean gcodesItemBean = new GcodesBean.GcodesItemBean();
+                                BitmapFactory.Options mOptions = new BitmapFactory.Options();
+                                mOptions.inScaled = false;
+                                List<String> strcontent = new ArrayList<>();
+                                ZoomViewBean zoomViewBean = zoomViewBeanslist.get(i);
+                                Log.d(TAG, "path=" + zoomViewBean.getUri().getPath());
+                                InputStream input = null;
+                                try {
+                                    input = getContentResolver().openInputStream(zoomViewBean.getUri());
+                                } catch (FileNotFoundException e) {
+                                    throw new RuntimeException(e);
+                                }
+                                Bitmap bitmaps = BitmapFactory.decodeStream(input, null, mOptions);
+                                int printWidth = zoomViewBean.getWide();
+                                int printHeight = zoomViewBean.getHeight();
+                                float resol = zoomViewBean.getResols();
+                                Bitmap adjustBitmap = ImageProcess.imageResize(bitmaps, printWidth, printHeight, resol);
+                                FileManager.get().addDelPath(zoomViewBean.getUri().getPath());
+
+
+                                switch (zoomViewBean.getTypes()) {
+                                    case "1"://灰度图
+                                        strcontent = image2Gcode.image2Gcode(adjustBitmap, resol
+                                                , Integer.valueOf(etSpeedlevel.getText().toString()), Integer.valueOf(etLaserlevel.getText().toString()) * 10, zoomViewBean.getEditWideX(), zoomViewBean.getEditHighY());
+                                        break;
+                                    case "2"://黑白图
+                                    case "4":// 素描模式
+                                        strcontent = image2Gcode.image2Gcode(adjustBitmap, resol
+                                                , Integer.valueOf(etSpeedlevel.getText().toString()), Integer.valueOf(etLaserlevel.getText().toString()) * 10, zoomViewBean.getEditWideX(), zoomViewBean.getEditHighY());
+                                        break;
+                                    case "3"://轮廓模式//这里要传入原始图像
+                                        Bitmap initBitmap = null;
+                                        try {
+                                            initBitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(zoomViewBean.getInitBitmapUri()),
+                                                    null, mOptions);
+                                        } catch (FileNotFoundException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                        Matrix m = new Matrix();
+                                        for (EffectBean effectBean : zoomViewBean.getEffectBeans()) {
+                                            if (effectBean.getEffectType() == 1) {
+                                                m.postScale(-1, 1);   //镜像水平翻转
+                                            } else if (effectBean.getEffectType() == 2) {
+                                                m.postRotate(effectBean.getRotate());  //旋转
+                                            }
+                                        }
+                                        initBitmap = Bitmap.createBitmap(initBitmap, 0, 0, initBitmap.getWidth(), initBitmap.getHeight(), m, true);
+                                        Bitmap outlineAdjustBitmap = ImageProcess.imageResize(initBitmap, printWidth, printHeight, resol);
+                                        strcontent = image2Gcode.outlineImage2Gcode(outlineAdjustBitmap, printWidth, printHeight, Integer.valueOf(etSpeedlevel.getText().toString()),
+                                                Integer.valueOf(etLaserlevel.getText().toString()) * 10, zoomViewBean.getEditWideX(), zoomViewBean.getEditHighY());
+                                        break;
+                                }
+//                                FileManager.get().addDelPath(zoomViewBean.getInitBitmapUri().getPath());
+//                                gcodesItemBean.setUri(ImgUtil.saveBitmap(System.currentTimeMillis() + ".png", zoomViewBean.getBitmap()).getPath());
+//                                FileManager.get().addDelPath(gcodesItemBean.getUri());
+//                                gcodesItemBean.setTypes(zoomViewBean.getTypes());
+//                                gcodesItemBean.setHeight(zoomViewBean.getHeight());
+//                                gcodesItemBean.setWide(zoomViewBean.getWide());
+//                                gcodesItemBean.setEditHighY(zoomViewBean.getEditHighY());
+//                                gcodesItemBean.setEditWideX(zoomViewBean.getEditWideX());
+//                                gcodesItemBean.setDepthProgress(zoomViewBean.getDepthProgress() + "");
+//                                gcodesItemBean.setSpeedProgress(zoomViewBean.getSpeedProgress() + "");
+
+                                FileUtils.writeTxtToFile(strcontent, GrblController.getInstance().getExternalFilesDir(null) + "/laser/", System.currentTimeMillis() + ".nc", new GcodeResults() {
+                                    @Override
+                                    public void onGcodeResults(String results, File file) {
+                                        Log.d(TAG, "file:" + file.getPath());
+                                        // 隐藏切片弹窗
+                                        runOnUiThread(() -> {
+                                            dialogTransform.dismiss();
+                                        });
+
+                                        // 开始切片
+                                        if (file != null) {
+                                            uploadFile(file, MAX_RETRY_NUM);
+                                        } else {
+                                            Toast.makeText(PreViewActivity.this, "切片失败，请检查并重试！", Toast.LENGTH_SHORT).show();
+                                        }
+
                                     }
 
-                                }
+                                    @Override
+                                    public void onGcodeResults(List<String> gcode) {
+                                        // 隐藏切片弹窗
+                                        runOnUiThread(() -> {
+                                            dialogTransform.dismiss();
+                                        });
+                                    }
+                                });
 
-                                @Override
-                                public void onGcodeResults(List<String> gcode) {
-                                    // 隐藏切片弹窗
-                                    runOnUiThread(() -> {
-                                        dialogTransform.dismiss();
-                                    });
-                                }
-                            });
+                            }
+
+//                            Bitmap adjustBitmap = ImageProcess.imageResize(finalBitmap, Integer.valueOf(etWidth.getText().toString()), Integer.valueOf(etHeight.getText().toString()), resols);
+//                            strcontent = image2Gcode.image2Gcode(adjustBitmap, resols, Integer.valueOf(etSpeedlevel.getText().toString()), Integer.valueOf(etLaserlevel.getText().toString()) * 10, Integer.valueOf(etXpos.getText().toString()), Integer.valueOf(etYpos.getText().toString()));
+
+
                         }
                     }).start();
                 }
@@ -399,8 +540,6 @@ public class PreViewActivity extends BaseActivity {
                     e.printStackTrace();
                 }
                 isUpdating = false;
-
-
 
 
             }
@@ -503,7 +642,6 @@ public class PreViewActivity extends BaseActivity {
                 commandBottomSheetFragment.show(getSupportFragmentManager(), "");
             }
         });
-
 
 
         sv_grl.post(new Runnable() {
@@ -778,7 +916,6 @@ public class PreViewActivity extends BaseActivity {
     }
 
 
-
     private void setLocation(View selfView, boolean lean, int type) {
         ZoomViewBean zoomViewBean = null;
         for (int i = 0; i < zoomViewBeanslist.size(); i++) {
@@ -840,4 +977,54 @@ public class PreViewActivity extends BaseActivity {
         xy[1] = ehigh;
         return xy;
     }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            switch (requestCode) {
+                case ImgUtil.CHOOSE_PHOTO:
+                    Uri selectedImageUri = data.getData();
+                    Intent intentChoosePhoto = new Intent(PreViewActivity.this, EditActivity.class);
+                    intentChoosePhoto.putExtra("type", "5");
+                    intentChoosePhoto.putExtra(BuildConfig.APPLICATION_ID + ".InputUri", selectedImageUri);
+                    intentChoosePhoto.putExtra("businessType", 2);
+                    startActivityForResult(intentChoosePhoto, ACTIVITY_CODE_DATA);
+                    break;
+                case ImgUtil.TAKE_PHOTO:
+                    Intent intentTakePhoto = new Intent(PreViewActivity.this, EditActivity.class);
+                    intentTakePhoto.putExtra("type", "5");
+                    intentTakePhoto.putExtra(BuildConfig.APPLICATION_ID + ".InputUri", ImgUtil.imageUri);
+                    intentTakePhoto.putExtra("businessType", 2);
+                    startActivityForResult(intentTakePhoto, ACTIVITY_CODE_DATA);
+                    break;
+                case ACTIVITY_CODE_FINISH:
+                    setResult(RESULT_OK);
+                    finish();
+                    break;
+                case ACTIVITY_CODE_DATA: {
+                    Bundle bundleData = data.getBundleExtra("data");
+                    mCompositeDisposable.add(Observable.create(new ObservableOnSubscribe<Bitmap>() {
+                                @Override
+                                public void subscribe(final ObservableEmitter<Bitmap> e) throws Exception {
+                                    Bitmap bitmap = ImgUtil.getImageToChange(ImgUtil.getBitmapFormUri(PreViewActivity.this, bundleData.getParcelable(BuildConfig.APPLICATION_ID + ".InputUri")));
+                                    e.onNext(bitmap);
+                                    e.onComplete();
+                                }
+                            }).subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(new Consumer<Bitmap>() {
+                                @Override
+                                public void accept(Bitmap results) throws Exception {
+                                    addDragView(results, true, bundleData.getString("type"), bundleData.getParcelable(BuildConfig.APPLICATION_ID + ".InputUri"), bundleData.getParcelable("initedBitmapUri"));
+                                }
+                            }));
+                }
+                break;
+            }
+        }
+    }
+
+
 }
