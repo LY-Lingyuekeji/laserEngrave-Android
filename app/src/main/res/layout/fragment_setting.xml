@@ -7,11 +7,19 @@
     tools:context=".fragment.SettingFragment">
 
 
+    <ImageView
+        android:layout_width="240dp"
+        android:layout_height="26dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="10dp"
+        android:src="@drawable/home_top_logo" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="150dp"
+        android:layout_marginTop="30dp"
         android:padding="15dp"
-        android:background="@drawable/bg_white_ffffff_r10"
+        android:background="@drawable/bg_white_ffffff_r20"
         android:orientation="horizontal"
         android:gravity="center">
 
@@ -22,20 +30,21 @@
             android:layout_weight="1"
             android:gravity="center"
             android:orientation="vertical"
-            android:background="@drawable/bg_blue_f6f9fe_r10">
+            android:background="@drawable/bg_gray_eef3f6_r20">
 
             <ImageView
                 android:layout_width="50dp"
                 android:layout_height="50dp"
-                android:src="@mipmap/icon_control"/>
+                android:src="@mipmap/icon_guide"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:text="使用指南"
-                android:textSize="12sp"
-                android:textColor="@color/colorBlack"/>
+                android:textSize="13sp"
+                android:textColor="@color/colorBlack"
+                android:textStyle="bold"/>
 
 
         </LinearLayout>
@@ -48,20 +57,22 @@
             android:gravity="center"
             android:layout_marginStart="10dp"
             android:orientation="vertical"
-            android:background="@drawable/bg_blue_f6f9fe_r10">
+            android:background="@drawable/bg_gray_eef3f6_r20">
 
             <ImageView
                 android:layout_width="50dp"
                 android:layout_height="50dp"
-                android:src="@mipmap/icon_control"/>
+                android:src="@mipmap/icon_question"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:text="常见问题"
-                android:textSize="12sp"
-                android:textColor="@color/colorBlack"/>
+                android:textSize="13sp"
+                android:textColor="@color/colorBlack"
+                android:textStyle="bold"
+                />
 
 
         </LinearLayout>
@@ -74,9 +85,9 @@
         android:id="@+id/rl_setting_model"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:layout_marginTop="10dp"
-        android:background="@drawable/bg_white_ffffff_r10"
+        android:padding="15dp"
+        android:layout_marginTop="40dp"
+        android:background="@drawable/bg_white_ffffff_r20"
         >
 
         <TextView
@@ -85,6 +96,7 @@
             android:text="操作模式"
             android:textSize="14sp"
             android:textColor="@color/colorBlack"
+            android:textStyle="bold"
             android:layout_centerVertical="true"
             android:layout_alignParentStart="true"/>
 
@@ -105,6 +117,7 @@
                 android:layout_marginEnd="10dp"
                 android:textSize="14sp"
                 android:textColor="#999999"
+                android:textStyle="bold"
                />
 
             <ImageView
@@ -123,9 +136,9 @@
         android:id="@+id/rl_setting_language"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:layout_marginTop="10dp"
-        android:background="@drawable/bg_white_ffffff_r10"
+        android:padding="15dp"
+        android:layout_marginTop="15dp"
+        android:background="@drawable/bg_white_ffffff_r20"
         >
 
         <TextView
@@ -134,6 +147,7 @@
             android:text="语言"
             android:textSize="14sp"
             android:textColor="@color/colorBlack"
+            android:textStyle="bold"
             android:layout_centerVertical="true"
             android:layout_alignParentStart="true"/>
 
@@ -153,6 +167,7 @@
                 android:layout_marginEnd="10dp"
                 android:textSize="14sp"
                 android:textColor="#999999"
+                android:textStyle="bold"
                 />
 
             <ImageView
@@ -170,9 +185,9 @@
         android:id="@+id/rl_setting_agreement"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:layout_marginTop="10dp"
-        android:background="@drawable/bg_white_ffffff_r10"
+        android:padding="15dp"
+        android:layout_marginTop="15dp"
+        android:background="@drawable/bg_white_ffffff_r20"
         >
 
         <TextView
@@ -181,6 +196,7 @@
             android:text="用户协议"
             android:textSize="14sp"
             android:textColor="@color/colorBlack"
+            android:textStyle="bold"
             android:layout_centerVertical="true"
             android:layout_alignParentStart="true"/>
 
@@ -198,9 +214,9 @@
         android:id="@+id/rl_setting_clean"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:layout_marginTop="10dp"
-        android:background="@drawable/bg_white_ffffff_r10"
+        android:padding="15dp"
+        android:layout_marginTop="15dp"
+        android:background="@drawable/bg_white_ffffff_r20"
         >
 
         <TextView
@@ -209,6 +225,7 @@
             android:text="清除缓存"
             android:textSize="14sp"
             android:textColor="@color/colorBlack"
+            android:textStyle="bold"
             android:layout_centerVertical="true"
             android:layout_alignParentStart="true"/>
 
@@ -228,6 +245,7 @@
                 android:layout_marginEnd="10dp"
                 android:textSize="14sp"
                 android:textColor="#999999"
+                android:textStyle="bold"
                 />
 
             <ImageView
@@ -245,9 +263,9 @@
         android:id="@+id/rl_setting_settings"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:layout_marginTop="10dp"
-        android:background="@drawable/bg_white_ffffff_r10"
+        android:padding="15dp"
+        android:layout_marginTop="15dp"
+        android:background="@drawable/bg_white_ffffff_r20"
         >
 
         <TextView
@@ -256,6 +274,7 @@
             android:text="设置"
             android:textSize="14sp"
             android:textColor="@color/colorBlack"
+            android:textStyle="bold"
             android:layout_centerVertical="true"
             android:layout_alignParentStart="true"/>
 
@@ -263,6 +282,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_arrow_right"
+
             android:layout_centerVertical="true"
             android:layout_alignParentEnd="true"/>
 
@@ -273,9 +293,9 @@
         android:id="@+id/rl_setting_about"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:layout_marginTop="10dp"
-        android:background="@drawable/bg_white_ffffff_r10"
+        android:padding="15dp"
+        android:layout_marginTop="15dp"
+        android:background="@drawable/bg_white_ffffff_r20"
         >
 
         <TextView
@@ -284,6 +304,7 @@
             android:text="关于"
             android:textSize="14sp"
             android:textColor="@color/colorBlack"
+            android:textStyle="bold"
             android:layout_centerVertical="true"
             android:layout_alignParentStart="true"/>
 
@@ -303,12 +324,14 @@
                 android:layout_marginEnd="10dp"
                 android:textSize="14sp"
                 android:textColor="#999999"
+                android:textStyle="bold"
                 />
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/ic_arrow_right"
+
                 />
 
         </LinearLayout>

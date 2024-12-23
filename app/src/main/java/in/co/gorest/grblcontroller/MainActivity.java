@@ -14,6 +14,7 @@ import android.net.NetworkCapabilities;
 import android.net.NetworkRequest;
 import android.net.Uri;
 import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.os.Build;
@@ -24,6 +25,8 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.PowerManager;
 import android.provider.Settings;
+import android.text.TextUtils;
+import android.text.format.Formatter;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowInsetsController;
@@ -232,7 +235,6 @@ public class MainActivity extends BaseActivity {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
             requiredPermissions.add(Manifest.permission.CAMERA);
         }
-
 
         // 申请所有必要的权限
         if (!requiredPermissions.isEmpty()) {
@@ -445,9 +447,20 @@ public class MainActivity extends BaseActivity {
             public void onAvailable(Network network) {
                 // Connected to the network
                 connectivityManager.bindProcessToNetwork(network); // This line sets the network for all outgoing data
-
-                // 连接Telnet
-                EventBus.getDefault().post(new DeviceConnectEvent("Telnet", ssid, "192.168.4.1"));
+                WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+                int ipAddress = wifiInfo.getIpAddress();
+                String ip = Formatter.formatIpAddress(ipAddress);
+                Log.d(TAG, "Connected Wi-Fi IP Address: " + ip);
+                if (ssid.contains("MKS")) {
+                    // 连接Telnet
+                    EventBus.getDefault().post(new DeviceConnectEvent("Telnet", ssid, ip));
+                } else {
+                    String host = sharedPref.getString(getString(R.string.preference_sta_host), "");
+                    if (!TextUtils.isEmpty(host)) {
+                        // 连接Telnet
+                        EventBus.getDefault().post(new DeviceConnectEvent("Telnet", ssid, host));
+                    }
+                }
             }
 
             @Override
@@ -494,9 +507,20 @@ public class MainActivity extends BaseActivity {
                 // Network is available
                 super.onAvailable(network);
                 connectivityManager.unregisterNetworkCallback(this);
-
-                // 连接Telnet
-                EventBus.getDefault().post(new DeviceConnectEvent("Telnet", ssid, "192.168.4.1"));
+                WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+                int ipAddress = wifiInfo.getIpAddress();
+                String ip = Formatter.formatIpAddress(ipAddress);
+                Log.d(TAG, "Connected Wi-Fi IP Address: " + ip);
+                if (ssid.contains("MKS")) {
+                    // 连接Telnet
+                    EventBus.getDefault().post(new DeviceConnectEvent("Telnet", ssid, ip));
+                } else {
+                    String host = sharedPref.getString(getString(R.string.preference_sta_host), "");
+                    if (!TextUtils.isEmpty(host)) {
+                        // 连接Telnet
+                        EventBus.getDefault().post(new DeviceConnectEvent("Telnet", ssid, host));
+                    }
+                }
 
             }
 

@@ -1,440 +1,492 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:scrollbars="none">
+    android:background="#eff3f6"
+    android:orientation="vertical">
+
+    <ImageView
+        android:layout_width="240dp"
+        android:layout_height="26dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="10dp"
+        android:src="@drawable/home_top_logo" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#eff3f6"
-        android:orientation="vertical">
-
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="150dp"
-            android:layout_gravity="center_horizontal"
-            android:src="@mipmap/ic_logo" />
+        android:layout_height="203dp"
+        android:layout_marginTop="15dp"
+        android:background="@drawable/bg_white_ffffff_r20"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingHorizontal="15dp"
+        android:paddingVertical="13dp">
 
         <LinearLayout
+            android:id="@+id/ll_machine_status"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:background="@drawable/bg_white_ffffff_r10"
-            android:gravity="center"
-            android:orientation="vertical"
-            android:padding="10dp">
-
-            <LinearLayout
-                android:id="@+id/ll_machine_status"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:visibility="gone">
-
-                <TextView
-                    android:id="@+id/tv_machine_status_tips"
-                    android:layout_width="10dp"
-                    android:layout_height="10dp"
-                    android:layout_gravity="center"
-                    android:background="@drawable/bg_green_1e853a_r100" />
-
-                <TextView
-                    android:id="@+id/tv_machine_status"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginStart="10dp"
-                    android:text="已连接"
-                    android:textColor="@color/colorBlack"
-                    android:textSize="14sp" />
-            </LinearLayout>
-
-            <ImageView
-                android:id="@+id/iv_machine"
-                android:layout_width="match_parent"
-                android:layout_height="90dp"
-                android:src="@mipmap/ic_empty" />
-
-            <TextView
-                android:id="@+id/tv_address"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="还没有连接到设备，试试手动添加"
-                android:textColor="@color/colorBlack"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tv_add_device"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/bg_green_1e853a_r30"
-                android:paddingLeft="40dp"
-                android:paddingTop="4dp"
-                android:paddingRight="40dp"
-                android:paddingBottom="4dp"
-                android:text="连接设备"
-                android:textColor="@color/colorWhite"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/ll_home_simple"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:layout_marginTop="15dp"
-            android:background="@drawable/bg_white_ffffff_r10"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="常用功能"
-                android:textColor="@color/colorBlack"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="10dp">
-
-                <LinearLayout
-                    android:id="@+id/ll_engrave_simple"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_red_fff7f5_r10"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <ImageView
-                        android:layout_width="70dp"
-                        android:layout_height="70dp"
-                        android:src="@mipmap/icon_engrave" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="15dp"
-                        android:text="雕刻"
-                        android:textColor="@color/colorBlack"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/ll_control_simple"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_marginStart="10dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_blue_f6f9fe_r10"
-                    android:gravity="center"
-                    android:orientation="vertical">
-
-                    <ImageView
-                        android:layout_width="70dp"
-                        android:layout_height="70dp"
-                        android:src="@mipmap/icon_control" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="15dp"
-                        android:text="控制中心"
-                        android:textColor="@color/colorBlack"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-                </LinearLayout>
-            </LinearLayout>
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/ll_home_pro"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="15dp"
-            android:background="@drawable/bg_white_ffffff_r10"
-            android:orientation="vertical"
-            android:padding="16dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
             android:visibility="gone">
 
             <TextView
+                android:id="@+id/tv_machine_status_tips"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:layout_gravity="center"
+                android:background="@drawable/bg_green_1e853a_r100" />
+
+            <TextView
+                android:id="@+id/tv_machine_status"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="常用功能"
+                android:layout_gravity="center"
+                android:layout_marginStart="10dp"
+                android:text="已连接"
                 android:textColor="@color/colorBlack"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:textSize="13sp"
+                android:textStyle="bold"/>
+        </LinearLayout>
 
-            <LinearLayout
-                android:id="@+id/ll_engrave"
+        <ImageView
+            android:id="@+id/iv_machine"
+            android:layout_width="210dp"
+            android:layout_height="85dp"
+            android:src="@drawable/ic_empty" />
+
+        <TextView
+            android:id="@+id/tv_address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="还没有连接到设备，试试手动添加"
+            android:textColor="@color/colorBlack"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_add_device"
+            android:layout_width="200dp"
+            android:layout_height="30dp"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_green_1e853a_r30"
+            android:gravity="center"
+            android:text="连接设备"
+            android:textColor="@color/colorWhite"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_home_simple"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/bg_white_ffffff_r20"
+        android:orientation="vertical"
+        android:padding="15dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="常用功能"
+            android:textColor="@color/colorBlack"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:layout_marginTop="15dp"
+            android:orientation="vertical">
+
+            <RelativeLayout
+                android:id="@+id/rl_control_simple"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="15dp"
-                android:visibility="gone"
-                android:layout_weight="1"
-                android:background="@drawable/bg_red_fff7f5_r10"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp">
+                android:layout_height="130dp"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="22dp"
+                android:background="@drawable/bg_gray_eef3f6_r20">
 
                 <ImageView
-                    android:layout_width="70dp"
-                    android:layout_height="70dp"
-                    android:src="@mipmap/icon_engrave" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="15dp"
-                    android:text="雕刻"
-                    android:textColor="@color/colorBlack"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/ll_control"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/bg_blue_f6f9fe_r10"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp">
-
-                <ImageView
-                    android:layout_width="70dp"
-                    android:layout_height="70dp"
+                    android:layout_width="85dp"
+                    android:layout_height="85dp"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
                     android:src="@mipmap/icon_control" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="15dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
                     android:text="控制中心"
                     android:textColor="@color/colorBlack"
-                    android:textSize="12sp"
+                    android:textSize="20dp"
                     android:textStyle="bold" />
-            </LinearLayout>
+            </RelativeLayout>
 
-            <LinearLayout
-                android:id="@+id/ll_material"
+            <RelativeLayout
+                android:id="@+id/rl_engrave_simple"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="15dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_yellow_e1b53d_r10"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp">
+                android:layout_height="130dp"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="22dp"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/bg_gray_eef3f6_r20">
 
                 <ImageView
-                    android:layout_width="70dp"
-                    android:layout_height="70dp"
-                    android:src="@drawable/ic_star" />
+                    android:layout_width="85dp"
+                    android:layout_height="85dp"
+                    android:src="@mipmap/icon_engrave" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="15dp"
-                    android:text="素材库"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:text="雕刻"
                     android:textColor="@color/colorBlack"
-                    android:textSize="12sp"
+                    android:textSize="20sp"
                     android:textStyle="bold" />
-            </LinearLayout>
+            </RelativeLayout>
 
-            <LinearLayout
-                android:id="@+id/ll_file"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/bg_pink_dd98bb_r10"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp">
-
-                <ImageView
-                    android:layout_width="70dp"
-                    android:layout_height="70dp"
-                    android:src="@drawable/ic_file" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="15dp"
-                    android:text="文件"
-                    android:textColor="@color/colorBlack"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/ll_photo"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="15dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_orange_d88e70_r10"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp">
-
-                <ImageView
-                    android:layout_width="70dp"
-                    android:layout_height="70dp"
-                    android:src="@drawable/ic_photo" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="15dp"
-                    android:text="相册"
-                    android:textColor="@color/colorBlack"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/ll_camera"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/bg_green_49753c_r10"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp">
-
-                <ImageView
-                    android:layout_width="70dp"
-                    android:layout_height="70dp"
-                    android:src="@drawable/ic_camera" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="15dp"
-                    android:text="相机"
-                    android:textColor="@color/colorBlack"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/ll_create"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/bg_blue_526be3_r10"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp">
-
-                <ImageView
-                    android:layout_width="70dp"
-                    android:layout_height="70dp"
-                    android:src="@drawable/ic_create" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="15dp"
-                    android:text="画图"
-                    android:textColor="@color/colorBlack"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/ll_text"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/bg_orange_cb6f33_r10"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp">
-
-                <ImageView
-                    android:layout_width="70dp"
-                    android:layout_height="70dp"
-                    android:src="@drawable/ic_text" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="15dp"
-                    android:text="文字"
-                    android:textColor="@color/colorBlack"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/ll_barcode"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/bg_purple_6148c6_r10"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp">
-
-                <ImageView
-                    android:layout_width="70dp"
-                    android:layout_height="70dp"
-                    android:src="@drawable/ic_calendar" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="15dp"
-                    android:text="条形码"
-                    android:textColor="@color/colorBlack"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/ll_qrcode"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/bg_red_c1513e_r10"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp">
-
-                <ImageView
-                    android:layout_width="70dp"
-                    android:layout_height="70dp"
-                    android:src="@drawable/ic_qr_code" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="15dp"
-                    android:text="二维码"
-                    android:textColor="@color/colorBlack"
-                    android:textSize="12sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
         </LinearLayout>
+
+
     </LinearLayout>
-</ScrollView>
+
+    <LinearLayout
+        android:id="@+id/ll_home_pro"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/bg_white_ffffff_r10"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="常用功能"
+            android:textColor="@color/colorBlack"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:layout_marginTop="10dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="130dp"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:id="@+id/ll_control"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="match_parent"
+                        android:paddingVertical="15dp"
+                        android:background="@drawable/bg_gray_eef3f6_r20"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <ImageView
+                            android:layout_width="54dp"
+                            android:layout_height="54dp"
+                            android:src="@mipmap/icon_control" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="18dp"
+                            android:text="控制中心"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_material"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="20dp"
+                        android:background="@drawable/bg_gray_eef3f6_r20"
+                        android:paddingVertical="15dp"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <ImageView
+                            android:layout_width="54dp"
+                            android:layout_height="54dp"
+                            android:src="@drawable/ic_star" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="18dp"
+                            android:text="素材库"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="130dp"
+                    android:layout_marginTop="16dp"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:id="@+id/ll_file"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="match_parent"
+                        android:paddingVertical="15dp"
+                        android:background="@drawable/bg_gray_eef3f6_r20"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <ImageView
+                            android:layout_width="54dp"
+                            android:layout_height="54dp"
+                            android:src="@drawable/ic_file" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="18dp"
+                            android:text="文件"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_photo"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="20dp"
+                        android:background="@drawable/bg_gray_eef3f6_r20"
+                        android:paddingVertical="15dp"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <ImageView
+                            android:layout_width="54dp"
+                            android:layout_height="54dp"
+                            android:src="@drawable/ic_photo" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="18dp"
+                            android:text="相册"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="130dp"
+                    android:layout_marginTop="16dp"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:id="@+id/ll_camera"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="match_parent"
+                        android:paddingVertical="15dp"
+                        android:background="@drawable/bg_gray_eef3f6_r20"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <ImageView
+                            android:layout_width="54dp"
+                            android:layout_height="54dp"
+                            android:src="@drawable/ic_camera" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="18dp"
+                            android:text="相机"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_create"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="20dp"
+                        android:background="@drawable/bg_gray_eef3f6_r20"
+                        android:paddingVertical="15dp"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <ImageView
+                            android:layout_width="54dp"
+                            android:layout_height="54dp"
+                            android:src="@drawable/ic_create" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="18dp"
+                            android:text="画图"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="130dp"
+                    android:layout_marginTop="16dp"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:id="@+id/ll_text"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="match_parent"
+                        android:paddingVertical="15dp"
+                        android:background="@drawable/bg_gray_eef3f6_r20"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <ImageView
+                            android:layout_width="54dp"
+                            android:layout_height="54dp"
+                            android:src="@drawable/ic_text" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="18dp"
+                            android:text="文字"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_barcode"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="20dp"
+                        android:background="@drawable/bg_gray_eef3f6_r20"
+                        android:paddingVertical="15dp"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <ImageView
+                            android:layout_width="54dp"
+                            android:layout_height="54dp"
+                            android:src="@drawable/ic_calendar" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="18dp"
+                            android:text="条形码"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="130dp"
+                    android:layout_marginTop="16dp"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:id="@+id/ll_qrcode"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="match_parent"
+                        android:paddingVertical="15dp"
+                        android:background="@drawable/bg_gray_eef3f6_r20"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <ImageView
+                            android:layout_width="54dp"
+                            android:layout_height="54dp"
+                            android:src="@drawable/ic_qr_code" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="18dp"
+                            android:text="二维码"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="20dp"
+                        android:paddingVertical="15dp"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <ImageView
+                            android:layout_width="54dp"
+                            android:layout_height="54dp"
+                            />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="18dp"
+                            android:text=""
+                            android:textColor="@color/colorBlack"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+
+        </ScrollView>
+
+    </LinearLayout>
+</LinearLayout>
+
+

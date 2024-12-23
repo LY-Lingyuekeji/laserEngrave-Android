@@ -90,6 +90,9 @@
     <string name="preference_file_path" translatable="false">preference_file_path</string>
     <string name="preference_draw_board_pen_size" translatable="false">preference_draw_board_pen_size</string>
     <string name="preference_draw_board_tool_name" translatable="false">preference_draw_board_tool_name</string>
+    <string name="preference_device_mac_address" translatable="false">preference_device_mac_address</string>
+    <string name="preference_sta_host" translatable="false">preference_sta_host</string>
+    <string name="preference_sta_ssid" translatable="false">preference_sta_ssid</string>
 
 
     <string name="connect_type" translatable="false">connect_type</string>

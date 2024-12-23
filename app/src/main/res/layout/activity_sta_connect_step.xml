@@ -132,6 +132,19 @@
         </LinearLayout>
 
 
+        <TextView
+            android:id="@+id/tv_retry"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="50dp"
+            android:layout_marginHorizontal="16dp"
+            android:background="@drawable/bg_green_1e853a_r10"
+            android:gravity="center"
+            android:padding="10dp"
+            android:text="重试"
+            android:textColor="@color/colorWhite" />
+
+
     </LinearLayout>
 
 </layout>

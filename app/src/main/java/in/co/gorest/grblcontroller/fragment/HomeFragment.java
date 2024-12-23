@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,12 +41,14 @@ import in.co.gorest.grblcontroller.activity.BarCodeActivity;
 import in.co.gorest.grblcontroller.activity.BeginEngraveActivity;
 import in.co.gorest.grblcontroller.activity.BluetoothConnectionActivity;
 import in.co.gorest.grblcontroller.activity.ConnectActivity;
+import in.co.gorest.grblcontroller.activity.DrawBoardActivity;
 import in.co.gorest.grblcontroller.activity.EditActivity;
 import in.co.gorest.grblcontroller.activity.EngraveActivity;
 import in.co.gorest.grblcontroller.activity.FileActivity;
 import in.co.gorest.grblcontroller.activity.MaterialActivity;
 import in.co.gorest.grblcontroller.activity.QrCodeActivity;
 import in.co.gorest.grblcontroller.activity.TelnetConnectionActivity;
+import in.co.gorest.grblcontroller.activity.TextCreateActivity;
 import in.co.gorest.grblcontroller.base.BaseDialog;
 import in.co.gorest.grblcontroller.events.DeviceConnectEvent;
 import in.co.gorest.grblcontroller.events.ModelChangeEvent;
@@ -78,9 +81,9 @@ public class HomeFragment extends Fragment {
     // 简易模式
     private LinearLayout llHomeSimple;
     // 雕刻
-    private LinearLayout llEngraveSimple;
+    private RelativeLayout rlEngraveSimple;
     // 控制中心
-    private LinearLayout llControlSimple;
+    private RelativeLayout rlControlSimple;
     // 专业模式
     private LinearLayout llHomePro;
     // 控制中心
@@ -170,9 +173,9 @@ public class HomeFragment extends Fragment {
         // 简易模式
         llHomeSimple = view.findViewById(R.id.ll_home_simple);
         // 雕刻
-        llEngraveSimple = view.findViewById(R.id.ll_engrave_simple);
+        rlEngraveSimple = view.findViewById(R.id.rl_engrave_simple);
         // 控制中心
-        llControlSimple = view.findViewById(R.id.ll_control_simple);
+        rlControlSimple = view.findViewById(R.id.rl_control_simple);
         // 专业模式
         llHomePro = view.findViewById(R.id.ll_home_pro);
         // 控制中心
@@ -244,7 +247,7 @@ public class HomeFragment extends Fragment {
         });
 
         // 雕刻
-        llEngraveSimple.setOnClickListener(new View.OnClickListener() {
+        rlEngraveSimple.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(getActivity(), BeginEngraveActivity.class));
@@ -252,7 +255,7 @@ public class HomeFragment extends Fragment {
         });
 
         // 控制中心(简易模式)
-        llControlSimple.setOnClickListener(new View.OnClickListener() {
+        rlControlSimple.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (connectType != null) {
@@ -337,7 +340,7 @@ public class HomeFragment extends Fragment {
         llCreate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                startActivity(new Intent(getActivity(), DrawBoardActivity.class));
             }
         });
 
@@ -345,7 +348,7 @@ public class HomeFragment extends Fragment {
         llText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                startActivity(new Intent(getActivity(), TextCreateActivity.class));
             }
         });
 
@@ -378,13 +381,25 @@ public class HomeFragment extends Fragment {
             Log.d(TAG, "Type=" + event.getType() + "----Name=" + event.getName() + "----Address=" + event.getAddress());
             connectType = event.getType();
             if (connectType.equals("Telnet")) {
-                // 连接Telnet
-                NettyClient.getInstance().connect(event.getAddress(), 8080);
+                if (event.getName().contains("MKS")) {
+                    // 连接Telnet
+                    NettyClient.getInstance().connect("192.168.4.1", 8080);
+                } else {
+                    // 连接Telnet
+                    NettyClient.getInstance().connect(event.getAddress(), 8080);
+                }
+
 
                 // 设置设备图片
                 Glide.with(getContext()).load(R.mipmap.ic_machine).into(ivMachine);
-                // 设置设备名称和地址
-                tvAddress.setText(event.getName() + "   " + event.getAddress());
+                if (event.getName().contains("MKS")) {
+                    // 设置设备名称和地址
+                    tvAddress.setText(event.getName() + "   " + "192.168.4.1");
+                } else {
+                    // 设置设备名称和地址
+                    tvAddress.setText(event.getName() + "   " + event.getAddress());
+                }
+
                 // 设置按钮提示
                 tvAddDevice.setText("添加其他设备");
                 // 设置机器状态
@@ -411,6 +426,15 @@ public class HomeFragment extends Fragment {
                     }
                 }
 
+            } else if (connectType.equals("disconnect")) {
+                // 设置设备图片
+                Glide.with(getContext()).load(R.mipmap.ic_empty).into(ivMachine);
+                // 设置设备名称和地址
+                tvAddress.setText("还没有连接到设备，试试手动添加");
+                // 设置按钮提示
+                tvAddDevice.setText("连接设备");
+                // 设置机器状态
+                llMachineStatus.setVisibility(View.VISIBLE);
             }
         }
     }

@@ -10,13 +10,8 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkCapabilities;
-import android.net.NetworkRequest;
-import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.net.wifi.WifiNetworkSpecifier;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -39,23 +34,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
-import androidx.fragment.app.Fragment;
-import androidx.viewpager2.widget.ViewPager2;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import in.co.gorest.grblcontroller.R;
-import in.co.gorest.grblcontroller.adapters.ViewPagerAdapter;
-import in.co.gorest.grblcontroller.events.DeviceConnectEvent;
 import in.co.gorest.grblcontroller.events.UiToastEvent;
 import in.co.gorest.grblcontroller.events.WifiNameEvent;
-import in.co.gorest.grblcontroller.fragment.BtConnetModelFragment;
-import in.co.gorest.grblcontroller.fragment.WiFiConnetModelFragment;
 import in.co.gorest.grblcontroller.fragment.WifiChooseBottomSheetFragment;
 import in.co.gorest.grblcontroller.util.NettyClient;
 
@@ -87,6 +77,8 @@ public class STAModelActivity extends AppCompatActivity {
     private TextView tvPasswordTips;
     // 下一步
     private TextView tvNext;
+    // Mac地址
+    private String macAddress;
 
     // 启用矢量图支持，确保在应用中可以正确显示矢量图形
     static {
@@ -110,7 +102,6 @@ public class STAModelActivity extends AppCompatActivity {
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
         }
 
-
         // 初始化界面
         initView();
         // 初始化数据
@@ -120,6 +111,7 @@ public class STAModelActivity extends AppCompatActivity {
 
         // 注册EventBus
         EventBus.getDefault().register(this);
+
     }
 
     @Override
@@ -246,37 +238,66 @@ public class STAModelActivity extends AppCompatActivity {
                 } else {
                     tvPasswordTips.setTextColor(Color.parseColor("#000000"));
                     // 连接WIFI
-//                    if (!etSsid.getText().toString().isEmpty() && !etPassword.getText().toString().isEmpty()) {
-//                        Log.d(TAG, "STA-SSID=" + etSsid.getText().toString() + "----- STA-Password=" + etPassword.getText().toString());
-//                        // TODO 第一步 获取当前模式
-//                        NettyClient.getInstance(new Handler(new Handler.Callback() {
-//                            @Override
-//                            public boolean handleMessage(@NonNull Message msg) {
-//                                Log.d(TAG, "msg = " + msg);
-//                                return false;
-//                            }
-//                        })).sendMsgToServer("$I".getBytes(StandardCharsets.UTF_8),null);
+                    if (!etSsid.getText().toString().isEmpty() && !etPassword.getText().toString().isEmpty()) {
+                        // TODO 第一步 获取当前模式
+                        NettyClient.getInstance(new Handler(new Handler.Callback() {
+                            @Override
+                            public boolean handleMessage(@NonNull Message msg) {
+                                Log.d(TAG, "msg = " + msg.obj.toString());
+                                if (msg.obj.toString().contains("MAC=")) {
+                                    Log.d(TAG, "-------------------------------------");
+                                    // 正则表达式匹配MAC地址
+                                    Pattern pattern = Pattern.compile("MAC=((?:[0-9A-Fa-f]{2}-){5}[0-9A-Fa-f]{2})");
+                                    Matcher matcher = pattern.matcher(msg.obj.toString());
+                                    if (matcher.find()) {
+                                        macAddress = matcher.group(0).substring(4); // 移除"MAC="前缀
+                                        // 去掉连接符
+                                        macAddress = macAddress.replace("-", "");
+                                        Log.d(TAG, "macAddress=" + macAddress);
 
-                        // TODO 第二步 配置STA模式
-//                        // 发送命令切换成STA模式
-//                        NettyClient.getInstance(null).sendMsgToServer("$50=2".getBytes(StandardCharsets.UTF_8), null);
-//                        // 发送命令配置账号密码
-//                        NettyClient.getInstance(null).sendMsgToServer(("$53=" + etSsid.getText().toString()).getBytes(StandardCharsets.UTF_8), null);
-//                        NettyClient.getInstance(null).sendMsgToServer(("$54=" + etPassword.getText().toString()).getBytes(StandardCharsets.UTF_8), null);
 
-                        // TODO 第三步 重启设备
-                        // 发送命令重启设备
-//                        NettyClient.getInstance(null).sendMsgToServer("$System/Control=RESTART".getBytes(StandardCharsets.UTF_8), null);
+                                        // TODO 第二步 配置STA模式
+                                        // 发送命令切换成STA模式
+                                        NettyClient.getInstance(null).sendMsgToServer("$50=2\r\n".getBytes(StandardCharsets.UTF_8), null);
+                                        // 发送命令配置账号密码
+                                        NettyClient.getInstance(null).sendMsgToServer(("$53=" + etSsid.getText().toString() + "\r\n").getBytes(StandardCharsets.UTF_8), null);
+                                        NettyClient.getInstance(null).sendMsgToServer(("$54=" + etPassword.getText().toString() + "\r\n").getBytes(StandardCharsets.UTF_8), null);
 
-                        // TODO 第三步 页面跳转，传递SSID和PASSWORD进行匹配和连接
-                        Intent intent = new Intent(STAModelActivity.this, STAConnectStepActivity.class);
-                        intent.putExtra("ssid", etSsid.getText().toString());
-                        intent.putExtra("password", etPassword.getText().toString());
-                        startActivity(intent);
-//                    }
+                                        // TODO 第三步 重启设备
+                                        // 发送命令重启设备
+                                        NettyClient.getInstance(null).sendMsgToServer("$System/Control=RESTART\r\n".getBytes(StandardCharsets.UTF_8), null);
+
+                                        // TODO 第三步 页面跳转，传递SSID和PASSWORD进行匹配和连接
+                                        new Thread(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                try {
+                                                    Thread.sleep(4000);
+                                                    Intent intent = new Intent(STAModelActivity.this, STAConnectStepActivity.class);
+                                                    intent.putExtra("ssid", etSsid.getText().toString());
+                                                    intent.putExtra("password", etPassword.getText().toString());
+                                                    intent.putExtra("macAddress", macAddress);
+                                                    startActivity(intent);
+                                                    finish();
+                                                } catch (InterruptedException e) {
+                                                    throw new RuntimeException(e);
+                                                }
+                                            }
+                                        }).start();
+
+                                    } else {
+                                        Log.d(TAG, "No MAC address found.");
+                                        Toast.makeText(STAModelActivity.this, "No MAC address found.", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+                                return false;
+                            }
+                        })).sendMsgToServer("$I\r\n".getBytes(StandardCharsets.UTF_8), null);
+
+
+                    }
                 }
             }
-
         });
     }
 

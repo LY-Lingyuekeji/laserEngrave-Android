@@ -22,7 +22,9 @@ import android.net.wifi.WifiNetworkSpecifier;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.text.format.Formatter;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
@@ -55,6 +57,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 
+import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.activity.ConnectActivity;
 import in.co.gorest.grblcontroller.events.AfterUploadFileEvent;
@@ -67,6 +70,8 @@ import in.co.gorest.grblcontroller.service.GrblTelnetSerialService;
 public class WiFiConnetModelFragment extends Fragment {
     // 用于日志记录的标签
     private final static String TAG = WiFiConnetModelFragment.class.getSimpleName();
+    // 用于管理和访问增强的共享偏好设置实例
+    protected EnhancedSharedPreferences sharedPref;
     // Activity
     private Activity mActivity;
     // 请求位置权限的请求码
@@ -178,6 +183,8 @@ public class WiFiConnetModelFragment extends Fragment {
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @SuppressLint("MissingPermission")
     private void initData() {
+        // 初始化共享偏好设置实例
+        sharedPref = EnhancedSharedPreferences.getInstance(GrblController.getInstance(), getString(R.string.shared_preference_key));
         // 获取系统的WifiManager实例
         wifiManager = (WifiManager) requireContext().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         // 检查权限并初始化WiFi信息
@@ -253,35 +260,27 @@ public class WiFiConnetModelFragment extends Fragment {
         tvNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!etSsid.getText().toString().contains("MKS")) {
-                    Toast.makeText(mActivity, "请选择名称为的 \"MKS_xxx\" Wi-Fi进行连接", Toast.LENGTH_SHORT).show();
-                } else {
-                    if (etPassword.getText().length() < 8) {
-                        tvPasswordTips.setTextColor(Color.parseColor("#ff1135"));
-                    } else {
-                        tvPasswordTips.setTextColor(Color.parseColor("#000000"));
-                        // 连接WIFI
-                        if (!etSsid.getText().toString().isEmpty() && !etPassword.getText().toString().isEmpty()) {
-                            Log.d(TAG, "SSID=" + etSsid.getText().toString() + "----- Password=" + etPassword.getText().toString());
+//                if (!etSsid.getText().toString().contains("MKS")) {
+//                    Toast.makeText(mActivity, "请选择名称为的 \"MKS_xxx\" Wi-Fi进行连接", Toast.LENGTH_SHORT).show();
+//                } else {
+//
+//                }
 
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                connectToWifiForAndroidQ(getContext(), etSsid.getText().toString(), etPassword.getText().toString());
-                            } else {
-                                connectToWifi(getContext(), etSsid.getText().toString(), etPassword.getText().toString());
-                            }
+                if (etPassword.getText().length() < 8) {
+                    tvPasswordTips.setTextColor(Color.parseColor("#ff1135"));
+                } else {
+                    tvPasswordTips.setTextColor(Color.parseColor("#000000"));
+                    // 连接WIFI
+                    if (!etSsid.getText().toString().isEmpty() && !etPassword.getText().toString().isEmpty()) {
+                        Log.d(TAG, "SSID=" + etSsid.getText().toString() + "----- Password=" + etPassword.getText().toString());
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                            connectToWifiForAndroidQ(getContext(), etSsid.getText().toString(), etPassword.getText().toString());
+                        } else {
+                            connectToWifi(getContext(), etSsid.getText().toString(), etPassword.getText().toString());
                         }
                     }
                 }
-
-//                new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        String subnet = "192.168.31"; // 替换为实际网段
-//                        scanNetwork(subnet);
-//                    }
-//                }).start();
-
-
             }
         });
     }
@@ -419,9 +418,21 @@ public class WiFiConnetModelFragment extends Fragment {
             public void onAvailable(Network network) {
                 // Connected to the network
                 connectivityManager.bindProcessToNetwork(network); // This line sets the network for all outgoing data
+                WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+                int ipAddress = wifiInfo.getIpAddress();
+                String ip = Formatter.formatIpAddress(ipAddress);
+                Log.d(TAG, "Connected Wi-Fi IP Address: " + ip);
+                if (ssid.contains("MKS")) {
+                    // 连接Telnet
+                    EventBus.getDefault().post(new DeviceConnectEvent("Telnet", ssid, ip));
+                } else {
+                    String host = sharedPref.getString(getString(R.string.preference_sta_host), "");
+                    if (!TextUtils.isEmpty(host)) {
+                        // 连接Telnet
+                        EventBus.getDefault().post(new DeviceConnectEvent("Telnet", ssid, host));
+                    }
+                }
 
-                // 连接Telnet
-                EventBus.getDefault().post(new DeviceConnectEvent("Telnet", ssid, "192.168.4.1"));
 
                 if (mActivity != null) {
                     // 关闭当前页面
@@ -476,9 +487,20 @@ public class WiFiConnetModelFragment extends Fragment {
                 // Network is available
                 super.onAvailable(network);
                 connectivityManager.unregisterNetworkCallback(this);
-
-                // 连接Telnet
-                EventBus.getDefault().post(new DeviceConnectEvent("Telnet", ssid, "192.168.4.1"));
+                WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+                int ipAddress = wifiInfo.getIpAddress();
+                String ip = Formatter.formatIpAddress(ipAddress);
+                Log.d(TAG, "Connected Wi-Fi IP Address: " + ip);
+                if (ssid.contains("MKS")) {
+                    // 连接Telnet
+                    EventBus.getDefault().post(new DeviceConnectEvent("Telnet", ssid, ip));
+                } else {
+                    String host = sharedPref.getString(getString(R.string.preference_sta_host), "");
+                    if (!TextUtils.isEmpty(host)) {
+                        // 连接Telnet
+                        EventBus.getDefault().post(new DeviceConnectEvent("Telnet", ssid, host));
+                    }
+                }
 
                 if (mActivity != null) {
                     // 关闭当前页面
@@ -515,48 +537,4 @@ public class WiFiConnetModelFragment extends Fragment {
             etSsid.setText(event.getMessage().toString());
         }
     }
-
-
-    // 扫描指定子网范围的IP
-    public static void scanNetwork(String subnet, int start, int end) {
-        for (int i = start; i <= end; i++) {
-            String host = subnet + "." + i;
-            try {
-                InetAddress address = InetAddress.getByName(host);
-                if (address.isReachable(500)) { // 超时设置为 500ms
-                    Log.d(TAG, "Device Found: " + host + " - " + address.getHostName());
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    // 创建线程池并分段扫描
-    public static void scanNetworkInParallel(String subnet) {
-        ExecutorService executor = Executors.newFixedThreadPool(16); // 创建 16 个线程的线程池
-
-        // 为每个线程分配扫描任务
-        int segmentSize = 255 / 16; // 每个线程扫描的 IP 段大小
-
-        for (int i = 0; i < 16; i++) {
-            int start = i * segmentSize + 1; // 计算每个线程的起始 IP
-            int end = (i + 1) * segmentSize; // 计算每个线程的结束 IP
-
-            // 处理最后一个线程，确保覆盖到 255
-            if (i == 15) {
-                end = 255;
-            }
-
-            // 为每个段提交一个任务
-            final int segmentStart = start;
-            final int segmentEnd = end;
-
-            executor.submit(() -> scanNetwork(subnet, segmentStart, segmentEnd)); // 提交扫描任务
-        }
-
-        // 关闭线程池
-        executor.shutdown();
-    }
-
 }

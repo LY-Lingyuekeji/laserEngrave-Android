@@ -3,7 +3,6 @@ package in.co.gorest.grblcontroller.activity;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
