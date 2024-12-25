@@ -1,19 +1,13 @@
 package in.co.gorest.grblcontroller.adapters;
 
-import android.bluetooth.BluetoothDevice;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
-
 import java.util.List;
-
 import in.co.gorest.grblcontroller.R;
-import in.co.gorest.grblcontroller.events.WifiNameEvent;
 
 public class WifiChooseBottomSheetAdapter extends RecyclerView.Adapter<WifiChooseBottomSheetAdapter.ViewHolder> {
 

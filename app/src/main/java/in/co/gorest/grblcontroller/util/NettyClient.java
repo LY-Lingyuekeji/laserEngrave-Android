@@ -7,11 +7,9 @@ import androidx.core.app.NotificationCompat;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import cn.wandersnail.commons.util.ShellUtils;
 import in.co.gorest.grblcontroller.events.ServiceMessageEvent;
 import in.co.gorest.grblcontroller.model.PrinterFiles;
@@ -41,7 +39,6 @@ import io.netty.util.CharsetUtil;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
 
-/* loaded from: classes2.dex */
 public class NettyClient {
     private static final String M997_IDLE = "M997 IDLE";
     private static final String M997_PAUSE = "M997 PAUSE";

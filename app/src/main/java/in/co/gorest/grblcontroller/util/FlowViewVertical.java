@@ -10,9 +10,7 @@ import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.view.View;
-
 import java.util.Map;
-
 import in.co.gorest.grblcontroller.R;
 
 public class FlowViewVertical extends View {

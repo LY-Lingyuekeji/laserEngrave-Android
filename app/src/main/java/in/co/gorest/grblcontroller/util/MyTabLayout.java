@@ -6,12 +6,8 @@ import android.widget.TextView;
 import com.google.android.material.tabs.TabLayout;
 import java.util.ArrayList;
 import java.util.List;
-
 import in.co.gorest.grblcontroller.R;
 
-/**
- * 作者: liuhuaqian on 2020-12-17.
- */
 public class MyTabLayout extends TabLayout {
     private List<String> titles;
     private int itemPressed, itemNormal;

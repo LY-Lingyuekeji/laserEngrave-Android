@@ -9,7 +9,6 @@ import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.View;
 
-
 public class VerticalScaleView extends View {
 
     private Paint mLinePaint;

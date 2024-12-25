@@ -1,18 +1,12 @@
 package in.co.gorest.grblcontroller.listeners;
 
-import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
-import android.util.Log;
-
 import org.greenrobot.eventbus.EventBus;
-
 import java.lang.ref.WeakReference;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
 import in.co.gorest.grblcontroller.events.ConsoleMessageEvent;
 import in.co.gorest.grblcontroller.model.Constants;
 import in.co.gorest.grblcontroller.service.GrblTelnetSerialService;

@@ -1,7 +1,6 @@
 package in.co.gorest.grblcontroller.util;
 
 import android.graphics.Bitmap;
-
 import java.util.ArrayList;
 import java.util.Locale;
 

@@ -4,10 +4,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 import java.io.File;
-
 import in.co.gorest.grblcontroller.GrblController;
 
-/* loaded from: classes2.dex */
 public class PrefUtil {
     private static PrefUtil instance = null;
     private static String shareName = "ENGRAVER_SHARE_DATA";

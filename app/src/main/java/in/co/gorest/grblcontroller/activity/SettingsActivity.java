@@ -16,30 +16,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.Toast;
-
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import org.greenrobot.eventbus.EventBus;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-
 import in.co.gorest.grblcontroller.R;
-import in.co.gorest.grblcontroller.adapters.QuestionAdapter;
 import in.co.gorest.grblcontroller.base.BaseActivity;
-import in.co.gorest.grblcontroller.base.BaseDialog;
-import in.co.gorest.grblcontroller.events.DeviceConnectEvent;
-import in.co.gorest.grblcontroller.model.FAQ;
-import in.co.gorest.grblcontroller.ui.FileSenderTabFragment;
 import in.co.gorest.grblcontroller.util.NettyClient;
 
 public class SettingsActivity extends BaseActivity {

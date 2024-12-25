@@ -7,17 +7,13 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowInsetsController;
 import android.view.inputmethod.InputMethodManager;
@@ -26,14 +22,11 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
-
 import java.io.File;
 import java.util.Stack;
-
 import in.co.gorest.grblcontroller.BuildConfig;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.util.ImgUtil;

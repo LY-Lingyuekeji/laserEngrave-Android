@@ -26,7 +26,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.UUID;
 
-/* loaded from: classes2.dex */
 public class BLEService extends Service {
     public static final String EXTRA_DATA = "UART.EXTRA_DATA";
     private static final String TAG = "BLEService";

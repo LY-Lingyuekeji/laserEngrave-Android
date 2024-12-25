@@ -6,7 +6,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import java.util.List;
-
 import in.co.gorest.grblcontroller.model.EffectBean;
 
 public class ZoomViewBean {

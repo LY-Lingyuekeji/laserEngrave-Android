@@ -10,14 +10,9 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
-
 import in.co.gorest.grblcontroller.R;
-import in.co.gorest.grblcontroller.util.DimensionUtil;
 
 
-/**
- * 作者: liuhuaqian on 2020-12-18.
- */
 public class MySeekBar extends View {
 
     /********************** 参数 **********************/

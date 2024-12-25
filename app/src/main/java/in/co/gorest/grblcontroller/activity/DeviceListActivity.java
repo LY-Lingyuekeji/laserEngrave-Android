@@ -12,7 +12,6 @@ import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -20,22 +19,17 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
-
 import org.greenrobot.eventbus.EventBus;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.adapters.BluetoothDeviceAdapter;
 import in.co.gorest.grblcontroller.events.UiToastEvent;
-
 
 public class DeviceListActivity extends Activity implements BluetoothDeviceAdapter.OnItemClickListener {
 
@@ -128,6 +122,7 @@ public class DeviceListActivity extends Activity implements BluetoothDeviceAdapt
      * 初始化监听事件
      */
     private void initListeners() {
+        // 返回
         ivBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -176,6 +171,10 @@ public class DeviceListActivity extends Activity implements BluetoothDeviceAdapt
         }
     };
 
+    /**
+     * item点击事件
+     * @param device 设备item
+     */
     @SuppressLint("MissingPermission")
     @Override
     public void onItemClick(BluetoothDevice device) {

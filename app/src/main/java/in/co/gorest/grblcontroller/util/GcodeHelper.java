@@ -3,11 +3,9 @@ package in.co.gorest.grblcontroller.util;
 import android.util.Log;
 import cn.wandersnail.commons.util.ShellUtils;
 import in.co.gorest.grblcontroller.model.PrinterFiles;
-
 import java.util.ArrayList;
 import java.util.List;
 
-/* loaded from: classes2.dex */
 public class GcodeHelper {
     public static String beginWriteDataToFile() {
         return "M110\n";

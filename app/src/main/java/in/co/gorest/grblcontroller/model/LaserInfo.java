@@ -2,7 +2,6 @@ package in.co.gorest.grblcontroller.model;
 
 import java.io.Serializable;
 
-/* loaded from: classes2.dex */
 public class LaserInfo implements Serializable {
     private String power;
     private String printName;

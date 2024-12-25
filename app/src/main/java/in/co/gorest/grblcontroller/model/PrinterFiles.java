@@ -2,7 +2,6 @@ package in.co.gorest.grblcontroller.model;
 
 import java.io.Serializable;
 
-/* loaded from: classes2.dex */
 public class PrinterFiles implements Serializable {
     private String fileName;
     private String fileSize;

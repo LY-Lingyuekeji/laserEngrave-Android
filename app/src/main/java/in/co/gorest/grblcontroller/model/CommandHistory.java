@@ -4,7 +4,6 @@ import com.orm.SugarRecord;
 import com.orm.query.Condition;
 import com.orm.query.Select;
 import com.orm.util.NamingHelper;
-
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;

@@ -1,37 +1,24 @@
 package in.co.gorest.grblcontroller.util;
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Environment;
 import android.text.TextPaint;
-import android.text.TextUtils;
 import android.util.Log;
-
 import cn.wandersnail.commons.util.ShellUtils;
 import in.co.gorest.grblcontroller.model.LaserInfo;
-
 import java.io.BufferedWriter;
 import java.io.File;
-
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-
-/* loaded from: classes2.dex */
 public class ToolUtil {
 
     public static LaserInfo getLaserInfoFromString(String str) {

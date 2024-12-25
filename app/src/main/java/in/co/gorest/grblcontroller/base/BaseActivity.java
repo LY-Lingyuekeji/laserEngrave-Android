@@ -14,13 +14,8 @@ import android.os.Environment;
 import android.provider.Settings;
 import android.view.Gravity;
 import android.view.KeyEvent;
-import android.view.View;
 import android.view.WindowManager;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -28,23 +23,16 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
-import androidx.fragment.app.Fragment;
-import androidx.viewpager2.widget.ViewPager2;
-
 import com.joanzapata.iconify.Iconify;
 import com.joanzapata.iconify.fonts.FontAwesomeModule;
-
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import es.dmoral.toasty.Toasty;
 import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
-import in.co.gorest.grblcontroller.adapters.ViewPagerAdapter;
 import in.co.gorest.grblcontroller.databinding.ActivityBaseBinding;
 import in.co.gorest.grblcontroller.events.ConsoleMessageEvent;
 import in.co.gorest.grblcontroller.events.GrblAlarmEvent;
@@ -52,7 +40,6 @@ import in.co.gorest.grblcontroller.events.GrblErrorEvent;
 import in.co.gorest.grblcontroller.events.StreamingCompleteEvent;
 import in.co.gorest.grblcontroller.events.StreamingStartedEvent;
 import in.co.gorest.grblcontroller.events.UiToastEvent;
-import in.co.gorest.grblcontroller.events.ViewPagerItemEvent;
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 import in.co.gorest.grblcontroller.helpers.NotificationHelper;
 import in.co.gorest.grblcontroller.listeners.ConsoleLoggerListener;
@@ -63,9 +50,6 @@ import in.co.gorest.grblcontroller.service.FileStreamerIntentService;
 import in.co.gorest.grblcontroller.service.GrblBluetoothSerialService;
 import in.co.gorest.grblcontroller.service.GrblTelnetSerialService;
 import in.co.gorest.grblcontroller.ui.BaseFragment;
-import in.co.gorest.grblcontroller.ui.ConsoleTabFragment;
-import in.co.gorest.grblcontroller.ui.JoggingTabFragment;
-import in.co.gorest.grblcontroller.ui.MaterialTabFragment;
 import in.co.gorest.grblcontroller.util.GrblUtils;
 
 public class BaseActivity extends AppCompatActivity implements BaseFragment.OnFragmentInteractionListener {

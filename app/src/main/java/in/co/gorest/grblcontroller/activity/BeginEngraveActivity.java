@@ -3,48 +3,32 @@ package in.co.gorest.grblcontroller.activity;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowInsetsController;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
-
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.nbsp.materialfilepicker.MaterialFilePicker;
-import com.nbsp.materialfilepicker.ui.FilePickerActivity;
-
 import org.json.JSONArray;
 import org.json.JSONException;
-
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
-
 import in.co.gorest.grblcontroller.BuildConfig;
 import in.co.gorest.grblcontroller.GrblController;
-import in.co.gorest.grblcontroller.MainActivity;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.adapters.EngraveListItemAdapter;
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
-import in.co.gorest.grblcontroller.model.Constants;
 import in.co.gorest.grblcontroller.model.EngraveListItem;
-import in.co.gorest.grblcontroller.util.GrblUtils;
 import in.co.gorest.grblcontroller.util.ImgUtil;
 
 public class BeginEngraveActivity extends AppCompatActivity implements EngraveListItemAdapter.OnItemClickListener{
@@ -53,20 +37,16 @@ public class BeginEngraveActivity extends AppCompatActivity implements EngraveLi
     private final static String TAG = BeginEngraveActivity.class.getSimpleName();
     // 用于管理和访问增强的共享偏好设置实例
     protected EnhancedSharedPreferences sharedPref;
-
     // 返回
     private ImageView ivBack;
     // 管理
     private TextView tvManager;
     // 列表
     private RecyclerView recyclerView;
-
     // 默认数据
     List<EngraveListItem> items = new ArrayList<>();
     // Adapter
     private EngraveListItemAdapter adapter;
-
-
     // 启用矢量图支持，确保在应用中可以正确显示矢量图形
     static {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
@@ -212,6 +192,10 @@ public class BeginEngraveActivity extends AppCompatActivity implements EngraveLi
         return itemList;
     }
 
+    /**
+     * item点击事件
+     * @param item 子项
+     */
     @Override
     public void onItemClick(EngraveListItem item) {
         switch (item.getText()) {
@@ -243,6 +227,9 @@ public class BeginEngraveActivity extends AppCompatActivity implements EngraveLi
     }
 
 
+    /**
+     * 请求结果回调
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

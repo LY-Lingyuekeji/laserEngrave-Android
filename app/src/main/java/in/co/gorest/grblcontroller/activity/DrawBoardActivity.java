@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Build;
@@ -16,7 +15,6 @@ import android.text.InputFilter;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.MenuInflater;
 import android.view.View;
 import android.view.WindowInsetsController;
 import android.view.inputmethod.InputMethodManager;
@@ -24,25 +22,19 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
-
 import com.bumptech.glide.Glide;
-
 import java.io.File;
-
 import in.co.gorest.grblcontroller.BuildConfig;
 import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.fragment.ColorChooseBottomSheetFragment;
 import in.co.gorest.grblcontroller.fragment.SizeChooseBottomSheetFragment;
 import in.co.gorest.grblcontroller.fragment.ToolChooseBottomSheetFragment;
-import in.co.gorest.grblcontroller.fragment.WifiChooseBottomSheetFragment;
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 import in.co.gorest.grblcontroller.util.DrawingView;
 import in.co.gorest.grblcontroller.util.ImgUtil;

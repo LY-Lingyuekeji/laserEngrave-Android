@@ -7,14 +7,9 @@ import android.content.res.Resources;
 import android.os.Build;
 import android.os.LocaleList;
 import android.util.DisplayMetrics;
-
 import androidx.annotation.RequiresApi;
-
 import java.util.Locale;
 
-/**
- * 作者: liuhuaqian on 2020/4/22.
- */
 public class LanguageUtil {
     private static final String TAG = "LanguageUtil";
 

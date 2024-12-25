@@ -11,8 +11,6 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowInsetsController;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -20,10 +18,8 @@ import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import in.co.gorest.grblcontroller.BuildConfig;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.adapters.MaterialAdapter;
@@ -141,11 +137,13 @@ public class MaterialActivity extends AppCompatActivity {
                 intent.putExtra("businessType", businessType);
                 startActivityForResult(intent, businessType == 1 ? ACTIVITY_CODE_FINISH : ACTIVITY_CODE_DATA);
                 Log.d(TAG, PictureList.get(position).getUrl().toString());
-//                finish();
             }
         });
     }
 
+    /**
+     * 请求结果回调
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

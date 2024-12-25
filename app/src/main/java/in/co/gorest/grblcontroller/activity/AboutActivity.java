@@ -11,11 +11,9 @@ import android.view.View;
 import android.view.WindowInsetsController;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
-
 import in.co.gorest.grblcontroller.R;
 
 public class AboutActivity extends AppCompatActivity {
@@ -78,6 +76,7 @@ public class AboutActivity extends AppCompatActivity {
      * 初始化监听事件
      */
     private void initListeners() {
+        // 返回
         ivBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

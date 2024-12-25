@@ -1,17 +1,12 @@
 package in.co.gorest.grblcontroller.util;
 
-
 import java.util.concurrent.TimeUnit;
-
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
 
-/**
- * 作者: liuhuaqian on 2019/7/15.
- */
 public class RxTimer {
     private Disposable mDisposable;
 

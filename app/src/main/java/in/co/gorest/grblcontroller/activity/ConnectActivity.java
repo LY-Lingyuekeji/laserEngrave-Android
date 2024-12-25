@@ -9,15 +9,12 @@ import android.view.View;
 import android.view.WindowInsetsController;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
-
 import java.util.ArrayList;
-
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.adapters.ViewPagerAdapter;
 import in.co.gorest.grblcontroller.fragment.BtConnetModelFragment;
@@ -37,7 +34,6 @@ public class ConnectActivity extends AppCompatActivity {
     private ViewPagerAdapter adapter;
     // fragment数组
     private ArrayList<Fragment> fragments = new ArrayList<>();
-
     // 启用矢量图支持，确保在应用中可以正确显示矢量图形
     static {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);

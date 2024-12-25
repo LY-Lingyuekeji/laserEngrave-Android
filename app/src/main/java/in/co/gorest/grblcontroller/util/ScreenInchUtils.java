@@ -7,7 +7,6 @@ import android.util.DisplayMetrics;
 import android.view.Display;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
-
 import in.co.gorest.grblcontroller.GrblController;
 
 public class ScreenInchUtils {

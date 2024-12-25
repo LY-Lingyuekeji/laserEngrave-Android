@@ -2,10 +2,8 @@ package in.co.gorest.grblcontroller.util;
 
 import android.os.Handler;
 import android.os.Looper;
-
 import java.io.File;
 import java.io.IOException;
-
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okio.BufferedSink;

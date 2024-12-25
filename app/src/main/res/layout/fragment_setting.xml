@@ -84,7 +84,7 @@
     <RelativeLayout
         android:id="@+id/rl_setting_model"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:padding="15dp"
         android:layout_marginTop="40dp"
         android:background="@drawable/bg_white_ffffff_r20"
@@ -135,7 +135,7 @@
     <RelativeLayout
         android:id="@+id/rl_setting_language"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:padding="15dp"
         android:layout_marginTop="15dp"
         android:background="@drawable/bg_white_ffffff_r20"
@@ -184,7 +184,7 @@
     <RelativeLayout
         android:id="@+id/rl_setting_agreement"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:padding="15dp"
         android:layout_marginTop="15dp"
         android:background="@drawable/bg_white_ffffff_r20"
@@ -213,7 +213,7 @@
     <RelativeLayout
         android:id="@+id/rl_setting_clean"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:padding="15dp"
         android:layout_marginTop="15dp"
         android:background="@drawable/bg_white_ffffff_r20"
@@ -262,7 +262,7 @@
     <RelativeLayout
         android:id="@+id/rl_setting_settings"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:padding="15dp"
         android:layout_marginTop="15dp"
         android:background="@drawable/bg_white_ffffff_r20"
@@ -292,7 +292,7 @@
     <RelativeLayout
         android:id="@+id/rl_setting_about"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="50dp"
         android:padding="15dp"
         android:layout_marginTop="15dp"
         android:background="@drawable/bg_white_ffffff_r20"

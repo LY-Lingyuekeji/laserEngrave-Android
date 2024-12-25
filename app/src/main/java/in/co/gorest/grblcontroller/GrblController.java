@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
 import cn.wandersnail.ble.EasyBLE;
 import cn.wandersnail.ble.ScanConfiguration;
 import cn.wandersnail.ble.ScannerType;

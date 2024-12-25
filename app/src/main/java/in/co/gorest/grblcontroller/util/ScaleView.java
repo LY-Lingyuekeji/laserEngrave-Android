@@ -12,7 +12,6 @@ import android.view.View;
 
 /**
  * 刻度尺
- * 作者: liuhuaqian on 2020-12-16.
  */
 public class ScaleView extends View {
 

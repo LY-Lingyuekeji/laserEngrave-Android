@@ -3,9 +3,6 @@ package in.co.gorest.grblcontroller.util;
 import android.content.Context;
 import android.content.SharedPreferences;
 
-/**
- * 作者: liuhuaqian on 2020/4/22.
- */
 public class SpUtil {
     public static final String LANGUAGE = "language";
     private static final String SP_NAME = "poemTripSpref";

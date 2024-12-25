@@ -8,9 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
@@ -29,34 +26,22 @@ import android.util.Log;
 import android.view.View;
 import android.view.WindowInsetsController;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
-import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
-
-import com.baoyachi.stepview.VerticalStepView;
-import com.baoyachi.stepview.bean.StepBean;
 import com.king.view.circleprogressview.CircleProgressView;
-
 import org.greenrobot.eventbus.EventBus;
-
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
 import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.events.DeviceConnectEvent;
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
-import in.co.gorest.grblcontroller.util.FlowViewVertical;
+
 
 public class STAConnectStepActivity extends AppCompatActivity {
     // 用于日志记录的标签

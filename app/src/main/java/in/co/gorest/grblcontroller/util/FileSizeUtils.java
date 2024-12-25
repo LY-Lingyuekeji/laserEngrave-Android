@@ -3,7 +3,6 @@ package in.co.gorest.grblcontroller.util;
 import java.text.DecimalFormat;
 import okhttp3.internal.ws.RealWebSocket;
 
-/* loaded from: classes2.dex */
 public class FileSizeUtils {
     public static long ONE_GB = 0;
     public static long ONE_KB = 1024;

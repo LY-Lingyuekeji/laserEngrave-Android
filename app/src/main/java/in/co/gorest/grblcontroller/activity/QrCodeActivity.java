@@ -4,60 +4,33 @@ package in.co.gorest.grblcontroller.activity;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowInsetsController;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
-
-import com.bumptech.glide.Glide;
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.EncodeHintType;
-import com.google.zxing.WriterException;
-import com.google.zxing.common.BitMatrix;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
-import com.google.zxing.oned.Code128Writer;
-
 import org.greenrobot.eventbus.EventBus;
-
-import java.io.File;
 import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.Map;
-
-import in.co.gorest.grblcontroller.BuildConfig;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.adapters.ViewPagerAdapter;
 import in.co.gorest.grblcontroller.events.ScanResultMessageEvent;
-import in.co.gorest.grblcontroller.fragment.HomeFragment;
 import in.co.gorest.grblcontroller.fragment.QrCodeAudioModelFragment;
 import in.co.gorest.grblcontroller.fragment.QrCodeBusinessCardModelFragment;
 import in.co.gorest.grblcontroller.fragment.QrCodeCopyModelFragment;
 import in.co.gorest.grblcontroller.fragment.QrCodeTextModelFragment;
 import in.co.gorest.grblcontroller.fragment.QrCodeVideoModelFragment;
 import in.co.gorest.grblcontroller.fragment.QrCodeWiFiModelFragment;
-import in.co.gorest.grblcontroller.fragment.SettingFragment;
-import in.co.gorest.grblcontroller.util.ImgUtil;
 
 public class QrCodeActivity extends AppCompatActivity {
 
@@ -259,6 +232,9 @@ public class QrCodeActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * 请求结果回调
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);

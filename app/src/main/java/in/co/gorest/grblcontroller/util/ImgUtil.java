@@ -1,6 +1,5 @@
 package in.co.gorest.grblcontroller.util;
 
-
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -17,7 +16,6 @@ import android.os.Build;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.ImageView;
-
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
@@ -30,7 +28,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import in.co.gorest.grblcontroller.GrblController;
-import in.co.gorest.grblcontroller.R;
 
 /**
  * 图片工具类

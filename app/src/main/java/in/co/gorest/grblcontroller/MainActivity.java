@@ -3,10 +3,8 @@ package in.co.gorest.grblcontroller;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
@@ -21,7 +19,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Message;
 import android.os.PowerManager;
 import android.provider.Settings;
@@ -32,7 +29,6 @@ import android.view.View;
 import android.view.WindowInsetsController;
 import android.widget.LinearLayout;
 import android.widget.Toast;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -43,31 +39,22 @@ import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
-
-import com.nbsp.materialfilepicker.ui.FilePickerActivity;
-
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import in.co.gorest.grblcontroller.activity.BeginEngraveActivity;
 import in.co.gorest.grblcontroller.activity.EditActivity;
 import in.co.gorest.grblcontroller.activity.EngraveActivity;
 import in.co.gorest.grblcontroller.adapters.ViewPagerAdapter;
 import in.co.gorest.grblcontroller.base.BaseActivity;
 import in.co.gorest.grblcontroller.base.BaseDialog;
 import in.co.gorest.grblcontroller.events.DeviceConnectEvent;
-import in.co.gorest.grblcontroller.events.ModelChangeEvent;
 import in.co.gorest.grblcontroller.events.ServiceMessageEvent;
-import in.co.gorest.grblcontroller.events.TelnetConnectEvent;
 import in.co.gorest.grblcontroller.fragment.HomeFragment;
 import in.co.gorest.grblcontroller.fragment.SettingFragment;
 import in.co.gorest.grblcontroller.model.Constants;
-import in.co.gorest.grblcontroller.service.GrblTelnetSerialService;
 import in.co.gorest.grblcontroller.util.ImgUtil;
 import in.co.gorest.grblcontroller.util.NettyClient;
 

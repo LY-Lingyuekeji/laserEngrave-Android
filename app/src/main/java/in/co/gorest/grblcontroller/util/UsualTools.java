@@ -24,7 +24,6 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;

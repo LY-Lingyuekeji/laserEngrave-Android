@@ -3,10 +3,7 @@ package in.co.gorest.grblcontroller.activity;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -16,7 +13,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -34,35 +30,28 @@ import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
-
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
-
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-
 import in.co.gorest.grblcontroller.BuildConfig;
 import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.base.BaseActivity;
 import in.co.gorest.grblcontroller.events.ControltoPreViewMessageEvent;
-import in.co.gorest.grblcontroller.fragment.AddPhotoBottomSheetFragment;
 import in.co.gorest.grblcontroller.fragment.CommandBottomSheetFragment;
 import in.co.gorest.grblcontroller.fragment.ControlBottomSheetFragment;
-import in.co.gorest.grblcontroller.fragment.SizeChooseBottomSheetFragment;
 import in.co.gorest.grblcontroller.model.EffectBean;
 import in.co.gorest.grblcontroller.model.GcodesBean;
 import in.co.gorest.grblcontroller.util.FileManager;
@@ -831,7 +820,9 @@ public class PreViewActivity extends BaseActivity {
         }
     }
 
-
+    /**
+     * 添加视图
+     */
     public void addDragView(Bitmap bm, boolean lean, String type, Uri url, Uri initBitmapUri) {
         Log.d(TAG, "Uri=" + url.getPath());
         ZoomViewBean zoomViewBean = new ZoomViewBean();

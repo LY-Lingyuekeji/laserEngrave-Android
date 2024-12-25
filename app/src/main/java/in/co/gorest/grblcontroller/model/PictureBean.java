@@ -1,7 +1,6 @@
 package in.co.gorest.grblcontroller.model;
 
 import android.net.Uri;
-
 import java.util.List;
 
 /**

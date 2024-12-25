@@ -2,33 +2,22 @@
 package in.co.gorest.grblcontroller.activity;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.view.WindowInsetsController;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
-
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.base.BaseActivity;
 import in.co.gorest.grblcontroller.events.MachineVauleUpdateMessageEvent;
-import in.co.gorest.grblcontroller.events.ModelChangeEvent;
-import in.co.gorest.grblcontroller.fragment.CommandBottomSheetFragment;
 import in.co.gorest.grblcontroller.fragment.LaserSetupLineJudgeBottomSheetFragment;
 
 public class MachineValueSettingActivity extends BaseActivity {

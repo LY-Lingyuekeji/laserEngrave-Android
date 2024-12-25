@@ -21,8 +21,6 @@
 
 package in.co.gorest.grblcontroller;
 
-
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -43,16 +41,12 @@ import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowInsetsController;
-
 import androidx.core.app.ActivityCompat;
-
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
 import java.lang.ref.WeakReference;
 import java.util.Objects;
-
 import in.co.gorest.grblcontroller.activity.DeviceListActivity;
 import in.co.gorest.grblcontroller.base.BaseActivity;
 import in.co.gorest.grblcontroller.events.BluetoothDisconnectEvent;

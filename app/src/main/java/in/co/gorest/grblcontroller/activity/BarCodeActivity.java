@@ -4,8 +4,6 @@ package in.co.gorest.grblcontroller.activity;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.net.Uri;
@@ -23,24 +21,19 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
-
 import com.bumptech.glide.Glide;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.oned.Code128Writer;
-
 import java.io.File;
 import java.util.EnumMap;
 import java.util.Map;
-
 import in.co.gorest.grblcontroller.BuildConfig;
-import in.co.gorest.grblcontroller.MainActivity;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.util.ImgUtil;
 

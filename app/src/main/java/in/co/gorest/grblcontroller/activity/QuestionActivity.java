@@ -8,20 +8,17 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.WindowInsetsController;
 import android.widget.ImageView;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.adapters.QuestionAdapter;
 import in.co.gorest.grblcontroller.model.FAQ;

@@ -3,10 +3,8 @@ package in.co.gorest.grblcontroller.util;
 import android.util.Log;
 import cn.wandersnail.commons.util.ShellUtils;
 import in.co.gorest.grblcontroller.model.CommandSetInfo;
-
 import java.util.ArrayList;
 
-/* loaded from: classes2.dex */
 public class engraveUtils {
     public static String string2Command(CommandSetInfo commandSetInfo) {
         String str;

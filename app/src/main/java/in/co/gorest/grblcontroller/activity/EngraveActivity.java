@@ -3,16 +3,11 @@ package in.co.gorest.grblcontroller.activity;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Message;
 import android.os.Process;
 import android.os.SystemClock;
@@ -24,45 +19,29 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
-
 import com.bumptech.glide.Glide;
-import com.joanzapata.iconify.widget.IconButton;
-
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-
 import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.base.BaseActivity;
 import in.co.gorest.grblcontroller.base.BaseDialog;
 import in.co.gorest.grblcontroller.databinding.ActivityEngraveBinding;
-import in.co.gorest.grblcontroller.events.APModelUploadEvent;
-import in.co.gorest.grblcontroller.events.FragmentCommandEvent;
-import in.co.gorest.grblcontroller.events.GrblRealTimeCommandEvent;
 import in.co.gorest.grblcontroller.events.ServiceMessageEvent;
 import in.co.gorest.grblcontroller.events.UiToastEvent;
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 import in.co.gorest.grblcontroller.listeners.FileSenderListener;
-import in.co.gorest.grblcontroller.listeners.MachineStatusListener;
-import in.co.gorest.grblcontroller.model.CommandHistory;
 import in.co.gorest.grblcontroller.model.Constants;
 import in.co.gorest.grblcontroller.model.GcodeCommand;
-import in.co.gorest.grblcontroller.service.FileStreamerIntentService;
-import in.co.gorest.grblcontroller.service.GrblTelnetSerialService;
-import in.co.gorest.grblcontroller.util.FileUploader;
-import in.co.gorest.grblcontroller.util.GrblUtils;
 import in.co.gorest.grblcontroller.util.NettyClient;
 
 public class EngraveActivity extends BaseActivity {

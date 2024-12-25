@@ -3,20 +3,15 @@ package in.co.gorest.grblcontroller.activity;
 
 import android.annotation.SuppressLint;
 import android.content.pm.ActivityInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowInsetsController;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
-
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.fragment.CommandBottomSheetFragment;
 import in.co.gorest.grblcontroller.fragment.WifiChooseBottomSheetFragment;
@@ -29,8 +24,6 @@ public class BluetoothConnectionActivity extends AppCompatActivity {
     private ImageView ivStepSetting;
     // 命令
     private LinearLayout llCommand;
-
-
     // 启用矢量图支持，确保在应用中可以正确显示矢量图形
     static {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
@@ -75,7 +68,7 @@ public class BluetoothConnectionActivity extends AppCompatActivity {
     }
 
     /**
-     * 初始化数据`
+     * 初始化数据
      */
     private void initData() {
 

@@ -20,19 +20,14 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-
 import androidx.core.app.ActivityCompat;
-
 import com.joanzapata.iconify.IconDrawable;
 import com.joanzapata.iconify.fonts.FontAwesomeIcons;
-
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
 import java.lang.ref.WeakReference;
 import java.util.Objects;
-
 import in.co.gorest.grblcontroller.activity.DeviceListActivity;
 import in.co.gorest.grblcontroller.activity.WifiListActivity;
 import in.co.gorest.grblcontroller.base.BaseActivity;

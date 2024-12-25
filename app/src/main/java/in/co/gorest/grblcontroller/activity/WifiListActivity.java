@@ -16,7 +16,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -24,16 +23,12 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import org.greenrobot.eventbus.EventBus;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.adapters.WifiNetworkAdapter;
 import in.co.gorest.grblcontroller.events.UiToastEvent;
-
 
 public class WifiListActivity extends Activity implements WifiNetworkAdapter.OnItemClickListener {
 

@@ -1,11 +1,9 @@
 package in.co.gorest.grblcontroller.util;
 
 import android.util.Pair;
-
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
-
 import in.co.gorest.grblcontroller.model.Constants;
 
 public  class SimpleGcodeMaker {

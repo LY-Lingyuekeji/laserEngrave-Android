@@ -9,15 +9,10 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import org.greenrobot.eventbus.EventBus;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-
 import in.co.gorest.grblcontroller.R;
-import in.co.gorest.grblcontroller.events.AfterUploadFileEvent;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.MultipartBody;
