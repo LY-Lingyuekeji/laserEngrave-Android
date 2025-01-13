@@ -557,7 +557,7 @@ public class EditActivity extends AppCompatActivity {
                                 }
                                 break;
                             case 2://轮廓
-                                finalBitmap = ImageProcess.convertToOutlineImage(initedBitmap, ivMaterial.getWidth(), false,true);
+                                finalBitmap = ImageProcess.convertToOutlineImage(initedBitmap, ivMaterial.getWidth(), false);
                                 break;
                             case 3://素描
                                 finalBitmap = ImageProcess.ImageDithering(initedBitmap, 1, true);

@@ -1,18 +1,12 @@
 package in.co.gorest.grblcontroller.fragment;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Intent;
-import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,28 +15,17 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import com.bumptech.glide.Glide;
-import com.nbsp.materialfilepicker.MaterialFilePicker;
-import com.nbsp.materialfilepicker.ui.FilePickerActivity;
-
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
-import java.io.File;
-import java.util.regex.Pattern;
-
 import in.co.gorest.grblcontroller.GrblController;
-import in.co.gorest.grblcontroller.MainActivity;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.activity.BarCodeActivity;
 import in.co.gorest.grblcontroller.activity.BeginEngraveActivity;
 import in.co.gorest.grblcontroller.activity.BluetoothConnectionActivity;
 import in.co.gorest.grblcontroller.activity.ConnectActivity;
 import in.co.gorest.grblcontroller.activity.DrawBoardActivity;
-import in.co.gorest.grblcontroller.activity.EditActivity;
 import in.co.gorest.grblcontroller.activity.EngraveActivity;
 import in.co.gorest.grblcontroller.activity.FileActivity;
 import in.co.gorest.grblcontroller.activity.MaterialActivity;
@@ -53,13 +36,8 @@ import in.co.gorest.grblcontroller.base.BaseDialog;
 import in.co.gorest.grblcontroller.events.DeviceConnectEvent;
 import in.co.gorest.grblcontroller.events.ModelChangeEvent;
 import in.co.gorest.grblcontroller.events.ServiceMessageEvent;
-import in.co.gorest.grblcontroller.events.TelnetConnectEvent;
-import in.co.gorest.grblcontroller.events.UiToastEvent;
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 import in.co.gorest.grblcontroller.model.Constants;
-import in.co.gorest.grblcontroller.ui.FileSenderTabFragment;
-import in.co.gorest.grblcontroller.util.FileUploader;
-import in.co.gorest.grblcontroller.util.GrblUtils;
 import in.co.gorest.grblcontroller.util.ImgUtil;
 import in.co.gorest.grblcontroller.util.NettyClient;
 

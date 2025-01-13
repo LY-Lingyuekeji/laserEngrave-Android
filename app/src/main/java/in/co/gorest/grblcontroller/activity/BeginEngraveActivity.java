@@ -103,13 +103,13 @@ public class BeginEngraveActivity extends AppCompatActivity implements EngraveLi
         if (itemsJsonArray == null) {
             // 默认数据
             items.add(new EngraveListItem(R.drawable.ic_star, "素材库", true));
-            items.add(new EngraveListItem(R.drawable.ic_file, "文件", true));
+//            items.add(new EngraveListItem(R.drawable.ic_file, "文件", true));
             items.add(new EngraveListItem(R.drawable.ic_photo, "相册", true));
             items.add(new EngraveListItem(R.drawable.ic_camera, "相机", true));
-            items.add(new EngraveListItem(R.drawable.ic_create, "画图", true));
-            items.add(new EngraveListItem(R.drawable.ic_text, "文字", true));
-            items.add(new EngraveListItem(R.drawable.ic_calendar, "条形码", true));
-            items.add(new EngraveListItem(R.drawable.ic_qr_code, "二维码", true));
+//            items.add(new EngraveListItem(R.drawable.ic_create, "画图", true));
+//            items.add(new EngraveListItem(R.drawable.ic_text, "文字", true));
+//            items.add(new EngraveListItem(R.drawable.ic_calendar, "条形码", true));
+//            items.add(new EngraveListItem(R.drawable.ic_qr_code, "二维码", true));
 
             // 转换为JSONArray
             JSONArray jsonArray = new JSONArray();

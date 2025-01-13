@@ -85,13 +85,10 @@ public class TextCreateActivity extends AppCompatActivity {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
     }
 
-
     // 撤销操作栈
     private Stack<TextOperation> undoStack = new Stack<>();
     // 恢复操作栈
     private Stack<TextOperation> redoStack = new Stack<>();
-    // 标记是否初始化过对齐方式
-    private boolean isGravityInitialized = false;
 
     // 封装每次文本样式更改的细节
     class TextOperation {

@@ -714,7 +714,6 @@ public class PreViewActivity extends BaseActivity {
             // 文件上传
             OkHttpUtils.post().addFile("myfile[]", file.getName(), file).url("http://192.168.4.1/upload").addParams("path", "/").addParams("/" + file.getName() + "S", String.valueOf(file.length())).tag(this).build().execute(new StringCallback() {
 
-
                 @Override
                 public void inProgress(float f, long j, int i) {
                     super.inProgress(f, j, i);

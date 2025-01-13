@@ -274,11 +274,19 @@ public class WiFiConnetModelFragment extends Fragment {
                     if (!etSsid.getText().toString().isEmpty() && !etPassword.getText().toString().isEmpty()) {
                         Log.d(TAG, "SSID=" + etSsid.getText().toString() + "----- Password=" + etPassword.getText().toString());
 
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                            connectToWifiForAndroidQ(getContext(), etSsid.getText().toString(), etPassword.getText().toString());
+                        // 是否开启Wi-Fi
+                        if (isWifiEnabled(getContext())) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                connectToWifiForAndroidQ(getContext(), etSsid.getText().toString(), etPassword.getText().toString());
+                            } else {
+                                connectToWifi(getContext(), etSsid.getText().toString(), etPassword.getText().toString());
+                            }
                         } else {
-                            connectToWifi(getContext(), etSsid.getText().toString(), etPassword.getText().toString());
+//                            Toast.makeText(getContext(), "Wi-Fi未打开，请先打开Wi-Fi再重试", Toast.LENGTH_SHORT).show();
+                            EventBus.getDefault().post(new UiToastEvent("Wi-Fi未打开，请先打开Wi-Fi再重试", true, true));
                         }
+
+
                     }
                 }
             }
@@ -329,7 +337,7 @@ public class WiFiConnetModelFragment extends Fragment {
             // 处理Android 10 (API 29) 及以上版本中SSID可能返回"<unknown ssid>"的问题
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && "<unknown ssid>".equals(ssid)) {
                 Log.d(TAG, "SSID not available");
-                EventBus.getDefault().post(new UiToastEvent("SSID not available", true, true));
+//                EventBus.getDefault().post(new UiToastEvent("SSID not available", true, true));
             } else {
                 // 显示当前连接的SSID
                 etSsid.setText(ssid);
@@ -536,5 +544,22 @@ public class WiFiConnetModelFragment extends Fragment {
             // 显示当前连接的SSID
             etSsid.setText(event.getMessage().toString());
         }
+    }
+
+    /**
+     *
+     * 网络是否开启
+     * @param context 上下文
+     * @return 是否开启 true 已开启 false 未开启
+     */
+    public boolean isWifiEnabled(Context context) {
+        // 获取 WifiManager 系统服务
+        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+
+        if (wifiManager != null) {
+            // 检查 Wi-Fi 是否启用
+            return wifiManager.isWifiEnabled();
+        }
+        return false;
     }
 }

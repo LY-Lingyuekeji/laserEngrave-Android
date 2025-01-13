@@ -85,7 +85,9 @@ public class ConnectActivity extends AppCompatActivity {
     private void initData() {
         // 添加fragment数据源
         fragments.add(new WiFiConnetModelFragment());
-        fragments.add(new BtConnetModelFragment());
+
+        // TODO 暂时屏蔽蓝牙模式
+//        fragments.add(new BtConnetModelFragment());
 
         adapter = new ViewPagerAdapter(this, fragments);
 
