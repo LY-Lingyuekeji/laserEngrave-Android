@@ -43,7 +43,7 @@ public class FileUploader {
         TextView progressSpeed = dialogView.findViewById(R.id.progressSpeed);
 
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(context);
-        alertDialogBuilder.setTitle("提示");
+        alertDialogBuilder.setTitle("温馨提示");
         alertDialogBuilder.setView(dialogView);
         alertDialogBuilder.setCancelable(false);
         AlertDialog dialog = alertDialogBuilder.create();

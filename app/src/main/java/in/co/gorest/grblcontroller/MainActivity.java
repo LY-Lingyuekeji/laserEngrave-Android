@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
@@ -100,6 +101,7 @@ public class MainActivity extends BaseActivity {
      */
     private boolean isShowEngravingDialog = false;
 
+
     /**
      * 注册权限请求结果的回调
      */
@@ -140,6 +142,7 @@ public class MainActivity extends BaseActivity {
 
         // 注册EventBus
         EventBus.getDefault().register(this);
+
     }
 
 
@@ -154,6 +157,7 @@ public class MainActivity extends BaseActivity {
         })).getConnectStatus();
         Log.d(TAG, "isConnect=" + isConnect);
     }
+
 
     /**
      * 申请权限
@@ -440,12 +444,12 @@ public class MainActivity extends BaseActivity {
                 Log.d(TAG, "Connected Wi-Fi IP Address: " + ip);
                 if (ssid.contains("MKS")) {
                     // 连接Telnet
-                    EventBus.getDefault().post(new DeviceConnectEvent("Telnet", ssid, ip));
+                    EventBus.getDefault().post(new DeviceConnectEvent("AP", ssid, ip));
                 } else {
                     String host = sharedPref.getString(getString(R.string.preference_sta_host), "");
                     if (!TextUtils.isEmpty(host)) {
                         // 连接Telnet
-                        EventBus.getDefault().post(new DeviceConnectEvent("Telnet", ssid, host));
+                        EventBus.getDefault().post(new DeviceConnectEvent("AP", ssid, host));
                     }
                 }
             }
@@ -500,12 +504,12 @@ public class MainActivity extends BaseActivity {
                 Log.d(TAG, "Connected Wi-Fi IP Address: " + ip);
                 if (ssid.contains("MKS")) {
                     // 连接Telnet
-                    EventBus.getDefault().post(new DeviceConnectEvent("Telnet", ssid, ip));
+                    EventBus.getDefault().post(new DeviceConnectEvent("AP", ssid, ip));
                 } else {
                     String host = sharedPref.getString(getString(R.string.preference_sta_host), "");
                     if (!TextUtils.isEmpty(host)) {
                         // 连接Telnet
-                        EventBus.getDefault().post(new DeviceConnectEvent("Telnet", ssid, host));
+                        EventBus.getDefault().post(new DeviceConnectEvent("AP", ssid, host));
                     }
                 }
 
@@ -523,36 +527,36 @@ public class MainActivity extends BaseActivity {
         });
     }
 
-    /**
-     * ServiceMessageEvent
-     *
-     * @param event
-     */
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onServiceMessageEvent(ServiceMessageEvent event) {
-        if (!event.getMessage().isEmpty() && event.getMessage().startsWith("<")) {
-            Log.d(TAG, "message=" + event.getMessage().toString());
-            String[] parts = event.getMessage().substring(1, event.getMessage().toString().length() - 1).split("\\|");
-            Log.d(TAG, "status=" + parts[0] + " Mpos=" + parts[1] + " Wpos=" + parts[2] + " Fs=" + parts[3]);
-            if (parts[0].equals(Constants.MACHINE_STATUS_RUN)) {
-                if (!isShowEngravingDialog) {
-                    BaseDialog.showCustomDialog(this, "温馨提示",
-                            "检测到设备正在雕刻是否跳转到雕刻界面？",
-                            "跳转", "取消",
-                            v -> {
-                                Intent intent = new Intent(this, EngraveActivity.class);
-                                String imagePath = sharedPref.getString(getString(R.string.preference_image_path), "");
-                                String filePath = sharedPref.getString(getString(R.string.preference_file_path), "");
-                                intent.putExtra("imagePath", imagePath);
-                                intent.putExtra("filePath", filePath);
-                                startActivity(intent);
-                            },
-                            v -> {
-                                Log.d(TAG, "用户选择取消");
-                            });
-                }
-                isShowEngravingDialog = true;
-            }
-        }
-    }
+//    /**
+//     * ServiceMessageEvent
+//     *
+//     * @param event
+//     */
+//    @Subscribe(threadMode = ThreadMode.MAIN)
+//    public void onServiceMessageEvent(ServiceMessageEvent event) {
+//        if (!event.getMessage().isEmpty() && event.getMessage().startsWith("<")) {
+//            Log.d(TAG, "message=" + event.getMessage().toString());
+//            String[] parts = event.getMessage().substring(1, event.getMessage().toString().length() - 1).split("\\|");
+//            Log.d(TAG, "status=" + parts[0] + " Mpos=" + parts[1] + " Wpos=" + parts[2] + " Fs=" + parts[3]);
+//            if (parts[0].equals(Constants.MACHINE_STATUS_RUN)) {
+//                if (!isShowEngravingDialog) {
+//                    BaseDialog.showCustomDialog(this, "温馨提示",
+//                            "检测到设备正在雕刻是否跳转到雕刻界面？",
+//                            "跳转", "取消",
+//                            v -> {
+//                                Intent intent = new Intent(this, EngraveActivity.class);
+//                                String imagePath = sharedPref.getString(getString(R.string.preference_image_path), "");
+//                                String filePath = sharedPref.getString(getString(R.string.preference_file_path), "");
+//                                intent.putExtra("imagePath", imagePath);
+//                                intent.putExtra("filePath", filePath);
+//                                startActivity(intent);
+//                            },
+//                            v -> {
+//                                Log.d(TAG, "用户选择取消");
+//                            });
+//                }
+//                isShowEngravingDialog = true;
+//            }
+//        }
+//    }
 }

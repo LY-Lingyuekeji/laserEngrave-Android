@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ll_device_item"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@drawable/bg_white_ffffff_r10"
+    android:layout_marginEnd="15dp"
+    android:padding="10dp">
+
+
+    <ImageView
+        android:id="@+id/iv_device_iamge"
+        android:layout_width="210dp"
+        android:layout_height="85dp"
+        android:src="@mipmap/ic_laser_t4"/>
+
+    <TextView
+        android:id="@+id/tv_device_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:text="Laser-T4"
+        android:textSize="14sp"
+        android:textColor="@color/colorBlack"
+        android:textStyle="bold"
+        />
+
+
+
+    <TextView
+        android:id="@+id/tv_device_travel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="300x300(mm²)"
+        android:textColor="#8A8A8A"
+        android:textSize="12sp"
+        android:layout_marginTop="5dp"
+        />
+
+</LinearLayout>

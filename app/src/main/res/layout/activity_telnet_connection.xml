@@ -315,10 +315,12 @@
                     app:layout_constraintTop_toTopOf="@+id/rl_rlrl">
 
                     <ImageView
+                        android:id="@+id/jog_z_positive"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_alignParentTop="true"
                         android:layout_centerHorizontal="true"
+                        android:tag="$J=%s G91 Z%s F%s"
                         android:layout_marginTop="10dp"
                         android:src="@drawable/ic_arrow_up"
                         android:background="?attr/selectableItemBackgroundBorderless"/>
@@ -332,12 +334,14 @@
                         android:textSize="20sp" />
 
                     <ImageView
+                        android:id="@+id/jog_z_negative"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_alignParentBottom="true"
                         android:layout_centerHorizontal="true"
                         android:layout_marginBottom="10dp"
                         android:src="@drawable/ic_arrow_down"
+                        android:tag="$J=%s G91 Z-%s F%s"
                         android:background="?attr/selectableItemBackgroundBorderless"/>
                 </RelativeLayout>
 
@@ -587,10 +591,10 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/ll_x_zero"
+                    android:id="@+id/ll_clean_hold"
                     android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_marginStart="8dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
                     android:layout_weight="1"
                     android:background="@drawable/bg_gray_edebee_r100"
                     android:gravity="center"
@@ -603,20 +607,20 @@
                     <ImageView
                         android:layout_width="20dp"
                         android:layout_height="20dp"
-                        android:src="@drawable/ic_clean_pos" />
+                        android:src="@drawable/ic_clean_notifi" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="X轴清零"
+                        android:text="解除暂停"
                         android:textColor="@color/colorBlack"
                         android:textSize="12sp"
                         android:textStyle="bold"/>
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/ll_y_zero"
+                    android:id="@+id/ll_xy_zero"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_marginStart="8dp"
@@ -638,7 +642,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="Y轴清零"
+                        android:text="XY清零"
                         android:textColor="@color/colorBlack"
                         android:textSize="12sp"
                         android:textStyle="bold"/>
@@ -647,8 +651,8 @@
                 <LinearLayout
                     android:id="@+id/ll_z_zero"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="8dp"
                     android:layout_weight="1"
                     android:background="@drawable/bg_gray_edebee_r100"
                     android:gravity="center"
@@ -672,6 +676,8 @@
                         android:textSize="12sp"
                         android:textStyle="bold"/>
                 </LinearLayout>
+
+
             </LinearLayout>
 
             <LinearLayout
@@ -768,10 +774,10 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/ll_line_judge"
+                    android:id="@+id/ll_auto_focus"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
+                    android:layout_marginStart="10dp"
                     android:layout_weight="1"
                     android:background="@drawable/bg_gray_edebee_r100"
                     android:gravity="center"
@@ -784,13 +790,13 @@
                     <ImageView
                         android:layout_width="20dp"
                         android:layout_height="20dp"
-                        android:src="@drawable/ic_line_judge" />
+                        android:src="@drawable/ic_clean_pos" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
-                        android:text="巡边"
+                        android:text="自动对焦"
                         android:textColor="@color/colorBlack"
                         android:textSize="12sp"
                         android:textStyle="bold"/>

@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_white_ffffff_topradius30"
+    android:orientation="vertical"
+    android:paddingHorizontal="10dp"
+    android:paddingVertical="20dp">
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="材料类型"
+        android:textSize="14sp"
+        android:textColor="@color/colorBlack"
+        android:gravity="center"/>
+
+
+    <RadioGroup
+        android:id="@+id/rg_material_type"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:orientation="vertical">
+
+        <RadioButton
+            android:id="@+id/rb_material_type_jhb"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/step_setup_bg_color_selector"
+            android:button="@null"
+            android:gravity="center"
+            android:paddingVertical="10dp"
+            android:text="胶合板"
+            android:textColor="@drawable/step_setup_text_color_selector"
+            android:textSize="14sp" />
+
+        <RadioButton
+            android:id="@+id/rb_material_type_smb"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/step_setup_bg_color_selector"
+            android:button="@null"
+            android:gravity="center"
+            android:layout_marginTop="10dp"
+            android:paddingVertical="10dp"
+            android:text="松木板"
+            android:textColor="@drawable/step_setup_text_color_selector"
+            android:textSize="14sp" />
+
+        <RadioButton
+            android:id="@+id/rb_material_type_tnb"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/step_setup_bg_color_selector"
+            android:button="@null"
+            android:gravity="center"
+            android:layout_marginTop="10dp"
+            android:paddingVertical="10dp"
+            android:text="铜木板"
+            android:textColor="@drawable/step_setup_text_color_selector"
+            android:textSize="14sp" />
+
+        <RadioButton
+            android:id="@+id/rb_material_type_zb"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/step_setup_bg_color_selector"
+            android:button="@null"
+            android:gravity="center"
+            android:layout_marginTop="10dp"
+            android:paddingVertical="10dp"
+            android:text="纸板"
+            android:textColor="@drawable/step_setup_text_color_selector"
+            android:textSize="14sp" />
+
+        <RadioButton
+            android:id="@+id/rb_material_type_zzfbz"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/step_setup_bg_color_selector"
+            android:button="@null"
+            android:gravity="center"
+            android:layout_marginTop="10dp"
+            android:paddingVertical="10dp"
+            android:text="纸张（非白纸）"
+            android:textColor="@drawable/step_setup_text_color_selector"
+            android:textSize="14sp" />
+
+        <RadioButton
+            android:id="@+id/rb_material_type_npz"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/step_setup_bg_color_selector"
+            android:button="@null"
+            android:gravity="center"
+            android:layout_marginTop="10dp"
+            android:paddingVertical="10dp"
+            android:text="牛皮纸"
+            android:textColor="@drawable/step_setup_text_color_selector"
+            android:textSize="14sp" />
+
+    </RadioGroup>
+
+
+
+
+
+
+</LinearLayout>

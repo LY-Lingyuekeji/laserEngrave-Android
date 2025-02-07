@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ll_device_item"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@drawable/bg_gray_e6e6e6_r10"
+    android:layout_marginEnd="15dp"
+    android:padding="10dp">
+
+
+    <ImageView
+        android:layout_width="210dp"
+        android:layout_height="85dp"
+        android:src="@mipmap/ic_laser_t4"/>
+
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tv_ssid"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="机器名称/Wi-Fi名称"
+            android:textSize="14sp"
+            android:textColor="@color/colorBlack"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/tv_ipaddress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:text="127.0.0.1"
+            android:textSize="14sp"
+            android:textColor="@color/colorBlack"
+            android:textStyle="bold"/>
+
+    </LinearLayout>
+
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="可连接"
+        android:textColor="@color/colorWhite"
+        android:textSize="12sp"
+        android:layout_marginTop="15dp"
+        android:paddingVertical="5dp"
+        android:paddingHorizontal="15dp"
+        android:background="@drawable/bg_green_1e853a_r10"/>
+
+</LinearLayout>

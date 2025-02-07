@@ -77,6 +77,40 @@
             tools:ignore="LockedOrientationActivity,NonResizeableActivity" />
 
         <activity
+            android:name=".activity.AddDeviceActivity"
+            android:resizeableActivity="false"
+            android:screenOrientation="portrait"
+            android:supportsPictureInPicture="false"
+            android:usesCleartextTraffic="true"
+            android:windowSoftInputMode="adjustNothing"
+            android:theme="@style/AppTheme.NoActionBar"
+            tools:targetApi="n"
+            tools:ignore="LockedOrientationActivity,NonResizeableActivity"/>
+
+        <activity
+            android:name=".activity.ApModelAddActivity"
+            android:resizeableActivity="false"
+            android:screenOrientation="portrait"
+            android:supportsPictureInPicture="false"
+            android:usesCleartextTraffic="true"
+            android:windowSoftInputMode="adjustNothing"
+            android:theme="@style/AppTheme.NoActionBar"
+            tools:targetApi="n"
+            tools:ignore="LockedOrientationActivity,NonResizeableActivity"/>
+
+        <activity
+            android:name=".activity.MaterialLibraryActivity"
+            android:resizeableActivity="false"
+            android:screenOrientation="portrait"
+            android:supportsPictureInPicture="false"
+            android:usesCleartextTraffic="true"
+            android:windowSoftInputMode="adjustNothing"
+            android:theme="@style/AppTheme.NoActionBar"
+            tools:targetApi="n"
+            tools:ignore="LockedOrientationActivity,NonResizeableActivity"/>
+
+
+        <activity
             android:name=".activity.ConnectActivity"
             android:resizeableActivity="false"
             android:screenOrientation="portrait"
@@ -292,15 +326,6 @@
             tools:targetApi="n"
             tools:ignore="LockedOrientationActivity,NonResizeableActivity"/>
 
-        <activity
-            android:name=".activity.AdvertiseActivity"
-            android:resizeableActivity="false"
-            android:screenOrientation="portrait"
-            android:supportsPictureInPicture="false"
-            android:theme="@style/AppTheme.NoActionBar"
-            tools:targetApi="n"
-            tools:ignore="LockedOrientationActivity,NonResizeableActivity"/>
-
 
         <activity
             android:name=".BluetoothConnectionActivity"
@@ -392,12 +417,12 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <receiver android:name=".recevier.WifiReceiver">
-            <intent-filter>
-                <action android:name="android.net.wifi.WIFI_STATE_CHANGED"/>
-                <action android:name="android.net.wifi.STATE_CHANGE"/>
-            </intent-filter>
-        </receiver>
+<!--        <receiver android:name=".recevier.WifiReceiver">-->
+<!--            <intent-filter>-->
+<!--                <action android:name="android.net.wifi.WIFI_STATE_CHANGED"/>-->
+<!--                <action android:name="android.net.wifi.STATE_CHANGE"/>-->
+<!--            </intent-filter>-->
+<!--        </receiver>-->
 
 
         <meta-data

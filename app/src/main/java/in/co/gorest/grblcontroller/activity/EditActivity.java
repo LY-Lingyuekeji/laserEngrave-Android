@@ -74,18 +74,18 @@ public class EditActivity extends AppCompatActivity {
     private ImageView ivSave;
     // tab_model
     private MyTabLayout tabModel;
-    // 对比度
-    private TextView tvContrast;
-    private MySeekBar seekBarContrast;
-    // 亮度
-    private TextView tvBrightness;
-    private MySeekBar seekBarBrightness;
-    // 锐化
-    private TextView tvSharpening;
-    private MySeekBar seekBarSharpening;
-    // 高光
-    private TextView tvHighlights;
-    private MySeekBar seekBarHighlights;
+//    // 对比度
+//    private TextView tvContrast;
+//    private MySeekBar seekBarContrast;
+//    // 亮度
+//    private TextView tvBrightness;
+//    private MySeekBar seekBarBrightness;
+//    // 锐化
+//    private TextView tvSharpening;
+//    private MySeekBar seekBarSharpening;
+//    // 高光
+//    private TextView tvHighlights;
+//    private MySeekBar seekBarHighlights;
     // seekBars类型
     private int seekBars;
     // 业务模式
@@ -109,13 +109,13 @@ public class EditActivity extends AppCompatActivity {
     // tab title
     private List<String> title = Arrays.asList("灰度图", "黑白图", "轮廓", "素描");
     // 对比度
-    private int contrast = 50;
+//    private int contrast = 50;
     // 亮度
-    private int brightness = 50;
+//    private int brightness = 50;
     // 锐化
     private int sharp = 127;
     // 高光
-    private int highlights = 50;
+//    private int highlights = 50;
     // tabPosition
     private int tabPosition = 1;
     // 分辨率
@@ -178,18 +178,18 @@ public class EditActivity extends AppCompatActivity {
         ivSave = findViewById(R.id.iv_save);
         // tab_model
         tabModel = findViewById(R.id.tab_model);
-        // 对比度
-        tvContrast = findViewById(R.id.tv_contrast);
-        seekBarContrast = findViewById(R.id.seekbar_contrast);
+//        // 对比度
+//        tvContrast = findViewById(R.id.tv_contrast);
+//        seekBarContrast = findViewById(R.id.seekbar_contrast);
         // 亮度
-        tvBrightness = findViewById(R.id.tv_brightness);
-        seekBarBrightness = findViewById(R.id.seekbar_brightness);
-        // 锐化
-        tvSharpening = findViewById(R.id.tv_sharpening);
-        seekBarSharpening = findViewById(R.id.seekbar_sharpening);
-        // 高光
-        tvHighlights = findViewById(R.id.tv_highlights);
-        seekBarHighlights = findViewById(R.id.seekbar_highlights);
+//        tvBrightness = findViewById(R.id.tv_brightness);
+//        seekBarBrightness = findViewById(R.id.seekbar_brightness);
+//        // 锐化
+//        tvSharpening = findViewById(R.id.tv_sharpening);
+//        seekBarSharpening = findViewById(R.id.seekbar_sharpening);
+//        // 高光
+//        tvHighlights = findViewById(R.id.tv_highlights);
+//        seekBarHighlights = findViewById(R.id.seekbar_highlights);
 
 
     }
@@ -397,63 +397,63 @@ public class EditActivity extends AppCompatActivity {
             }
         });
 
-        // 对比度
-        seekBarContrast.setProgressChanged(new MySeekBar.onProgressChanged() {
-            @Override
-            public void onProgress(int Progress) {
-                contrast = Progress;
-                tvContrast.setText(Progress + "%");
-                createEffectBitmap(tabPosition);
-            }
+//        // 对比度
+//        seekBarContrast.setProgressChanged(new MySeekBar.onProgressChanged() {
+//            @Override
+//            public void onProgress(int Progress) {
+//                contrast = Progress;
+//                tvContrast.setText(Progress + "%");
+//                createEffectBitmap(tabPosition);
+//            }
+//
+//            @Override
+//            public void onStop(int Progress) {
+//
+//            }
+//        });
 
-            @Override
-            public void onStop(int Progress) {
+//        // 亮度
+//        seekBarBrightness.setProgressChanged(new MySeekBar.onProgressChanged() {
+//            @Override
+//            public void onProgress(int Progress) {
+//                brightness = Progress;
+//                tvBrightness.setText(Progress + "%");
+//            }
+//
+//            @Override
+//            public void onStop(int Progress) {
+//
+//            }
+//        });
 
-            }
-        });
+//        // 锐化
+//        seekBarSharpening.setProgressChanged(new MySeekBar.onProgressChanged() {
+//            @Override
+//            public void onProgress(int Progress) {
+//                sharp = Progress;
+//                tvSharpening.setText(String.valueOf(Progress));
+//                createEffectBitmap(tabPosition);
+//            }
+//
+//            @Override
+//            public void onStop(int Progress) {
+//
+//            }
+//        });
 
-        // 亮度
-        seekBarBrightness.setProgressChanged(new MySeekBar.onProgressChanged() {
-            @Override
-            public void onProgress(int Progress) {
-                brightness = Progress;
-                tvBrightness.setText(Progress + "%");
-            }
-
-            @Override
-            public void onStop(int Progress) {
-
-            }
-        });
-
-        // 锐化
-        seekBarSharpening.setProgressChanged(new MySeekBar.onProgressChanged() {
-            @Override
-            public void onProgress(int Progress) {
-                sharp = Progress;
-                tvSharpening.setText(String.valueOf(Progress));
-                createEffectBitmap(tabPosition);
-            }
-
-            @Override
-            public void onStop(int Progress) {
-
-            }
-        });
-
-        // 高光
-        seekBarHighlights.setProgressChanged(new MySeekBar.onProgressChanged() {
-            @Override
-            public void onProgress(int Progress) {
-                highlights = Progress;
-                tvHighlights.setText(Progress + "%");
-            }
-
-            @Override
-            public void onStop(int Progress) {
-
-            }
-        });
+//        // 高光
+//        seekBarHighlights.setProgressChanged(new MySeekBar.onProgressChanged() {
+//            @Override
+//            public void onProgress(int Progress) {
+//                highlights = Progress;
+//                tvHighlights.setText(Progress + "%");
+//            }
+//
+//            @Override
+//            public void onStop(int Progress) {
+//
+//            }
+//        });
 
 
     }
@@ -489,29 +489,29 @@ public class EditActivity extends AppCompatActivity {
      * 初始化参数
      */
     private void initParameter() {
-        // 对比度
-        seekBarContrast.setProgressMin(1);
-        seekBarContrast.setProgressMax(100);
-        seekBarContrast.setProgressDefault(50);
-        tvContrast.setText(seekBarContrast.getProgressDefault() + "%");
-
-        // 亮度
-        seekBarBrightness.setProgressMin(1);
-        seekBarBrightness.setProgressMax(100);
-        seekBarBrightness.setProgressDefault(50);
-        tvBrightness.setText(seekBarBrightness.getProgressDefault() + "%");
-
-        // 锐化
-        seekBarSharpening.setProgressMin(1);
-        seekBarSharpening.setProgressMax(255);
-        seekBarSharpening.setProgressDefault(127);
-        tvSharpening.setText(String.valueOf(seekBarSharpening.getProgressDefault()));
-
-        // 高光
-        seekBarHighlights.setProgressMin(1);
-        seekBarHighlights.setProgressMax(100);
-        seekBarHighlights.setProgressDefault(50);
-        tvHighlights.setText(seekBarHighlights.getProgressDefault() + "%");
+//        // 对比度
+//        seekBarContrast.setProgressMin(1);
+//        seekBarContrast.setProgressMax(100);
+//        seekBarContrast.setProgressDefault(50);
+//        tvContrast.setText(seekBarContrast.getProgressDefault() + "%");
+//
+//        // 亮度
+//        seekBarBrightness.setProgressMin(1);
+//        seekBarBrightness.setProgressMax(100);
+//        seekBarBrightness.setProgressDefault(50);
+//        tvBrightness.setText(seekBarBrightness.getProgressDefault() + "%");
+//
+//        // 锐化
+//        seekBarSharpening.setProgressMin(1);
+//        seekBarSharpening.setProgressMax(255);
+//        seekBarSharpening.setProgressDefault(127);
+//        tvSharpening.setText(String.valueOf(seekBarSharpening.getProgressDefault()));
+//
+//        // 高光
+//        seekBarHighlights.setProgressMin(1);
+//        seekBarHighlights.setProgressMax(100);
+//        seekBarHighlights.setProgressDefault(50);
+//        tvHighlights.setText(seekBarHighlights.getProgressDefault() + "%");
     }
 
     /**

@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="320dp"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_white_ffffff_r10"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- 标题 -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="选择连接方式"
+        android:textSize="20sp"
+        android:textColor="@color/colorBlack"
+        android:textStyle="bold"
+        android:gravity="center" />
+
+    <!-- STA -->
+    <LinearLayout
+        android:id="@+id/ll_module_sta"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_blue_f3f8fe_r10"
+        android:layout_marginTop="25dp"
+        android:padding="10dp">
+
+        <!-- 图标 -->
+       <LinearLayout
+           android:layout_width="48dp"
+           android:layout_height="48dp"
+           android:gravity="center"
+           android:background="@drawable/bg_blue_258aff_r10"
+           android:padding="10dp">
+           
+           <ImageView
+               android:layout_width="24dp"
+               android:layout_height="24dp"
+               android:src="@drawable/icon_module_sta"/>
+
+       </LinearLayout>
+
+        <!-- 标题 & 描述 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:layout_marginStart="10dp">
+
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="WLAN连接 >"
+                android:textColor="@color/colorBlack"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:text="路由器发出的2.4GHz WiFi网络"
+                android:textColor="#8A8A8A"
+                android:textSize="14sp"
+                />
+
+
+
+        </LinearLayout>
+
+        
+    </LinearLayout>
+
+    <!-- AP -->
+    <LinearLayout
+        android:id="@+id/ll_module_ap"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="@drawable/bg_green_edfff3_r10"
+        android:layout_marginTop="16dp"
+        android:padding="10dp">
+
+        <!-- 图标 -->
+        <LinearLayout
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:gravity="center"
+            android:background="@drawable/bg_green_2fc45e_r10"
+            android:padding="10dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/icon_module_ap"/>
+
+        </LinearLayout>
+
+        <!-- 标题 & 描述 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:layout_marginStart="10dp">
+
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="AP连接 >"
+                android:textColor="@color/colorBlack"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:text="机器发出的热点"
+                android:textColor="#8A8A8A"
+                android:textSize="14sp"
+                />
+
+
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+
+    <ImageView
+        android:id="@+id/iv_cancel"
+        android:layout_width="match_parent"
+        android:layout_height="24dp"
+        android:layout_marginTop="20dp"
+        android:src="@drawable/icon_cancel"
+        android:layout_gravity="center"/>
+
+</LinearLayout>

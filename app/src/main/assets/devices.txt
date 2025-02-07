@@ -1,0 +1,22 @@
+{
+  "laser": [
+    {
+      "name": "Laser-T4",
+      "travel": "300x300(mm²)"
+    },
+    {
+      "name": "Laser-T2020",
+      "travel": "200x200(mm²)"
+    }
+  ],
+  "cnc": [
+    {
+      "name": "CNC-示例1",
+      "travel": "400x400(mm²)"
+    },
+    {
+      "name": "CNC-示例2",
+      "travel": "500x500(mm²)"
+    }
+  ]
+}

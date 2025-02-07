@@ -1,6 +1,7 @@
 package in.co.gorest.grblcontroller.fragment;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -20,13 +21,17 @@ import androidx.annotation.Nullable;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedList;
 
 import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.activity.PreViewActivity;
 import in.co.gorest.grblcontroller.events.ControltoPreViewMessageEvent;
+import in.co.gorest.grblcontroller.events.ServiceMessageEvent;
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 import in.co.gorest.grblcontroller.util.NettyClient;
 
@@ -46,6 +51,10 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
     private ImageView jog_y_positive;
     // jog_y_negative
     private ImageView jog_y_negative;
+    // jog_z_positive
+    private ImageView jog_z_positive;
+    // jog_z_negative
+    private ImageView jog_z_negative;
     // 步长
     private RadioGroup rgStep;
     // 步长 Double
@@ -74,12 +83,14 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
     private ImageView ivStepSetting;
     // 解除警告
     private LinearLayout llCleanAlarm;
-    // X轴清零
-    private LinearLayout llXZero;
-    // Y轴清零
-    private LinearLayout llYZero;
+    // 解除暂停
+    private LinearLayout llCleanHold;
+    // XY清零
+    private LinearLayout llXYZero;
     // Z轴清零
     private LinearLayout llZZero;
+    // 自动对焦
+    private LinearLayout llAutoFocus;
     // 设置起点
     private LinearLayout llSetOrigin;
     // 回起点
@@ -88,12 +99,13 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
     private LinearLayout llLaser;
     // 激光功率
     private int laserLevel;
-    // 巡边
-    private LinearLayout llLineJudge;
-    // 巡边激光功率
-    private int lineJudgeLaserLevel;
-    // 是否巡边标志类
-    private boolean isLineJudge = false;
+
+    // 队列最大值
+    private static final int MAX_HISTORY_SIZE = 5;
+    // wposZ值历史记录队列
+    private LinkedList<String> wposZHistory = new LinkedList<>();
+    // 当前的wposZ值
+    private String wposZ;
 
 
     public ControlBottomSheetFragment() {
@@ -106,16 +118,15 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // 注册EventBus
+        EventBus.getDefault().register(this);
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
+    public void onDestroy() {
+        super.onDestroy();
+        // 注销EventBus
+        EventBus.getDefault().unregister(this);
     }
 
     @Override
@@ -151,6 +162,10 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
         jog_y_positive = view.findViewById(R.id.jog_y_positive);
         // jog_y_negative
         jog_y_negative = view.findViewById(R.id.jog_y_negative);
+        // jog_z_positive
+        jog_z_positive = view.findViewById(R.id.jog_z_positive);
+        // jog_z_negative
+        jog_z_negative = view.findViewById(R.id.jog_z_negative);
         // 步长
         rgStep = view.findViewById(R.id.rg_step);
         // 步长（短）
@@ -175,20 +190,21 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
         ivStepSetting = view.findViewById(R.id.iv_step_setting);
         // 解除警告
         llCleanAlarm = view.findViewById(R.id.ll_clean_alarm);
-        // X轴清零
-        llXZero = view.findViewById(R.id.ll_x_zero);
-        // Y轴清零
-        llYZero = view.findViewById(R.id.ll_y_zero);
+        // 解除暂停
+        llCleanHold = view.findViewById(R.id.ll_clean_hold);
+        // XY清零
+        llXYZero = view.findViewById(R.id.ll_xy_zero);
         // Z轴清零
         llZZero = view.findViewById(R.id.ll_z_zero);
+        // 自动对焦
+        llAutoFocus = view.findViewById(R.id.ll_auto_focus);
         // 设置起点
         llSetOrigin = view.findViewById(R.id.ll_set_origin);
         // 回起点
         llGoToOrigin = view.findViewById(R.id.ll_go_to_origin);
         // 激光
         llLaser = view.findViewById(R.id.ll_laser);
-        // 巡边
-        llLineJudge = view.findViewById(R.id.ll_line_judge);
+
     }
 
     /**
@@ -255,7 +271,6 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
 
         // 激光功率
         laserLevel = sharedPref.getInt(getString(R.string.preference_laser_level), 10);
-        lineJudgeLaserLevel = sharedPref.getInt(getString(R.string.preference_laser_level_line_judge_setting), 1);
     }
 
     /**
@@ -301,6 +316,24 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
             @Override
             public void onClick(View v) {
                 String jog = String.format(jog_y_negative.getTag().toString(), "G21", stepValue, speedValue);
+                sendJogCommand(jog);
+            }
+        });
+
+        // jog_z_positive
+        jog_z_positive.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String jog = String.format(jog_z_positive.getTag().toString(), "G21", stepValue, speedValue);
+                sendJogCommand(jog);
+            }
+        });
+
+        // jog_z_negative
+        jog_z_negative.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String jog = String.format(jog_z_negative.getTag().toString(), "G21", stepValue, speedValue);
                 sendJogCommand(jog);
             }
         });
@@ -389,19 +422,20 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
             }
         });
 
-
-        // X轴清零
-        llXZero.setOnClickListener(new View.OnClickListener() {
+        // 解除暂停
+        llCleanHold.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendJogCommand("G92 X 0");
+                sendJogCommand("\u0018");
             }
         });
 
-        // Y轴清零
-        llYZero.setOnClickListener(new View.OnClickListener() {
+
+        // X轴清零
+        llXYZero.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                sendJogCommand("G92 X 0");
                 sendJogCommand("G92 Y 0");
             }
         });
@@ -457,41 +491,109 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
             }
         });
 
-        // 巡边
-        llLineJudge.setOnClickListener(new View.OnClickListener() {
+        // 自动对焦
+        llAutoFocus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isLineJudge == false) {
-                    lineJudgeLaserLevel = sharedPref.getInt(getString(R.string.preference_laser_level_line_judge_setting), 1);
-                    Log.d(TAG, "lineJudgeLaserLevel=" + lineJudgeLaserLevel);
-                    sendJogCommand("G0 X0 Y0");
-                    sendJogCommand("M3 S" + lineJudgeLaserLevel);
-                    sendJogCommand("F1000");
-                    sendJogCommand("G1 Y20");
-                    sendJogCommand("G1 X20");
-                    sendJogCommand("G1 Y0");
-                    sendJogCommand("G1 X0");
-                    sendJogCommand("M5");
-                    sendJogCommand("G0 X0 Y0");
-                    isLineJudge = true;
-                } else {
-                    sendJogCommand("\u0018");
-                    sendJogCommand("$X");
-                    sendJogCommand("G0 X0 Y0");
-                    isLineJudge = false;
-                }
+                // 显示对刀弹窗
+                showDialogKinfe();
+            }
+        });
+    }
+
+    /**
+     * 对刀弹窗
+     */
+    private void showDialogKinfe() {
+        Dialog dialog = new Dialog(requireContext(), R.style.CustomDialog);
+        dialog.setContentView(R.layout.dialog_knife);
+
+        // 设置窗口背景为透明，以显示圆角效果
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        // 设置可取消（点击空白处取消）
+        dialog.setCancelable(false);
+        dialog.setCanceledOnTouchOutside(false);  // 点击外部空白区域取消 Dialog
+
+        // 对焦
+        TextView tvDialogKnife = dialog.findViewById(R.id.tv_dialog_knife);
+        tvDialogKnife.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 禁用按钮，防止再次点击
+                tvDialogKnife.setEnabled(false);
+                // 修改按钮背景颜色为灰色
+                tvDialogKnife.setBackgroundResource(R.drawable.bg_gray_999999_r30);
+
+                // 对焦
+                sendJogCommand("[esp212]");
+
+                // 10秒后隐藏弹窗
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        // 检查wposZ的连续一致性
+                        if (checkWposZConsistency(wposZ)) {
+                            // 隐藏弹窗
+                            if (dialog.isShowing()) {
+                                dialog.dismiss();
+                            }
+                        } else {
+                            // 如果5次不一致，则继续等待
+                            new Handler().postDelayed(this, 500);  // 每秒检查2次
+                        }
+                    }
+                }, 1000);  // 10秒后执行
             }
         });
 
-        // 激光
-        llLineJudge.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                LaserSetupLineJudgeBottomSheetFragment laserSetupLineJudgeBottomSheetFragment = new LaserSetupLineJudgeBottomSheetFragment();
-                laserSetupLineJudgeBottomSheetFragment.show(getParentFragmentManager(), "");
-                return true;
+        // 显示 Dialog
+        dialog.show();
+    }
+
+    /**
+     * 检查wposZ是否连续5次相同
+     */
+    private boolean checkWposZConsistency(String newValue) {
+        // 保存最新的wposZ值
+        if (wposZHistory.size() == MAX_HISTORY_SIZE) {
+            wposZHistory.removeFirst(); // 保持队列大小为3
+        }
+        wposZHistory.add(newValue);
+
+        // 如果队列已经满了，检查所有值是否相同
+        if (wposZHistory.size() == MAX_HISTORY_SIZE) {
+            for (int i = 1; i < wposZHistory.size(); i++) {
+                if (!wposZHistory.get(i).equals(wposZHistory.get(0))) {
+                    return false; // 如果有任何一个不相同，则返回false
+                }
             }
-        });
+            return true; // 如果所有值都相同，返回true
+        }
+
+        return false; // 如果队列没有满5个值，返回false
+    }
+
+
+    /**
+     * ServiceMessageEvent
+     *
+     * @param event
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onServiceMessageEvent(ServiceMessageEvent event) {
+        if (!event.getMessage().isEmpty() && event.getMessage().startsWith("<")) {
+            Log.d(TAG, "message=" + event.getMessage().toString());
+            String[] parts = event.getMessage().substring(1, event.getMessage().toString().length() - 1).split("\\|");
+            Log.d(TAG, "status=" + parts[0] + " Mpos=" + parts[1] + " Wpos=" + parts[2] + " Fs=" + parts[3]);
+
+
+            String[] WposParts = parts[2].substring(5, parts[2].length()).split(",");
+            Log.d(TAG, "Wpos X=" + WposParts[0] + " Y=" + WposParts[1] + " Z=" + WposParts[2]);
+            wposZ = WposParts[2];
+        }
     }
 
 

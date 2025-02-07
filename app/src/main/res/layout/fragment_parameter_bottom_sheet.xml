@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_white_ffffff_topradius30"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <!-- 标题 -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="雕刻参数设置"
+        android:textSize="18sp"
+        android:textColor="@color/colorBlack"
+        android:textStyle="bold"
+        android:gravity="center"/>
+
+
+    <!-- 素材 -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view_material"
+            android:layout_toLeftOf="@id/iv_more_material"
+            android:layout_alignParentStart="true"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            />
+
+        <ImageView
+            android:id="@+id/iv_more_material"
+            android:layout_width="20dp"
+            android:layout_height="100dp"
+            android:src="@drawable/icon_more"
+            android:background="@drawable/bg_gray_e6e6e6_l0_r10"
+            android:layout_alignParentEnd="true"/>
+    </RelativeLayout>
+
+    <!-- 材料类型 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:layout_marginTop="25dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="3"
+            android:orientation="horizontal"
+            android:gravity="start">
+
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/icon_parameter_parameter"
+                android:layout_marginEnd="10dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="材料类型"
+                android:textSize="16sp"
+                android:textColor="@color/colorBlack"
+                />
+
+        </LinearLayout>
+
+
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="4"
+            android:gravity="end"
+            android:background="@drawable/bg_gray_e6e6e6_r10"
+            android:padding="10dp">
+
+            <TextView
+                android:id="@+id/tv_material_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="2"
+                android:hint="请选择材料"
+                android:textSize="14sp"
+                android:textColor="@color/colorBlack"
+                android:layout_gravity="center"/>
+
+
+
+
+        </LinearLayout>
+
+
+
+
+    </LinearLayout>
+
+    <!-- 激光功率 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:layout_marginTop="25dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="3"
+            android:orientation="horizontal"
+            android:gravity="start">
+
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/icon_parameter_level"
+                android:layout_marginEnd="10dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="激光功率"
+                android:textSize="16sp"
+                android:textColor="@color/colorBlack"
+                />
+
+        </LinearLayout>
+
+
+
+        <LinearLayout
+            android:id="@+id/ll_parameter_laser_level"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="4"
+            android:gravity="end"
+            android:background="@drawable/bg_gray_e6e6e6_r10"
+            android:padding="10dp">
+
+            <TextView
+                android:id="@+id/tv_parameter_laser_level"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="3"
+                android:text="请选择功率"
+                android:textSize="14sp"
+                android:layout_gravity="center"/>
+
+            <ImageView
+                android:layout_width="0dp"
+                android:layout_height="24dp"
+                android:layout_weight="1"
+                android:src="@drawable/ic_arrow_down"
+                android:layout_gravity="center"/>
+
+
+        </LinearLayout>
+
+
+
+
+    </LinearLayout>
+
+    <!-- 雕刻速度 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:layout_marginTop="25dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="3"
+            android:orientation="horizontal"
+            android:gravity="start">
+
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/icon_parameter_speed"
+                android:layout_marginEnd="10dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="雕刻速度"
+                android:textSize="16sp"
+                android:textColor="@color/colorBlack"
+                />
+
+        </LinearLayout>
+
+
+
+        <LinearLayout
+            android:id="@+id/ll_parameter_speed_level"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="4"
+            android:gravity="end"
+            android:background="@drawable/bg_gray_e6e6e6_r10"
+            android:padding="10dp">
+
+            <TextView
+                android:id="@+id/tv_parameter_speed_level"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="3"
+                android:text="请选择速度"
+                android:textSize="14sp"
+                android:layout_gravity="center"/>
+
+            <ImageView
+                android:layout_width="0dp"
+                android:layout_height="24dp"
+                android:layout_weight="1"
+                android:src="@drawable/ic_arrow_down"
+                android:layout_gravity="center"/>
+
+
+        </LinearLayout>
+
+
+
+
+    </LinearLayout>
+
+
+    <TextView
+        android:id="@+id/tv_confirm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="确定"
+        android:textColor="@color/colorWhite"
+        android:textSize="18sp"
+        android:background="@drawable/bg_green_1e853a_r30"
+        android:gravity="center"
+        android:padding="10dp"
+        android:layout_marginTop="25dp"/>
+
+
+</LinearLayout>

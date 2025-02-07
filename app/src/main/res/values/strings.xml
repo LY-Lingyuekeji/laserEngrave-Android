@@ -93,6 +93,16 @@
     <string name="preference_device_mac_address" translatable="false">preference_device_mac_address</string>
     <string name="preference_sta_host" translatable="false">preference_sta_host</string>
     <string name="preference_sta_ssid" translatable="false">preference_sta_ssid</string>
+    <string name="preference_parameter_laser_type" translatable="false">preference_parameter_laser_type</string>
+    <string name="preference_parameter_material_type" translatable="false">preference_parameter_material_type</string>
+    <string name="preference_speed_level" translatable="false">preference_speed_level</string>
+    <string name="preference_laser_level_level" translatable="false">preference_laser_level_level</string>
+    <string name="preference_laser_module" translatable="false">preference_laser_module</string>
+    <string name="preference_recommended_power" translatable="false">preference_recommended_power</string>
+    <string name="preference_recommended_speed" translatable="false">preference_recommended_speed</string>
+    <string name="preference_scandevice_guide_isshow" translatable="false">preference_scandevice_guide_isshow</string>
+    <string name="preference_connectdevice_guide_isshow" translatable="false">preference_connectdevice_guide_isshow</string>
+
 
 
     <string name="connect_type" translatable="false">connect_type</string>
@@ -450,6 +460,19 @@
     <string name="dummy_content">DUMMY\nCONTENT</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+
+    <string-array name="laser_modules">
+        <item>请选择</item>
+        <item>LdT-3W</item>
+        <item>LdT4-10W</item>
+        <item>LdT4-20W</item>
+    </string-array>
+
+
+
+
+
 
 
 </resources>

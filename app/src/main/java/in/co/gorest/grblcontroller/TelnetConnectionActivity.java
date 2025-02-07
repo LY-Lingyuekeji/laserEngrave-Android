@@ -261,7 +261,7 @@ public class TelnetConnectionActivity extends BaseActivity {
                     connectType = sharedPref.getString(getString(R.string.connect_type), "AP");
                     Log.d(TAG, "connectType=" + connectType);
                     new AlertDialog.Builder(this)
-                            .setTitle("提示")
+                            .setTitle("温馨提示")
                             .setMessage("测试阶段，请确保您已手动连接到WIFI\n名称：GRBL_ESP\n若未连接可能出现意外情况，请先手动连接")
                             .setPositiveButton("OK", (dialog, which) -> {
                                 handleWifiConnection();

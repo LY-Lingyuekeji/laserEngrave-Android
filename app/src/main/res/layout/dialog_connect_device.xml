@@ -30,7 +30,7 @@
         android:layout_width="150dp"
         android:layout_height="100dp"
         android:layout_marginTop="10dp"
-        android:src="@mipmap/ic_machine"
+        android:src="@mipmap/ic_laser_t4"
         android:layout_gravity="center"/>
 
     <TextView

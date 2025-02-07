@@ -179,7 +179,7 @@ public class FileSenderTabFragment extends BaseFragment implements View.OnClickL
             } else {
 
                 new AlertDialog.Builder(getActivity())
-                        .setTitle("提示")
+                        .setTitle("温馨提示")
                         .setMessage("终止雕刻，会立即停止所有运动，清空缓冲区，雕刻将无法恢复，是否继续执行")
                         .setPositiveButton(getString(R.string.text_continue_streaming), (dialog, which) -> {
                             // 终止雕刻

@@ -42,7 +42,7 @@
         android:layout_height="50dp"
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
-        android:src="@mipmap/ic_machine" />
+        android:src="@mipmap/ic_laser_t4" />
 
 
 </RelativeLayout>

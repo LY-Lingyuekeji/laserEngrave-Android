@@ -18,8 +18,8 @@ android {
     defaultConfig {
         applicationId "com.lingyue.laserengraving"
         minSdkVersion 26
-        versionCode 1104
-        versionName "1.1.04"
+        versionCode 1108
+        versionName "1.1.08"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
@@ -142,6 +142,11 @@ dependencies {
     implementation 'com.github.baoyachi:StepView:1.9'
     // AutoSize
     implementation 'com.github.JessYanCoding:AndroidAutoSize:v1.2.1'
+    // 添加 Gson 库的依赖
+    implementation 'com.google.code.gson:gson:2.8.8'
+    // 新手引导图
+    implementation 'com.github.xuexiangjys:XUI:1.2.1'
+//    implementation 'com.github.faruktoptas:FancyShowCaseView:1.4.0'
 
 }
 

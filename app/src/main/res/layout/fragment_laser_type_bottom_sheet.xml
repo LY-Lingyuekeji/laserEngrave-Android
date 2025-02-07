@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_white_ffffff_topradius30"
+    android:orientation="vertical"
+    android:paddingHorizontal="10dp"
+    android:paddingVertical="20dp">
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="激光型号"
+        android:textSize="14sp"
+        android:textColor="@color/colorBlack"
+        android:gravity="center"/>
+
+
+    <RadioGroup
+        android:id="@+id/rg_laser_type"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:orientation="vertical">
+
+        <RadioButton
+            android:id="@+id/rb_laser_type_dl5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/step_setup_bg_color_selector"
+            android:button="@null"
+            android:gravity="center"
+            android:paddingVertical="10dp"
+            android:text="DL-5W"
+            android:textColor="@drawable/step_setup_text_color_selector"
+            android:textSize="14sp" />
+
+        <RadioButton
+            android:id="@+id/rb_laser_type_dl10"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/step_setup_bg_color_selector"
+            android:button="@null"
+            android:gravity="center"
+            android:layout_marginTop="10dp"
+            android:paddingVertical="10dp"
+            android:text="DL-10W"
+            android:textColor="@drawable/step_setup_text_color_selector"
+            android:textSize="14sp" />
+
+        <RadioButton
+            android:id="@+id/rb_laser_type_dl20"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/step_setup_bg_color_selector"
+            android:button="@null"
+            android:gravity="center"
+            android:layout_marginTop="10dp"
+            android:paddingVertical="10dp"
+            android:text="DL-20W"
+            android:textColor="@drawable/step_setup_text_color_selector"
+            android:textSize="14sp" />
+
+    </RadioGroup>
+
+
+
+
+
+
+</LinearLayout>

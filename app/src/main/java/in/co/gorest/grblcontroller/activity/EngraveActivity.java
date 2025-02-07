@@ -250,12 +250,13 @@ public class EngraveActivity extends BaseActivity {
         tvStartOrPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String connectType = sharedPref.getString(getString(R.string.preference_connect_type), "Telnet");
+                String connectType = sharedPref.getString(getString(R.string.preference_connect_type), "AP");
+                Log.d(TAG, "connectType=" + connectType);
                 if (machineStatus.equals("") || machineStatus.isEmpty()) {
                     Toast.makeText(EngraveActivity.this, "未能获取机器状态，请重试", Toast.LENGTH_SHORT).show();
                 } else {
                     // Wi-Fi
-                    if (connectType.equals("Telnet")) {
+                    if (connectType.equals("AP")) {
                         // 机器状态为IDLE 认为机器是空闲状态
                         if (machineStatus.equals(Constants.MACHINE_STATUS_IDLE)) {
                             // 发送离线雕刻命令
@@ -264,7 +265,7 @@ public class EngraveActivity extends BaseActivity {
                             startTime = SystemClock.elapsedRealtime();
                             // 设置定时器，每1000毫秒（1秒）更新一次
                             elapsedTimeHandler.postDelayed(runnableElapsedTime, 1000);
-                        } else if (machineStatus.equals(Constants.MACHINE_STATUS_HOLD)) {  // 机器状态为HOLD 认为机器是暂停中
+                        } else if (machineStatus.contains(Constants.MACHINE_STATUS_HOLD)) {  // 机器状态为HOLD 认为机器是暂停中
                             sendJogCommand("~");
                         } else if (machineStatus.equals(Constants.MACHINE_STATUS_RUN)) { // 机器状态为RUN 认为机器是雕刻中
                             // 暂停雕刻
@@ -282,12 +283,12 @@ public class EngraveActivity extends BaseActivity {
         tvStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String connectType = sharedPref.getString(getString(R.string.preference_connect_type), "Telnet");
+                String connectType = sharedPref.getString(getString(R.string.preference_connect_type), "AP");
                 if (machineStatus.equals("") || machineStatus.isEmpty()) {
                     Toast.makeText(EngraveActivity.this, "未能获取机器状态，请重试", Toast.LENGTH_SHORT).show();
                 } else {
                     // Wi-Fi
-                    if (connectType.equals("Telnet")) {
+                    if (connectType.equals("AP")) {
                         // 终止雕刻
                         sendJogCommand("\u0018");
                         // 销毁时移除所有回调和消息
@@ -406,7 +407,7 @@ public class EngraveActivity extends BaseActivity {
         TextView content = dialogView.findViewById(R.id.dialog_content);
         // 创建弹窗
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-        alertDialogBuilder.setTitle("提示");
+        alertDialogBuilder.setTitle("温馨提示");
         alertDialogBuilder.setView(dialogView);
         alertDialogBuilder.setCancelable(false);
         dialogSycn = alertDialogBuilder.create();

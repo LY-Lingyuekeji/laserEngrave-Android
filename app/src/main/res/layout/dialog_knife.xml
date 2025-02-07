@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="320dp"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_white_ffffff_r10"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- 标题 -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="温馨提示"
+        android:textSize="20sp"
+        android:textColor="@color/colorBlack"
+        android:textStyle="bold"
+        android:gravity="center" />
+
+    <!-- 提示 -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="即将进行自动对焦\n请检查激光是否处于材料上方"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@color/colorPrimary"
+        android:gravity="center" />
+
+    <!-- 图示 -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp"
+        android:layout_marginTop="15dp"
+        android:background="@drawable/bg_gray_e6e6e6_r10">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:src="@mipmap/ic_knife_tips"
+            android:layout_centerInParent="true"/>
+
+    </RelativeLayout>
+
+
+    <TextView
+        android:id="@+id/tv_dialog_knife"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:paddingVertical="8dp"
+        android:background="@drawable/bg_green_1e853a_r30"
+        android:gravity="center"
+        android:text="已检查，开始对焦"
+        android:textColor="@color/colorWhite"
+        android:textSize="16sp" />
+
+
+
+</LinearLayout>

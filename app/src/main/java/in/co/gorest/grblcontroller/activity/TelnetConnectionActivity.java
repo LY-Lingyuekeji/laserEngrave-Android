@@ -3,6 +3,8 @@ package in.co.gorest.grblcontroller.activity;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
@@ -24,6 +26,8 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedList;
+
 import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.base.BaseActivity;
@@ -69,6 +73,10 @@ public class TelnetConnectionActivity extends BaseActivity {
     private ImageView jog_y_positive;
     // jog_y_negative
     private ImageView jog_y_negative;
+    // jog_z_positive
+    private ImageView jog_z_positive;
+    // jog_z_negative
+    private ImageView jog_z_negative;
     // 步长
     private RadioGroup rgStep;
     // 步长 Double
@@ -97,10 +105,10 @@ public class TelnetConnectionActivity extends BaseActivity {
     private ImageView ivStepSetting;
     // 解除警告
     private LinearLayout llCleanAlarm;
+    // 解除暂停
+    private LinearLayout llCleanHold;
     // X轴清零
-    private LinearLayout llXZero;
-    // Y轴清零
-    private LinearLayout llYZero;
+    private LinearLayout llXYZero;
     // Z轴清零
     private LinearLayout llZZero;
     // 设置起点
@@ -111,17 +119,18 @@ public class TelnetConnectionActivity extends BaseActivity {
     private LinearLayout llLaser;
     // 激光功率
     private int laserLevel;
-    // 巡边
-    private LinearLayout llLineJudge;
-    // 巡边激光功率
-    private int lineJudgeLaserLevel;
-    // 是否巡边标志类
-    private boolean isLineJudge = false;
+    // 自动对焦
+    private LinearLayout llAutoFocus;
     // 命令
     private LinearLayout llCommand;
 
+    // 队列最大值
+    private static final int MAX_HISTORY_SIZE = 5;
+    // wposZ值历史记录队列
+    private LinkedList<String> wposZHistory = new LinkedList<>();
+
     // 数据同步弹窗
-    private AlertDialog dialogSycn;
+    private Dialog dialogSycn;
 
 
     // 启用矢量图支持，确保在应用中可以正确显示矢量图形
@@ -196,6 +205,10 @@ public class TelnetConnectionActivity extends BaseActivity {
         jog_y_positive = findViewById(R.id.jog_y_positive);
         // jog_y_negative
         jog_y_negative = findViewById(R.id.jog_y_negative);
+        // jog_z_positive
+        jog_z_positive = findViewById(R.id.jog_z_positive);
+        // jog_y_negative
+        jog_z_negative = findViewById(R.id.jog_z_negative);
         // 步长
         rgStep = findViewById(R.id.rg_step);
         // 步长（短）
@@ -220,20 +233,20 @@ public class TelnetConnectionActivity extends BaseActivity {
         ivStepSetting = findViewById(R.id.iv_step_setting);
         // 解除警告
         llCleanAlarm = findViewById(R.id.ll_clean_alarm);
+        // 解除暂停
+        llCleanHold = findViewById(R.id.ll_clean_hold);
         // X轴清零
-        llXZero = findViewById(R.id.ll_x_zero);
-        // Y轴清零
-        llYZero = findViewById(R.id.ll_y_zero);
+        llXYZero = findViewById(R.id.ll_xy_zero);
         // Z轴清零
         llZZero = findViewById(R.id.ll_z_zero);
+        // Y轴清零
+        llAutoFocus = findViewById(R.id.ll_auto_focus);
         // 设置起点
         llSetOrigin = findViewById(R.id.ll_set_origin);
         // 回起点
         llGoToOrigin = findViewById(R.id.ll_go_to_origin);
         // 激光
         llLaser = findViewById(R.id.ll_laser);
-        // 巡边
-        llLineJudge = findViewById(R.id.ll_line_judge);
         // 命令
         llCommand = findViewById(R.id.ll_command);
     }
@@ -302,7 +315,6 @@ public class TelnetConnectionActivity extends BaseActivity {
 
         // 激光功率
         laserLevel = sharedPref.getInt(getString(R.string.preference_laser_level), 10);
-        lineJudgeLaserLevel = sharedPref.getInt(getString(R.string.preference_laser_level_line_judge_setting), 1);
     }
 
     /**
@@ -356,6 +368,24 @@ public class TelnetConnectionActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 String jog = String.format(jog_y_negative.getTag().toString(), "G21", stepValue, speedValue);
+                sendJogCommand(jog);
+            }
+        });
+
+        // jog_z_positive
+        jog_z_positive.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String jog = String.format(jog_z_positive.getTag().toString(), "G21", stepValue, speedValue);
+                sendJogCommand(jog);
+            }
+        });
+
+        // jog_z_negative
+        jog_z_negative.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String jog = String.format(jog_z_negative.getTag().toString(), "G21", stepValue, speedValue);
                 sendJogCommand(jog);
             }
         });
@@ -444,24 +474,24 @@ public class TelnetConnectionActivity extends BaseActivity {
             }
         });
 
-
-        // X轴清零
-        llXZero.setOnClickListener(new View.OnClickListener() {
+        // 解除暂停
+        llCleanHold.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendJogCommand("G92 X 0");
+                sendJogCommand("\u0018");
+            }
+        });
+
+
+        // XY清零
+        llXYZero.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendJogCommand("G92 X 0 Y 0");
             }
         });
 
         // Y轴清零
-        llYZero.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendJogCommand("G92 Y 0");
-            }
-        });
-
-        // Z轴清零
         llZZero.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -512,42 +542,14 @@ public class TelnetConnectionActivity extends BaseActivity {
             }
         });
 
-        // 巡边
-        llLineJudge.setOnClickListener(new View.OnClickListener() {
+        // 自动对焦
+        llAutoFocus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isLineJudge == false) {
-                    lineJudgeLaserLevel = sharedPref.getInt(getString(R.string.preference_laser_level_line_judge_setting), 1);
-                    Log.d(TAG, "lineJudgeLaserLevel=" + lineJudgeLaserLevel);
-                    sendJogCommand("G0 X0 Y0");
-                    sendJogCommand("M3 S" + lineJudgeLaserLevel);
-                    sendJogCommand("F1000");
-                    sendJogCommand("G1 Y20");
-                    sendJogCommand("G1 X20");
-                    sendJogCommand("G1 Y0");
-                    sendJogCommand("G1 X0");
-                    sendJogCommand("M5");
-                    sendJogCommand("G0 X0 Y0");
-                    isLineJudge = true;
-                } else {
-                    sendJogCommand("\u0018");
-                    sendJogCommand("$X");
-                    sendJogCommand("G0 X0 Y0");
-                    isLineJudge = false;
-                }
+                // 显示对刀弹窗
+                showDialogKinfe();
             }
         });
-
-        // 激光
-        llLineJudge.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                LaserSetupLineJudgeBottomSheetFragment laserSetupLineJudgeBottomSheetFragment = new LaserSetupLineJudgeBottomSheetFragment();
-                laserSetupLineJudgeBottomSheetFragment.show(getSupportFragmentManager(), "");
-                return true;
-            }
-        });
-
 
         // 命令
         llCommand.setOnClickListener(new View.OnClickListener() {
@@ -557,6 +559,81 @@ public class TelnetConnectionActivity extends BaseActivity {
                 commandBottomSheetFragment.show(getSupportFragmentManager(), "");
             }
         });
+    }
+
+    /**
+     * 对刀弹窗
+     */
+    private void showDialogKinfe() {
+        Dialog dialog = new Dialog(this, R.style.CustomDialog);
+        dialog.setContentView(R.layout.dialog_knife);
+
+        // 设置窗口背景为透明，以显示圆角效果
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        // 设置可取消（点击空白处取消）
+        dialog.setCancelable(false);
+        dialog.setCanceledOnTouchOutside(false);  // 点击外部空白区域取消 Dialog
+
+        // 对焦
+        TextView tvDialogKnife = dialog.findViewById(R.id.tv_dialog_knife);
+        tvDialogKnife.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 禁用按钮，防止再次点击
+                tvDialogKnife.setEnabled(false);
+                // 修改按钮背景颜色为灰色
+                tvDialogKnife.setBackgroundResource(R.drawable.bg_gray_999999_r30);
+
+                // 对焦
+                sendJogCommand("[esp212]");
+
+                // 10秒后隐藏弹窗
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        // 检查wposZ的连续一致性
+                        if (checkWposZConsistency(tvWposZ.getText().toString())) {
+                            // 隐藏弹窗
+                            if (dialog.isShowing()) {
+                                dialog.dismiss();
+                            }
+                        } else {
+                            // 如果5次不一致，则继续等待
+                            new Handler().postDelayed(this, 500);  // 每秒检查2次
+                        }
+                    }
+                }, 1000);  // 10秒后执行
+            }
+        });
+
+        // 显示 Dialog
+        dialog.show();
+    }
+
+    /**
+     * 检查wposZ是否连续5次相同
+     */
+    private boolean checkWposZConsistency(String newValue) {
+        // 保存最新的wposZ值
+        if (wposZHistory.size() == MAX_HISTORY_SIZE) {
+            wposZHistory.removeFirst(); // 保持队列大小为3
+        }
+        wposZHistory.add(newValue);
+
+        // 如果队列已经满了，检查所有值是否相同
+        if (wposZHistory.size() == MAX_HISTORY_SIZE) {
+            for (int i = 1; i < wposZHistory.size(); i++) {
+                if (!wposZHistory.get(i).equals(wposZHistory.get(0))) {
+                    return false; // 如果有任何一个不相同，则返回false
+                }
+            }
+            return true; // 如果所有值都相同，返回true
+        }
+
+        return false; // 如果队列没有满5个值，返回false
     }
 
     /**
@@ -577,23 +654,58 @@ public class TelnetConnectionActivity extends BaseActivity {
      * 同步数据
      */
     private void syncData() {
-        // 使用自定义布局创建 AlertDialog
-        LayoutInflater inflater = LayoutInflater.from(this);
-        View dialogView = inflater.inflate(R.layout.dialog_transform, null);
+        dialogSycn = new Dialog(this, R.style.CustomDialog);
+        dialogSycn.setContentView(R.layout.dialog_data_sync);
+
+        // 设置窗口背景为透明，以显示圆角效果
+        if (dialogSycn.getWindow() != null) {
+            dialogSycn.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        // 设置可取消（点击空白处取消）
+        dialogSycn.setCancelable(false);
+        dialogSycn.setCanceledOnTouchOutside(false);  // 点击外部空白区域取消 Dialog
+
         // content
-        TextView content = dialogView.findViewById(R.id.dialog_content);
-        // 创建弹窗
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
-        alertDialogBuilder.setTitle("提示");
-        alertDialogBuilder.setView(dialogView);
-        alertDialogBuilder.setCancelable(false);
-        dialogSycn = alertDialogBuilder.create();
-        // 设置内容
-        content.setText("数据同步中，请稍等~");
-        // 显示弹窗
-        runOnUiThread(() -> {
-            dialogSycn.show();
-        });
+        TextView content = dialogSycn.findViewById(R.id.dialog_content);
+
+        // 定义一个计数器，用来循环显示点数
+        final int[] dotCount = {0};  // 用数组包裹，方便在Runnable中修改
+        final String baseText = "数据同步中，请稍等";  // 基础文字
+
+        // 创建 Handler 和 Runnable 来更新显示的内容
+        Handler handler = new Handler();  // 使用主线程的 Looper
+
+        Runnable loadingRunnable = new Runnable() {
+            @Override
+            public void run() {
+                // 根据当前的点数决定显示的文本
+                StringBuilder loadingText = new StringBuilder(baseText);
+
+                // 增加点数
+                for (int i = 0; i < dotCount[0]; i++) {
+                    loadingText.append(".");
+                }
+
+                // 更新 TextView 显示
+                content.setText(loadingText.toString());
+
+                // 更新点数，最多到 3 个点后重置
+                dotCount[0]++;
+                if (dotCount[0] > 3) {
+                    dotCount[0] = 0;  // 重置点数
+                }
+
+                // 每 500 毫秒更新一次
+                handler.postDelayed(this, 500);
+            }
+        };
+
+        // 启动动画
+        handler.post(loadingRunnable);
+
+        // 显示 Dialog
+        dialogSycn.show();
 
     }
 
@@ -631,7 +743,9 @@ public class TelnetConnectionActivity extends BaseActivity {
     public void onServiceMessageEvent(ServiceMessageEvent event) {
         if (!event.getMessage().isEmpty() && event.getMessage().startsWith("<")) {
             // 隐藏弹窗
-            dialogSycn.dismiss();
+            if (dialogSycn != null && dialogSycn.isShowing()) {
+                dialogSycn.dismiss();
+            }
 
             Log.d(TAG, "message=" + event.getMessage().toString());
             String[] parts = event.getMessage().substring(1, event.getMessage().toString().length() - 1).split("\\|");

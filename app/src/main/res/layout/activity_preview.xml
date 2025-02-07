@@ -420,6 +420,7 @@
                             android:textSize="12sp" />
 
                         <LinearLayout
+                            android:id="@+id/ll_speedlevel"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_alignParentEnd="true"
@@ -433,16 +434,13 @@
                             android:paddingRight="10dp"
                             android:paddingBottom="5dp">
 
-                            <EditText
-                                android:id="@+id/et_speedlevel"
+                            <TextView
+                                android:id="@+id/tv_speedlevel"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center"
                                 android:layout_weight="1"
-                                android:background="@null"
                                 android:gravity="center"
-                                android:inputType="number"
-                                android:text="2500"
                                 android:textColor="@color/colorBlack"
                                 android:textSize="12sp" />
 
@@ -460,8 +458,8 @@
                                 android:layout_width="12dp"
                                 android:layout_height="12dp"
                                 android:layout_marginStart="10dp"
-                                android:src="@drawable/ic_arrow_down"
-                                android:visibility="gone" />
+                                android:layout_gravity="center_vertical"
+                                android:src="@drawable/ic_arrow_down" />
                         </LinearLayout>
                     </RelativeLayout>
 
@@ -473,7 +471,7 @@
                         android:orientation="horizontal">
 
                         <TextView
-                            android:id="@+id/tv_laserlevel"
+                            android:id="@+id/tv_level"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_alignParentStart="true"
@@ -483,12 +481,13 @@
                             android:textSize="12sp" />
 
                         <LinearLayout
+                            android:id="@+id/ll_laserlevel"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_alignParentEnd="true"
                             android:layout_centerVertical="true"
                             android:layout_marginStart="15dp"
-                            android:layout_toRightOf="@+id/tv_laserlevel"
+                            android:layout_toRightOf="@+id/tv_level"
                             android:background="@drawable/bg_gray_e6e6e6_r10"
                             android:orientation="horizontal"
                             android:paddingLeft="10dp"
@@ -496,16 +495,13 @@
                             android:paddingRight="10dp"
                             android:paddingBottom="5dp">
 
-                            <EditText
-                                android:id="@+id/et_laserlevel"
+                            <TextView
+                                android:id="@+id/tv_laserlevel"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_gravity="center"
                                 android:layout_weight="1"
-                                android:background="@null"
                                 android:gravity="center"
-                                android:inputType="number"
-                                android:text="50"
                                 android:textColor="@color/colorBlack"
                                 android:textSize="12sp" />
 
@@ -523,8 +519,9 @@
                                 android:layout_width="12dp"
                                 android:layout_height="12dp"
                                 android:layout_marginStart="10dp"
+                                android:layout_gravity="center_vertical"
                                 android:src="@drawable/ic_arrow_down"
-                                android:visibility="gone" />
+                                 />
                         </LinearLayout>
                     </RelativeLayout>
 
@@ -598,25 +595,25 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/ll_command"
+                    android:id="@+id/ll_parameter"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center"
                     android:orientation="vertical"
                     android:padding="5dp"
-                    android:visibility="gone">
+                    >
 
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:src="@drawable/ic_code" />
+                        android:src="@drawable/ic_parameter" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="5dp"
-                        android:text="命令"
+                        android:text="参数"
                         android:textColor="@color/colorBlack"
                         android:textSize="12sp" />
                 </LinearLayout>

@@ -203,13 +203,13 @@ public class ConsoleTabFragment extends BaseFragment {
             String connectType = sharedPref.getString(getString(R.string.connect_type), "AP");
             if ("BT".equals(connectType)) {
                 new AlertDialog.Builder(getActivity())
-                        .setTitle("提示")
+                        .setTitle("温馨提示")
                         .setMessage("当前已经是蓝牙模式")
                         .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                         .show();
             } else {
                 new AlertDialog.Builder(getActivity())
-                        .setTitle("提示")
+                        .setTitle("温馨提示")
                         .setMessage("点击OK后，模式即将切换为蓝牙模式，请在5秒后重启机器，避免错误发生，如有需要请重启APP")
                         .setPositiveButton("OK", (dialog, which) -> {
                             GcodeCommand gcodeCommandBTModel = new GcodeCommand("$Radio/Mode=BT");
@@ -228,13 +228,13 @@ public class ConsoleTabFragment extends BaseFragment {
             String connectType = sharedPref.getString(getString(R.string.connect_type), "AP");
             if ("AP".equals(connectType)) {
                 new AlertDialog.Builder(getActivity())
-                        .setTitle("提示")
+                        .setTitle("温馨提示")
                         .setMessage("当前已经是WIFI模式")
                         .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                         .show();
             } else {
                 new AlertDialog.Builder(getActivity())
-                        .setTitle("提示")
+                        .setTitle("温馨提示")
                         .setMessage("点击OK后，模式即将切换为AP模式，请在5秒后重启机器，避免错误发生，如有需要请重启APP")
                         .setPositiveButton("OK", (dialog, which) -> {
                             GcodeCommand gcodeCommandAPModel = new GcodeCommand("$Radio/Mode=AP");

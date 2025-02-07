@@ -1,6 +1,8 @@
 package in.co.gorest.grblcontroller.util;
 
 import android.graphics.Bitmap;
+import android.util.Log;
+
 import java.util.ArrayList;
 import java.util.Locale;
 
@@ -77,6 +79,11 @@ public class Image2Gcode {
 
         ArrayList<String> gcode = new ArrayList();
         String line;
+
+        Log.d("Image2Gcode", "X=" + String.format("%.1f", image.getHeight()* resol) + "Y=" +  String.format("%.1f", image.getHeight() * resol));
+        // 插入边框信息
+        line = ";Bounds:X0 Y0 to X" + String.format("%.1f", image.getHeight()* resol) + " Y" + String.format("%.1f", image.getHeight() * resol) + "\r\n";
+        gcode.add(line);
 
         // 使用绝对坐标
         line = "G90\r\n";
