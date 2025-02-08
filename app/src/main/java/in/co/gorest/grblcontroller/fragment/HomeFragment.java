@@ -142,8 +142,6 @@ public class HomeFragment extends Fragment {
     private boolean isShowConnectDeviceGuide;
 
 
-
-
     // 连接方式
     private String connectType = null;
 
@@ -272,8 +270,8 @@ public class HomeFragment extends Fragment {
         recyclerViewDevice.setAdapter(deviceAdapter);
 
         // 注册广播接收器，接收 Wi-Fi 扫描结果
-        IntentFilter filter = new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
-        requireActivity().registerReceiver(wifiScanReceiver, filter);
+//        IntentFilter filter = new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
+//        requireActivity().registerReceiver(wifiScanReceiver, filter);
 
         // 模式切换
         String operationModel = sharedPref.getString(getString(R.string.preference_operation_mode), "simple");
@@ -504,6 +502,10 @@ public class HomeFragment extends Fragment {
         // 检查必要的权限
         if (checkPermissions()) {
             // 权限已授权，执行 Wi-Fi 扫描
+            // 注册接收器
+            IntentFilter filter = new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION);
+            requireActivity().registerReceiver(wifiScanReceiver, filter);
+
             // 隐藏空白展示界面
             llEmptyContent.setVisibility(View.GONE);
             // 显示设备搜索界面
@@ -581,6 +583,7 @@ public class HomeFragment extends Fragment {
                 // 停止搜索动画
                 radarView.stop();
             } else {
+                Log.d(TAG, "触发了--------------");
                 // 隐藏空白展示界面
                 llEmptyContent.setVisibility(View.GONE);
                 // 隐藏设备搜索界面
@@ -786,9 +789,9 @@ public class HomeFragment extends Fragment {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onServiceMessageEvent(ServiceMessageEvent event) {
         if (!event.getMessage().isEmpty() && event.getMessage().startsWith("<")) {
-            Log.d(TAG, "message=" + event.getMessage().toString());
+//            Log.d(TAG, "message=" + event.getMessage().toString());
             String[] parts = event.getMessage().substring(1, event.getMessage().toString().length() - 1).split("\\|");
-            Log.d(TAG, "status=" + parts[0] + " Mpos=" + parts[1] + " Wpos=" + parts[2] + " Fs=" + parts[3]);
+//            Log.d(TAG, "status=" + parts[0] + " Mpos=" + parts[1] + " Wpos=" + parts[2] + " Fs=" + parts[3]);
             if (parts[0].equals(Constants.MACHINE_STATUS_IDLE)) {
                 tvMachineStatusTips.setBackgroundResource(R.drawable.bg_green_1e853a_r100);
                 tvMachineStatus.setText("已连接");

@@ -431,7 +431,7 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
         });
 
 
-        // X轴清零
+        // XY轴清零
         llXYZero.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

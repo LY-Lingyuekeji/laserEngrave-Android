@@ -1,10 +1,14 @@
 
 package in.co.gorest.grblcontroller.activity;
 
+import static in.co.gorest.grblcontroller.util.ImgUtil.REQUEST_CODE_CAMERA;
+
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -13,9 +17,12 @@ import android.view.View;
 import android.view.WindowInsetsController;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -172,7 +179,6 @@ public class BeginEngraveActivity extends AppCompatActivity implements EngraveLi
      * @return itemList
      */
     public List<EngraveListItem> loadListFromPrefs(String itemsJsonArray) {
-
         // 数据源
         List<EngraveListItem> itemList = new ArrayList<>();
         if (itemsJsonArray != null) {
@@ -209,7 +215,13 @@ public class BeginEngraveActivity extends AppCompatActivity implements EngraveLi
                 ImgUtil.openAlbum(this);
                 break;
             case "相机":
-                ImgUtil.openCamera(this);
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                    // 请求相机权限
+                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, REQUEST_CODE_CAMERA);
+                } else {
+                    // 已经有权限，直接打开相机
+                    ImgUtil.openCamera(this);
+                }
                 break;
             case "画图":
                 startActivity(new Intent(this, DrawBoardActivity.class));
@@ -249,6 +261,20 @@ public class BeginEngraveActivity extends AppCompatActivity implements EngraveLi
                 startActivity(intent);
             }
 
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CODE_CAMERA) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // 权限已授予，打开相机
+                ImgUtil.openCamera(this);
+            } else {
+                // 权限被拒绝，提示用户需要权限
+                Toast.makeText(BeginEngraveActivity.this, "相机权限被拒绝", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 }

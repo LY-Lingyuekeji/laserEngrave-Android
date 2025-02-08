@@ -197,6 +197,9 @@ public class PreViewActivity extends BaseActivity implements ParameterBottomShee
     // 当前的机器状态
     private String strMachineStatus;
 
+    // 是否正在对刀
+    private boolean isKinfe = false;
+
 
     // 启用矢量图支持，确保在应用中可以正确显示矢量图形
     static {
@@ -518,25 +521,17 @@ public class PreViewActivity extends BaseActivity implements ParameterBottomShee
         tvLineJudge.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isLineJudge == false) {
-                    lineJudgeLaserLevel = sharedPref.getInt(getString(R.string.preference_laser_level_line_judge_setting), 1);
-                    Log.d(TAG, "lineJudgeLaserLevel=" + lineJudgeLaserLevel);
-                    sendJogCommand("G0 X0 Y0");
-                    sendJogCommand("M3 S" + lineJudgeLaserLevel * 10);
-                    sendJogCommand("F3500");
-                    sendJogCommand("G1 Y" + etHeight.getText().toString());
-                    sendJogCommand("G1 X" + etWidth.getText().toString());
-                    sendJogCommand("G1 Y0");
-                    sendJogCommand("G1 X0");
-                    sendJogCommand("M5");
-                    sendJogCommand("G0 X0 Y0");
-                    isLineJudge = true;
-                } else {
-                    sendJogCommand("\u0018");
-                    sendJogCommand("$X");
-                    sendJogCommand("G0 X0 Y0");
-                    isLineJudge = false;
-                }
+                lineJudgeLaserLevel = sharedPref.getInt(getString(R.string.preference_laser_level_line_judge_setting), 1);
+                Log.d(TAG, "lineJudgeLaserLevel=" + lineJudgeLaserLevel);
+                sendJogCommand("G0 X0 Y0");
+                sendJogCommand("M3 S" + lineJudgeLaserLevel * 10);
+                sendJogCommand("F3500");
+                sendJogCommand("G1 Y" + etHeight.getText().toString());
+                sendJogCommand("G1 X" + etWidth.getText().toString());
+                sendJogCommand("G1 Y0");
+                sendJogCommand("G1 X0");
+                sendJogCommand("M5");
+                sendJogCommand("G0 X0 Y0");
             }
         });
 
@@ -980,9 +975,41 @@ public class PreViewActivity extends BaseActivity implements ParameterBottomShee
                 // 修改按钮背景颜色为灰色
                 tvDialogKnife.setBackgroundResource(R.drawable.bg_gray_999999_r30);
 
+                // 定义一个计数器，用来循环显示点数
+                final int[] dotCount = {0};  // 用数组包裹，方便在Runnable中修改
+                final String baseText = "对刀中，请耐心等待";  // 基础文字
+
+                // 创建 Handler 和 Runnable 来更新显示的内容
+                Handler handler = new Handler();  // 使用主线程的 Looper
+                Runnable loadingRunnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        // 根据当前的点数决定显示的文本
+                        StringBuilder loadingText = new StringBuilder(baseText);
+
+                        // 增加点数
+                        for (int i = 0; i < dotCount[0]; i++) {
+                            loadingText.append(".");
+                        }
+
+                        // 更新 TextView 显示
+                        tvDialogKnife.setText(loadingText.toString());
+
+                        // 更新点数，最多到 3 个点后重置
+                        dotCount[0]++;
+                        if (dotCount[0] > 3) {
+                            dotCount[0] = 0;  // 重置点数
+                        }
+
+                        // 每 500 毫秒更新一次
+                        handler.postDelayed(this, 500);
+                    }
+                };
+                // 启动动画
+                handler.post(loadingRunnable);
+
                 // 对焦
                 sendJogCommand("[esp212]");
-
                 // 10秒后隐藏弹窗
                 new Handler().postDelayed(new Runnable() {
                     @Override
@@ -1005,11 +1032,58 @@ public class PreViewActivity extends BaseActivity implements ParameterBottomShee
                         }
                     }
                 }, 1000);  // 10秒后执行
+
+
+                isKinfe = true;
+            }
+        });
+
+        // 取消
+        ImageView ivCancel = dialog.findViewById(R.id.iv_cancel);
+        ivCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isKinfe) {
+                   Toast.makeText(PreViewActivity.this, "正在对刀中，无法取消", Toast.LENGTH_SHORT).show();
+                } else {
+                    // 不对刀确认弹窗
+                    showNotKinfeConfirm(bitmapFilePath, filePath);
+                    // 隐藏弹窗
+                    if (dialog.isShowing()) {
+                        dialog.dismiss();
+                    }
+                }
             }
         });
 
         // 显示 Dialog
         dialog.show();
+    }
+
+    /**
+     * 不对刀确认弹窗
+     * @param bitmapFilePath
+     * @param filePath
+     */
+    private void showNotKinfeConfirm(String bitmapFilePath, String filePath) {
+        BaseDialog.showCustomDialog(this,
+                "温馨提示",
+                "不对刀存在一定的风险，可能导致雕刻达不到预期的效果，是否取消？",
+                "确定",
+                "取消",
+                v -> {
+                    // 跳转雕刻页面
+                    Intent intent = new Intent(PreViewActivity.this, EngraveActivity.class);
+                    intent.putExtra("imagePath", bitmapFilePath);
+                    intent.putExtra("filePath", filePath);
+                    startActivity(intent);
+                    finish();
+                },
+                v -> {
+                    // 对刀弹窗
+                   showDialogKinfe(bitmapFilePath, filePath);
+                }
+        );
     }
 
 

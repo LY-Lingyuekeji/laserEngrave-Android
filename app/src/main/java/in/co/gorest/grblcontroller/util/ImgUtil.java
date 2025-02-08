@@ -90,27 +90,89 @@ public class ImgUtil {
      * @param activity
      */
     public static void openCamera(Activity activity) {
-        // 创建File对象，用于存储拍照后的图片
-        File outputImage = new File(activity.getExternalCacheDir(), System.currentTimeMillis() +".png");
-        try {
-            if (outputImage.exists()) {
-                outputImage.delete();
+
+        if (Build.VERSION.SDK_INT >= 23) {//检查相机权限
+            ArrayList<String> permissions = new ArrayList<>();
+            if (activity.checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                permissions.add(Manifest.permission.CAMERA);
             }
-            outputImage.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        if (Build.VERSION.SDK_INT < 24) {
-            imageUri = Uri.fromFile(outputImage);
+
+            if (permissions.size() == 0) {//有权限,跳转
+                //打开相机-兼容7.0
+//                openCamera(activity);
+                // 创建File对象，用于存储拍照后的图片
+                File outputImage = new File(activity.getExternalCacheDir(), System.currentTimeMillis() +".png");
+                try {
+                    if (outputImage.exists()) {
+                        outputImage.delete();
+                    }
+                    outputImage.createNewFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if (Build.VERSION.SDK_INT < 24) {
+                    imageUri = Uri.fromFile(outputImage);
+                } else {
+                    //Android 7.0系统开始 使用本地真实的Uri路径不安全,使用FileProvider封装共享Uri
+                    //参数二:fileprovider绝对路径 com.dyb.testcamerademo：项目包名
+                    imageUri = FileProvider.getUriForFile(activity, "com.lingyue.laserengraving.fileprovider", outputImage);
+                }
+                // 启动相机程序
+                Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+                activity.startActivityForResult(intent, TAKE_PHOTO);
+            } else {
+                activity.requestPermissions(permissions.toArray(new String[permissions.size()]), REQUEST_CODE_CAMERA);
+            }
         } else {
-            //Android 7.0系统开始 使用本地真实的Uri路径不安全,使用FileProvider封装共享Uri
-            //参数二:fileprovider绝对路径 com.dyb.testcamerademo：项目包名
-            imageUri = FileProvider.getUriForFile(activity, "com.lingyue.laserengraving.fileprovider", outputImage);
+            //打开相机-兼容7.0
+//            openCamera(activity);
+
+            // 创建File对象，用于存储拍照后的图片
+            File outputImage = new File(activity.getExternalCacheDir(), System.currentTimeMillis() +".png");
+            try {
+                if (outputImage.exists()) {
+                    outputImage.delete();
+                }
+                outputImage.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            if (Build.VERSION.SDK_INT < 24) {
+                imageUri = Uri.fromFile(outputImage);
+            } else {
+                //Android 7.0系统开始 使用本地真实的Uri路径不安全,使用FileProvider封装共享Uri
+                //参数二:fileprovider绝对路径 com.dyb.testcamerademo：项目包名
+                imageUri = FileProvider.getUriForFile(activity, "com.lingyue.laserengraving.fileprovider", outputImage);
+            }
+            // 启动相机程序
+            Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+            activity.startActivityForResult(intent, TAKE_PHOTO);
         }
-        // 启动相机程序
-        Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-        activity.startActivityForResult(intent, TAKE_PHOTO);
+
+
+//        // 创建File对象，用于存储拍照后的图片
+//        File outputImage = new File(activity.getExternalCacheDir(), System.currentTimeMillis() +".png");
+//        try {
+//            if (outputImage.exists()) {
+//                outputImage.delete();
+//            }
+//            outputImage.createNewFile();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        if (Build.VERSION.SDK_INT < 24) {
+//            imageUri = Uri.fromFile(outputImage);
+//        } else {
+//            //Android 7.0系统开始 使用本地真实的Uri路径不安全,使用FileProvider封装共享Uri
+//            //参数二:fileprovider绝对路径 com.dyb.testcamerademo：项目包名
+//            imageUri = FileProvider.getUriForFile(activity, "com.lingyue.laserengraving.fileprovider", outputImage);
+//        }
+//        // 启动相机程序
+//        Intent intent = new Intent("android.media.action.IMAGE_CAPTURE");
+//        intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
+//        activity.startActivityForResult(intent, TAKE_PHOTO);
     }
 
     public static void openAlbum(Activity activity) {

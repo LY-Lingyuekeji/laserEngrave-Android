@@ -1,5 +1,7 @@
 package in.co.gorest.grblcontroller;
 
+import static in.co.gorest.grblcontroller.util.ImgUtil.REQUEST_CODE_CAMERA;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -46,6 +48,8 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import in.co.gorest.grblcontroller.activity.BeginEngraveActivity;
 import in.co.gorest.grblcontroller.activity.EditActivity;
 import in.co.gorest.grblcontroller.activity.EngraveActivity;
 import in.co.gorest.grblcontroller.adapters.ViewPagerAdapter;
