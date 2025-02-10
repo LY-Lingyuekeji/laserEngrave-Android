@@ -35,6 +35,8 @@ import org.greenrobot.eventbus.EventBus;
 import java.util.List;
 import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
+import in.co.gorest.grblcontroller.activity.ApModelAddActivity;
+import in.co.gorest.grblcontroller.base.BaseAlertDialog;
 import in.co.gorest.grblcontroller.events.DeviceConnectEvent;
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 import in.co.gorest.grblcontroller.model.WifiNetwork;
@@ -164,17 +166,37 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.DeviceView
                 Toast.makeText(context, "请选择激光型号", Toast.LENGTH_SHORT).show();
                 return;
             }
-            // 获取当前 Wi-Fi 网络的 SSID 和密码
-            String ssid = wifiNetwork.getSsid();
-            String password = "12345678"; //
-            // 连接到 Wi-Fi
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                connectToWifiForAndroidQ(context, ssid, password);
+            WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+            if (!wifiManager.isWifiEnabled()) {
+                // 创建自定义弹窗对象
+                BaseAlertDialog baseAlertDialog = new BaseAlertDialog(context);
+
+                // 显示弹窗并传入标题、内容以及确认按钮的点击事件
+                baseAlertDialog.show("温馨提示", "当前检测到Wi-Fi开关暂未打开，请手动打开Wi-Fi后重试", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // 点击确认按钮后执行的操作
+                        Log.d(TAG, "用户点击了确认按钮");
+                    }
+                });
             } else {
-                connectToWifi(context, ssid, password);
+
+                // 获取当前 Wi-Fi 网络的 SSID 和密码
+                String ssid = wifiNetwork.getSsid();
+                String password = "12345678"; //
+                // 连接到 Wi-Fi
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    connectToWifiForAndroidQ(context, ssid, password);
+                } else {
+                    connectToWifi(context, ssid, password);
+                }
+
+                dialog.dismiss();
             }
 
-            dialog.dismiss();
+
+
+
         });
         tvCancel.setOnClickListener(v -> dialog.dismiss());
 

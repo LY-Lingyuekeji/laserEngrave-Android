@@ -49,12 +49,27 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <ImageView
-                android:id="@+id/iv_preview"
-                android:layout_width="200dp"
+
+            <FrameLayout
+                android:layout_width="250dp"
                 android:layout_height="200dp"
-                android:layout_gravity="center"
-                android:src="@drawable/ic_launcher" />
+                android:layout_gravity="center">
+
+                <ImageView
+                    android:id="@+id/iv_preview"
+                    android:layout_width="200dp"
+                    android:layout_height="200dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_launcher" />
+
+                <View
+                    android:id="@+id/maskView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="#80000000" />
+
+            </FrameLayout>
+
 
             <LinearLayout
                 android:layout_width="match_parent"

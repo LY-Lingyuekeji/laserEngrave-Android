@@ -18,8 +18,8 @@ android {
     defaultConfig {
         applicationId "com.lingyue.laserengraving"
         minSdkVersion 26
-        versionCode 1109
-        versionName "1.1.09"
+        versionCode 1110
+        versionName "1.1.10"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }

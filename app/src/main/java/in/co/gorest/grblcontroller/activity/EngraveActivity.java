@@ -1,6 +1,7 @@
 
 package in.co.gorest.grblcontroller.activity;
 
+import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.pm.ActivityInfo;
@@ -15,6 +16,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowInsetsController;
+import android.view.animation.TranslateAnimation;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -58,6 +61,8 @@ public class EngraveActivity extends BaseActivity {
     private ImageView ivBack;
     // 预览图
     private ImageView ivPreview;
+    // 预览图遮罩层
+    private View maskView;
     // 文件名
     private TextView tvFilename;
     // 雕刻速度
@@ -87,16 +92,14 @@ public class EngraveActivity extends BaseActivity {
     private int totalLines;
     // 耗时
     private long elapsedTime;
-
-
     // 进度更新线程
     private Handler progressHandler = new Handler();
     // 是否更新标识
     private boolean isStreaming = false;
 
-
     // 数据同步弹窗
     private AlertDialog dialogSycn;
+
 
 
     // 启用矢量图支持，确保在应用中可以正确显示矢量图形
@@ -153,6 +156,8 @@ public class EngraveActivity extends BaseActivity {
         ivBack = findViewById(R.id.iv_back);
         // 预览图
         ivPreview = findViewById(R.id.iv_preview);
+        // 预览图遮罩层
+        maskView = findViewById(R.id.maskView);
         // 文件名
         tvFilename = findViewById(R.id.tv_filename);
         // 雕刻速度
@@ -171,6 +176,8 @@ public class EngraveActivity extends BaseActivity {
         tvStartOrPause = findViewById(R.id.tv_start_or_pause);
         // 终止雕刻
         tvStop = findViewById(R.id.tv_stop);
+
+
 
     }
 
@@ -216,6 +223,20 @@ public class EngraveActivity extends BaseActivity {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+
+        // 确保遮罩层完全覆盖图片
+        maskView.post(new Runnable() {
+            @Override
+            public void run() {
+                // 获取 ivPreview 的高度
+                int ivHeight = ivPreview.getHeight();
+                // 设置 maskView 高度
+                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) maskView.getLayoutParams();
+                params.height = ivHeight;
+                maskView.setLayoutParams(params);
+            }
+        });
     }
 
     /**
@@ -386,6 +407,9 @@ public class EngraveActivity extends BaseActivity {
      * @param progress 进度
      */
     private void updateProgressBar(int progress) {
+        // 调用方法更新遮罩层
+        updateMaskViewHeightWithAnimation(progress/100f);
+
         // 更新UI上的进度条
         progressBar.setProgress(progress);
         tvProgress.setText(progress + "%");
@@ -554,5 +578,39 @@ public class EngraveActivity extends BaseActivity {
             }
         }
     }
+
+
+    /**
+     * 根据雕刻进度消除遮罩层
+     * @param progress 雕刻进度
+     */
+    private void updateMaskViewHeightWithAnimation(float progress) {
+        // 获取 ImageView 的高度
+        int screenHeight = ivPreview.getHeight();
+
+        // 计算目标高度：根据进度从底部消除遮罩
+        int targetHeight = (int) (screenHeight * (1 - progress));
+
+        // 如果遮罩层已经在目标高度附近，避免重复执行动画
+        if (maskView.getLayoutParams().height == targetHeight) {
+            return;
+        }
+
+        // 动画过渡遮罩层高度
+        ValueAnimator animator = ValueAnimator.ofInt(maskView.getLayoutParams().height, targetHeight);
+        animator.setDuration(500); // 设置动画持续时间
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                // 计算动画中的当前高度
+                int animatedHeight = (int) valueAnimator.getAnimatedValue();
+                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) maskView.getLayoutParams();
+                params.height = animatedHeight;
+                maskView.setLayoutParams(params);
+            }
+        });
+        animator.start();
+    }
+
 
 }

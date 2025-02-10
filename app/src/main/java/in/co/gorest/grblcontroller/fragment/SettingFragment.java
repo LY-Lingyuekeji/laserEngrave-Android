@@ -25,6 +25,7 @@ import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.activity.AboutActivity;
 import in.co.gorest.grblcontroller.activity.AgreementActivity;
+import in.co.gorest.grblcontroller.activity.GCodeTestActivity;
 import in.co.gorest.grblcontroller.activity.GuideActivity;
 import in.co.gorest.grblcontroller.activity.LanguageActivity;
 import in.co.gorest.grblcontroller.activity.ModelActivity;
@@ -168,6 +169,7 @@ public class SettingFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(getActivity(), GuideActivity.class));
+//                startActivity(new Intent(getActivity(), GCodeTestActivity.class));
             }
         });
 

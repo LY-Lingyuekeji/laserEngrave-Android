@@ -259,6 +259,7 @@ public class HomeFragment extends Fragment {
     private void initData() {
         // 获取系统的 WifiManager 实例
         wifiManager = (WifiManager) requireContext().getSystemService(Context.WIFI_SERVICE);
+        Log.d(TAG, "wifi是否可用：" + wifiManager.isWifiEnabled());
         // 检查 Wi-Fi 是否已启用，如果没有启用，则启用 Wi-Fi
         if (!wifiManager.isWifiEnabled()) {
             wifiManager.setWifiEnabled(true);  // 启用 Wi-Fi
@@ -583,7 +584,6 @@ public class HomeFragment extends Fragment {
                 // 停止搜索动画
                 radarView.stop();
             } else {
-                Log.d(TAG, "触发了--------------");
                 // 隐藏空白展示界面
                 llEmptyContent.setVisibility(View.GONE);
                 // 隐藏设备搜索界面

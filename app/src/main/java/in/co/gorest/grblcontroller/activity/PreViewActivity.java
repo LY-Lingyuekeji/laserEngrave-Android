@@ -188,6 +188,7 @@ public class PreViewActivity extends BaseActivity implements ParameterBottomShee
     // locations
     private float locations;
 
+
     // 队列最大值
     private static final int MAX_HISTORY_SIZE = 5;
     // wposZ值历史记录队列
@@ -196,6 +197,8 @@ public class PreViewActivity extends BaseActivity implements ParameterBottomShee
     private String wposZ;
     // 当前的机器状态
     private String strMachineStatus;
+    // 用来跟踪连续匹配的次数
+    private int consecutiveMatches = 0;
 
     // 是否正在对刀
     private boolean isKinfe = false;
@@ -517,21 +520,12 @@ public class PreViewActivity extends BaseActivity implements ParameterBottomShee
             }
         });
 
-        // 描框
+        // 巡边
         tvLineJudge.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                lineJudgeLaserLevel = sharedPref.getInt(getString(R.string.preference_laser_level_line_judge_setting), 1);
-                Log.d(TAG, "lineJudgeLaserLevel=" + lineJudgeLaserLevel);
-                sendJogCommand("G0 X0 Y0");
-                sendJogCommand("M3 S" + lineJudgeLaserLevel * 10);
-                sendJogCommand("F3500");
-                sendJogCommand("G1 Y" + etHeight.getText().toString());
-                sendJogCommand("G1 X" + etWidth.getText().toString());
-                sendJogCommand("G1 Y0");
-                sendJogCommand("G1 X0");
-                sendJogCommand("M5");
-                sendJogCommand("G0 X0 Y0");
+                // 显示巡边弹窗
+                showDialogLineJugde();
             }
         });
 
@@ -631,6 +625,80 @@ public class PreViewActivity extends BaseActivity implements ParameterBottomShee
     }
 
     /**
+     * 显示巡边弹窗
+     */
+    private void showDialogLineJugde() {
+        Dialog dialog = new Dialog(this, R.style.CustomDialog);
+        dialog.setContentView(R.layout.dialog_linejugde);
+
+        // 设置窗口背景为透明，以显示圆角效果
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+
+        // 设置可取消（点击空白处取消）
+        dialog.setCancelable(false);
+        dialog.setCanceledOnTouchOutside(false);  // 点击外部空白区域取消 Dialog
+
+        // 巡边提示
+        TextView tvDialogLinejugdeTips = dialog.findViewById(R.id.tv_dialog_linejugde_tips);
+        // 定义一个计数器，用来循环显示点数（模拟巡边正在动态进行）
+        final int[] dotCount = {0};  // 用数组包裹，方便在Runnable中修改
+        final String baseText = "自动巡边中，请耐心等待";  // 基础文字
+        // 创建 Handler 和 Runnable 来更新显示的内容
+        Handler handler = new Handler();  // 使用主线程的 Looper
+        Runnable loadingRunnable = new Runnable() {
+            @Override
+            public void run() {
+                // 根据当前的点数决定显示的文本
+                StringBuilder loadingText = new StringBuilder(baseText);
+
+                // 增加点数
+                for (int i = 0; i < dotCount[0]; i++) {
+                    loadingText.append(".");
+                }
+
+                // 更新 TextView 显示
+                tvDialogLinejugdeTips.setText(loadingText.toString());
+
+                // 更新点数，最多到 3 个点后重置
+                dotCount[0]++;
+                if (dotCount[0] > 3) {
+                    dotCount[0] = 0;  // 重置点数
+                }
+
+                // 每 500 毫秒更新一次
+                handler.postDelayed(this, 500);
+            }
+        };
+        // 启动动画
+        handler.post(loadingRunnable);
+
+
+        // 记录X和Y坐标初始值
+        final String originalStutas = strMachineStatus;
+
+        // 开始巡边
+        lineJudgeLaserLevel = sharedPref.getInt(getString(R.string.preference_laser_level_line_judge_setting), 1);
+        Log.d(TAG, "lineJudgeLaserLevel=" + lineJudgeLaserLevel);
+        sendJogCommand("G0 X" + etXpos.getText().toString() + " Y" + etYpos.getText().toString());
+        sendJogCommand("M3 S" + lineJudgeLaserLevel * 10);
+        sendJogCommand("F3500");
+        sendJogCommand("G1 Y" + String.valueOf(Integer.valueOf(etHeight.getText().toString()) + Integer.valueOf(etYpos.getText().toString())));
+        sendJogCommand("G1 X" + String.valueOf(Integer.valueOf(etWidth.getText().toString()) + Integer.valueOf(etXpos.getText().toString())));
+        sendJogCommand("G1 Y" + etYpos.getText().toString());
+        sendJogCommand("G1 X" + etXpos.getText().toString());
+        sendJogCommand("M5");
+        sendJogCommand("G0 X" + etXpos.getText().toString() + " Y" + etYpos.getText().toString());
+
+        // 开始轮询检查坐标是否恢复
+        checkCoordinatesUntilOriginal(dialog,originalStutas);
+
+        // 显示 Dialog
+        dialog.show();
+    }
+
+    /**
      * 显示巡边或雕刻弹窗
      */
     private void showDialogLineJugdeOrEngrave() {
@@ -649,24 +717,18 @@ public class PreViewActivity extends BaseActivity implements ParameterBottomShee
 
         // 预览范围
         TextView tvDialogLineJugde = dialog.findViewById(R.id.tv_dialog_linejugde);
+        // 雕刻
+        TextView tvDialogEngrave = dialog.findViewById(R.id.tv_dialog_engrave);
+
+        // 预览范围
         tvDialogLineJugde.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                lineJudgeLaserLevel = sharedPref.getInt(getString(R.string.preference_laser_level_line_judge_setting), 1);
-                Log.d(TAG, "lineJudgeLaserLevel=" + lineJudgeLaserLevel);
-                sendJogCommand("G0 X0 Y0");
-                sendJogCommand("M3 S" + lineJudgeLaserLevel * 10);
-                sendJogCommand("F3500");
-                sendJogCommand("G1 Y" + etHeight.getText().toString());
-                sendJogCommand("G1 X" + etWidth.getText().toString());
-                sendJogCommand("G1 Y0");
-                sendJogCommand("G1 X0");
-                sendJogCommand("M5");
-                sendJogCommand("G0 X0 Y0");
+                // 显示巡边弹窗
+                showDialogLineJugde();
             }
         });
         // 雕刻
-        TextView tvDialogEngrave = dialog.findViewById(R.id.tv_dialog_engrave);
         tvDialogEngrave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -1010,7 +1072,7 @@ public class PreViewActivity extends BaseActivity implements ParameterBottomShee
 
                 // 对焦
                 sendJogCommand("[esp212]");
-                // 10秒后隐藏弹窗
+
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
@@ -1027,7 +1089,7 @@ public class PreViewActivity extends BaseActivity implements ParameterBottomShee
                             startActivity(intent);
                             finish();
                         } else {
-                            // 如果5次不一致，则继续等待
+                            // 如果3次不一致，则继续等待
                             new Handler().postDelayed(this, 500);  // 每秒检查2次
                         }
                     }
@@ -1044,7 +1106,7 @@ public class PreViewActivity extends BaseActivity implements ParameterBottomShee
             @Override
             public void onClick(View v) {
                 if (isKinfe) {
-                   Toast.makeText(PreViewActivity.this, "正在对刀中，无法取消", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(PreViewActivity.this, "正在对刀中，无法取消", Toast.LENGTH_SHORT).show();
                 } else {
                     // 不对刀确认弹窗
                     showNotKinfeConfirm(bitmapFilePath, filePath);
@@ -1081,9 +1143,42 @@ public class PreViewActivity extends BaseActivity implements ParameterBottomShee
                 },
                 v -> {
                     // 对刀弹窗
-                   showDialogKinfe(bitmapFilePath, filePath);
+                    showDialogKinfe(bitmapFilePath, filePath);
                 }
         );
+    }
+
+    /**
+     * 开始轮询检查巡边是否完成
+     * @param dialog 巡边弹窗
+     * @param originalStutas 机器状态
+     */
+    private void checkCoordinatesUntilOriginal(Dialog dialog, String originalStutas) {
+        // 创建一个 Handler 来进行轮询检查
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                // 检查当前坐标是否已恢复到原始坐标
+                if (strMachineStatus.equals(originalStutas)) {
+                    // 如果坐标匹配，增加连续匹配的次数
+                    consecutiveMatches++;
+
+                    // 如果连续三次匹配，关闭进度对话框
+                    if (consecutiveMatches >= 3) {
+                        dialog.dismiss();
+                        consecutiveMatches = 0;  // 重置匹配次数
+                    } else {
+                        // 如果匹配不够三次，继续检查
+                        checkCoordinatesUntilOriginal(dialog, originalStutas);
+                    }
+                } else {
+                    // 如果坐标不匹配，重置匹配次数
+                    consecutiveMatches = 0;
+                    // 继续检查
+                    checkCoordinatesUntilOriginal(dialog, originalStutas);
+                }
+            }
+        }, 500); // 每隔500毫秒检查一次坐标
     }
 
 
@@ -1150,6 +1245,7 @@ public class PreViewActivity extends BaseActivity implements ParameterBottomShee
             String[] parts = event.getMessage().substring(1, event.getMessage().toString().length() - 1).split("\\|");
             Log.d(TAG, "status=" + parts[0] + " Mpos=" + parts[1] + " Wpos=" + parts[2] + " Fs=" + parts[3]);
             strMachineStatus = parts[0];
+
             String[] WposParts = parts[2].substring(5, parts[2].length()).split(",");
             Log.d(TAG, "Wpos X=" + WposParts[0] + " Y=" + WposParts[1] + " Z=" + WposParts[2]);
             wposZ = WposParts[2];
