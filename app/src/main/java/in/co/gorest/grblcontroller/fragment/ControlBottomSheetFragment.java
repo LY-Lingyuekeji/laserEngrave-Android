@@ -14,6 +14,7 @@ import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -106,6 +107,9 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
     private LinkedList<String> wposZHistory = new LinkedList<>();
     // 当前的wposZ值
     private String wposZ;
+
+    // 是否正在对刀
+    private boolean isKinfe = false;
 
 
     public ControlBottomSheetFragment() {
@@ -546,6 +550,24 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
                         }
                     }
                 }, 1000);  // 10秒后执行
+
+                isKinfe = true;
+            }
+        });
+
+        // 取消
+        ImageView ivCancel = dialog.findViewById(R.id.iv_cancel);
+        ivCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (isKinfe) {
+                    Toast.makeText(requireActivity(), "正在对刀中，无法取消", Toast.LENGTH_SHORT).show();
+                } else {
+                    // 隐藏弹窗
+                    if (dialog.isShowing()) {
+                        dialog.dismiss();
+                    }
+                }
             }
         });
 

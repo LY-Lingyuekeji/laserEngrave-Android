@@ -7,7 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -18,11 +17,10 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import android.os.Handler;
 import android.os.Message;
+import android.text.TextUtils;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,18 +29,14 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import com.xuexiang.xui.widget.guidview.FocusShape;
 import com.xuexiang.xui.widget.guidview.GuideCaseView;
-
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-
 import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.activity.AddDeviceActivity;
@@ -52,6 +46,7 @@ import in.co.gorest.grblcontroller.activity.BluetoothConnectionActivity;
 import in.co.gorest.grblcontroller.activity.DrawBoardActivity;
 import in.co.gorest.grblcontroller.activity.EngraveActivity;
 import in.co.gorest.grblcontroller.activity.FileActivity;
+import in.co.gorest.grblcontroller.activity.MachineDetailActivity;
 import in.co.gorest.grblcontroller.activity.MaterialActivity;
 import in.co.gorest.grblcontroller.activity.QrCodeActivity;
 import in.co.gorest.grblcontroller.activity.TelnetConnectionActivity;
@@ -169,6 +164,19 @@ public class HomeFragment extends Fragment {
         EventBus.getDefault().unregister(this);
         // 注销广播接收器，避免内存泄漏
         requireContext().unregisterReceiver(wifiScanReceiver);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // 激光模组
+        String machineLaserModule = sharedPref.getString(getString(R.string.preference_laser_module), "LdT-3W");
+        // 设置激光模组
+        if (TextUtils.isEmpty(machineLaserModule)) {
+            tvLaserModule.setText("未知");
+        } else {
+            tvLaserModule.setText(machineLaserModule);
+        }
     }
 
     @Override
@@ -290,12 +298,29 @@ public class HomeFragment extends Fragment {
         if (!isShowScanDeviceGuide) {
             showScanDeviceGuide();
         }
+
+
+
     }
 
     /**
      * 初始化事件监听
      */
     private void setupListeners() {
+
+        // 机器名称
+        tvMachineName.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // TODO 跳转机器详情页面
+                Intent intent = new Intent(getActivity(), MachineDetailActivity.class);
+                intent.putExtra("machineName", tvMachineName.getText().toString());
+                startActivity(intent);
+            }
+        });
+
+
+
         // 机器状态
         llMachineStatus.setOnClickListener(new View.OnClickListener() {
             @Override

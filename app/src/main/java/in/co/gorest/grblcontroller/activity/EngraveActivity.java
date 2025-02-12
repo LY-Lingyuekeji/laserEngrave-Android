@@ -23,6 +23,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
 import com.bumptech.glide.Glide;
@@ -47,7 +48,7 @@ import in.co.gorest.grblcontroller.model.Constants;
 import in.co.gorest.grblcontroller.model.GcodeCommand;
 import in.co.gorest.grblcontroller.util.NettyClient;
 
-public class EngraveActivity extends BaseActivity {
+public class EngraveActivity extends AppCompatActivity {
 
     // 用于日志记录的标签
     private static final String TAG = EngraveActivity.class.getSimpleName();

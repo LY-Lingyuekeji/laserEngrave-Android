@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_white_ffffff_r10"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- 警告图标 -->
+    <ImageView
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@mipmap/ic_warning"
+        android:layout_gravity="center"/>
+
+    <!-- 标题 -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="危险"
+        android:textSize="20sp"
+        android:textColor="#f6250a"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginTop="10dp"/>
+
+    <!-- 提示 -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="16dp"
+        android:text="&quot;重置参数&quot;为高度敏感操作，仅供专业人员使用。使用后，您的设备参数可能会被重置，导致机器无法正常使用。请谨慎使用此功能！"
+        android:textSize="16sp"
+        android:textColor="@color/warningColor"
+        android:gravity="center" />
+
+    <!-- 风险提示确认 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/iv_risk_warning"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_checkbox_unselect"
+            android:layout_gravity="center_vertical" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="我已知晓可能存在的风险，并自愿承担可能导致的后果"
+            android:gravity="center_vertical"
+            android:textColor="@color/colorBlack"
+            android:layout_marginStart="5dp"
+            android:textSize="14sp"/>
+
+    </LinearLayout>
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="20dp">
+
+        <TextView
+            android:id="@+id/tv_dialog_risk_warning_cancel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:padding="10dp"
+            android:background="@drawable/bg_white_green_1e853a_r30"
+            android:gravity="center"
+            android:text="取消"
+            android:textColor="@color/colorGreen"
+            android:textSize="16sp" />
+
+
+        <TextView
+            android:id="@+id/tv_dialog_risk_warning_confirm"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="10dp"
+            android:padding="10dp"
+            android:background="@drawable/bg_gray_999999_r30"
+            android:gravity="center"
+            android:text="确定"
+            android:textColor="@color/colorWhite"
+            android:textSize="16sp" />
+
+    </LinearLayout>
+
+
+
+
+
+</LinearLayout>

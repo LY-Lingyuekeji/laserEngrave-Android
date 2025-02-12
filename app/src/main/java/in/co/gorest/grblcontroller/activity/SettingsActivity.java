@@ -16,17 +16,24 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
 import java.nio.charset.StandardCharsets;
+
+import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
-import in.co.gorest.grblcontroller.base.BaseActivity;
+
+import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 import in.co.gorest.grblcontroller.util.NettyClient;
 
-public class SettingsActivity extends BaseActivity {
+public class SettingsActivity extends AppCompatActivity {
 
     // 用于日志记录的标签
     private static final String TAG = SettingsActivity.class.getSimpleName();
+    // 用于管理和访问增强的共享偏好设置实例。
+    protected EnhancedSharedPreferences sharedPref;
     // 返回
     private ImageView ivBack;
     // 自动连接
@@ -63,6 +70,8 @@ public class SettingsActivity extends BaseActivity {
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
         }
 
+        // 初始化共享偏好设置实例
+        sharedPref = EnhancedSharedPreferences.getInstance(GrblController.getInstance(), getString(R.string.shared_preference_key));
 
         // 初始化界面
         initView();
@@ -196,5 +205,10 @@ public class SettingsActivity extends BaseActivity {
 
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
     }
 }

@@ -34,6 +34,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
 
@@ -62,6 +63,7 @@ import in.co.gorest.grblcontroller.events.ControltoPreViewMessageEvent;
 import in.co.gorest.grblcontroller.events.ServiceMessageEvent;
 import in.co.gorest.grblcontroller.fragment.ControlBottomSheetFragment;
 import in.co.gorest.grblcontroller.fragment.ParameterBottomSheetFragment;
+import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 import in.co.gorest.grblcontroller.model.Constants;
 import in.co.gorest.grblcontroller.model.EffectBean;
 import in.co.gorest.grblcontroller.model.GcodesBean;
@@ -91,9 +93,11 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.Call;
 
-public class PreViewActivity extends BaseActivity implements ParameterBottomSheetFragment.OnLaserParametersSelectedListener {
+public class PreViewActivity extends AppCompatActivity implements ParameterBottomSheetFragment.OnLaserParametersSelectedListener {
     // 用于日志记录的标签
     private final static String TAG = PreViewActivity.class.getSimpleName();
+    // 用于管理和访问增强的共享偏好设置实例。
+    protected EnhancedSharedPreferences sharedPref;
     // 页面跳转Code
     private final static int ACTIVITY_CODE_FINISH = 5000;
     private final static int ACTIVITY_CODE_DATA = 5001;
@@ -225,6 +229,9 @@ public class PreViewActivity extends BaseActivity implements ParameterBottomShee
         } else {
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
         }
+
+        // 初始化共享偏好设置实例
+        sharedPref = EnhancedSharedPreferences.getInstance(GrblController.getInstance(), getString(R.string.shared_preference_key));
 
         // 注册EventBus
         EventBus.getDefault().register(this);

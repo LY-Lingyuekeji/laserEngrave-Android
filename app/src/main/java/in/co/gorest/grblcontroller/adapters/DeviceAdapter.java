@@ -147,7 +147,7 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.DeviceView
                 } else {
                     tvLaserModule.setText(selectedLaserModule);
                 }
-                // 保持激光模组
+                // 保存激光模组
                 sharedPref.edit().putString(context.getString(R.string.preference_laser_module), selectedLaserModule).apply();
             }
 

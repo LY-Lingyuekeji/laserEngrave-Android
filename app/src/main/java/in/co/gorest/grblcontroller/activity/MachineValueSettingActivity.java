@@ -10,20 +10,27 @@ import android.view.WindowInsetsController;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
+import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.base.BaseActivity;
 import in.co.gorest.grblcontroller.events.MachineVauleUpdateMessageEvent;
 import in.co.gorest.grblcontroller.fragment.LaserSetupLineJudgeBottomSheetFragment;
+import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 
-public class MachineValueSettingActivity extends BaseActivity {
+public class MachineValueSettingActivity extends AppCompatActivity {
 
     // 用于日志记录的标签
     private static final String TAG = MachineValueSettingActivity.class.getSimpleName();
+    // 用于管理和访问增强的共享偏好设置实例
+    private EnhancedSharedPreferences sharedPref;
     // 返回
     private ImageView ivBack;
     // 激光功率设置
@@ -54,6 +61,8 @@ public class MachineValueSettingActivity extends BaseActivity {
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
         }
 
+        // 初始化共享偏好设置实例
+        sharedPref = EnhancedSharedPreferences.getInstance(GrblController.getInstance(), getString(R.string.shared_preference_key));
 
         // 初始化界面
         initView();

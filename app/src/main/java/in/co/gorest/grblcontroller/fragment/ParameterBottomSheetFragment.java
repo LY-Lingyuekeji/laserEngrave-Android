@@ -20,38 +20,18 @@ import android.widget.ViewSwitcher;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import in.co.gorest.grblcontroller.R;
-import in.co.gorest.grblcontroller.activity.BeginEngraveActivity;
 import in.co.gorest.grblcontroller.activity.MaterialLibraryActivity;
-import in.co.gorest.grblcontroller.adapters.CommandHistoryAdapter;
 import in.co.gorest.grblcontroller.adapters.LaserMaterialAdapter;
-import in.co.gorest.grblcontroller.base.BaseDialog;
-import in.co.gorest.grblcontroller.databinding.FragmentCommandBottomSheetBinding;
-import in.co.gorest.grblcontroller.events.FragmentCommandEvent;
-import in.co.gorest.grblcontroller.events.LaserTypeUpdateMessageEvent;
-import in.co.gorest.grblcontroller.events.MaterialTypeUpdateMessageEvent;
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
-import in.co.gorest.grblcontroller.listeners.ConsoleLoggerListener;
-import in.co.gorest.grblcontroller.listeners.EndlessRecyclerViewScrollListener;
-import in.co.gorest.grblcontroller.listeners.MachineStatusListener;
-import in.co.gorest.grblcontroller.model.CommandHistory;
-import in.co.gorest.grblcontroller.model.GcodeCommand;
 import in.co.gorest.grblcontroller.model.LaserParameter;
 import in.co.gorest.grblcontroller.model.Material;
-import in.co.gorest.grblcontroller.util.GrblUtils;
 
 public class ParameterBottomSheetFragment extends BottomSheetDialogFragment implements LaserMaterialAdapter.OnItemSelectedListener{
 

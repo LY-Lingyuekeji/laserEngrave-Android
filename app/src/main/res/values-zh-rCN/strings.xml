@@ -384,7 +384,7 @@
     <string name="test_set_cordinate_system_description">changes %s axis location in the current coordinate system to the given value</string>
     <string name="text_delete_command_history_confirm">Do you want to delete this command from history?</string>
     <string name="text_single_step_mode">Enable single step mode</string>
-    <string name="text_single_step_mode_description">sends a line of gcode to grbl and waits for an OK or error: response message before sending the next line of gcode</string>
+    <string name="text_single_step_mode_description">sends a line of gcode to grbl and waits for an OK or error: response messageModel before sending the next line of gcode</string>
     <string name="text_warning_error_20">WARNING: You should not enable this unless you know what you are doing.</string>
     <string name="preference_cam_feed_rate">1000</string>
     <string name="preference_cam_z_traversal">6</string>

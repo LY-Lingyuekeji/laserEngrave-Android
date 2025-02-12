@@ -88,6 +88,17 @@
             tools:ignore="LockedOrientationActivity,NonResizeableActivity"/>
 
         <activity
+            android:name=".activity.MachineDetailActivity"
+            android:resizeableActivity="false"
+            android:screenOrientation="portrait"
+            android:supportsPictureInPicture="false"
+            android:usesCleartextTraffic="true"
+            android:windowSoftInputMode="adjustNothing"
+            android:theme="@style/AppTheme.NoActionBar"
+            tools:targetApi="n"
+            tools:ignore="LockedOrientationActivity,NonResizeableActivity"/>
+
+        <activity
             android:name=".activity.GCodeTestActivity"
             android:resizeableActivity="false"
             android:screenOrientation="portrait"

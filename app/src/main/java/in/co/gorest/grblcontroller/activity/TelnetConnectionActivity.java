@@ -42,7 +42,6 @@ import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 import in.co.gorest.grblcontroller.util.NettyClient;
 
 public class TelnetConnectionActivity extends BaseActivity {
-
     // 用于日志记录的标签
     private static final String TAG = TelnetConnectionActivity.class.getSimpleName();
     // 用于管理和访问增强的共享偏好设置实例

@@ -1,78 +1,64 @@
 package in.co.gorest.grblcontroller.fragment;
 
-import android.app.AlertDialog;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.ViewSwitcher;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 import in.co.gorest.grblcontroller.R;
-import in.co.gorest.grblcontroller.adapters.CommandHistoryAdapter;
-import in.co.gorest.grblcontroller.base.BaseDialog;
-import in.co.gorest.grblcontroller.databinding.FragmentCommandBottomSheetBinding;
-import in.co.gorest.grblcontroller.events.FragmentCommandEvent;
-import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
-import in.co.gorest.grblcontroller.listeners.ConsoleLoggerListener;
-import in.co.gorest.grblcontroller.listeners.EndlessRecyclerViewScrollListener;
-import in.co.gorest.grblcontroller.listeners.MachineStatusListener;
-import in.co.gorest.grblcontroller.model.CommandHistory;
-import in.co.gorest.grblcontroller.model.GcodeCommand;
-import in.co.gorest.grblcontroller.ui.BaseFragment;
-import in.co.gorest.grblcontroller.util.DataCleanManager;
-import in.co.gorest.grblcontroller.util.GrblUtils;
+import in.co.gorest.grblcontroller.activity.TelnetConnectionActivity;
+import in.co.gorest.grblcontroller.adapters.MessageAdapter;
+import in.co.gorest.grblcontroller.events.ServiceMessageEvent;
+import in.co.gorest.grblcontroller.model.MessageModel;
+import in.co.gorest.grblcontroller.util.NettyClient;
 
 public class CommandBottomSheetFragment extends BottomSheetDialogFragment {
-
-    // 用于管理和访问增强的共享偏好设置实例
-    private EnhancedSharedPreferences sharedPref;
-    // 用于监听和管理机器状态的监听器
-    private MachineStatusListener machineStatus;
-    // 用于记录控制台日志的监听器
-    private ConsoleLoggerListener consoleLogger;
-    // ViewSwitcher
-    private ViewSwitcher viewSwitcher;
-    // consoleLogView
-    private TextView consoleLogView;
-    // 开关 verboseOutputSwitch
-    private Switch verboseOutputSwitch;
-    // G-code输入框
-    private EditText etCommandInput;
+    // 用于日志记录的标签
+    private static final String TAG = CommandBottomSheetFragment.class.getSimpleName();
+    // 输出详细命令 switch
+    private Switch switchMessageDetail;
+    // 消息列表
+    private RecyclerView recyclerViewMessage;
+    // 消息适配器
+    private MessageAdapter messageAdapter;
+    // 存储消息的列表
+    private List<MessageModel> messageModelList = new ArrayList<>();
+    // 消息输入框
+    private EditText etMessage;
     // 发送
-    private RelativeLayout rlSendCommand;
-    // 历史记录
-    private RelativeLayout rlConsoleHistory;
-    // $$配置
+    private TextView tvSendMessage;
+    // $$（配置） 快捷命令
     private TextView tvCommandConfig;
-    // $#参数
+    // $#（参数） 快捷命令
     private TextView tvCommandParam;
-    // $G状态
+    // $G（状态） 快捷命令
     private TextView tvCommandState;
-    // $I版本
+    // $I（版本） 快捷命令
     private TextView tvCommandVersion;
-    // RecyclerView
-    private RecyclerView recyclerView;
-    // 历史数据源
-    private List<CommandHistory> dataSet;
-    // 历史数据 Adapter
-    private CommandHistoryAdapter commandHistoryAdapter;
 
     public CommandBottomSheetFragment() {
     }
@@ -82,42 +68,42 @@ public class CommandBottomSheetFragment extends BottomSheetDialogFragment {
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        sharedPref = EnhancedSharedPreferences.getInstance(getActivity(), getString(R.string.shared_preference_key));
-        consoleLogger = ConsoleLoggerListener.getInstance();
-        machineStatus = MachineStatusListener.getInstance();
+        // 注册EventBus
+        EventBus.getDefault().register(this);
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
+    public void onDestroy() {
+        super.onDestroy();
+        // 注销EventBus
+        EventBus.getDefault().unregister(this);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        FragmentCommandBottomSheetBinding binding = DataBindingUtil.inflate(inflater, R.layout.fragment_command_bottom_sheet, container, false);
-        View view = binding.getRoot();
-        binding.setConsole(consoleLogger);
-        binding.setMachineStatus(machineStatus);
-        return view;
+        return inflater.inflate(R.layout.fragment_command_bottom_sheet, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         // 初始化界面
         initView(view);
         // 初始化数据
         initData();
         // 初始化事件监听
         setupListeners();
+
+
+        // 获取 BottomSheetBehavior
+        BottomSheetBehavior<View> bottomSheetBehavior = BottomSheetBehavior.from((View) view.getParent());
+        // 设置 BottomSheet 不随下滑自动关闭
+        bottomSheetBehavior.setHideable(false);  // 禁用下滑自动关闭
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED); // 确保弹窗是展开状态
     }
 
     /**
@@ -126,207 +112,155 @@ public class CommandBottomSheetFragment extends BottomSheetDialogFragment {
      * @param view view
      */
     private void initView(View view) {
-        // ViewSwitcher
-        viewSwitcher = view.findViewById(R.id.view_switcher);
-        // consoleLogView
-        consoleLogView = view.findViewById(R.id.tv_logger);
-        // 开关 verboseOutputSwitch
-        verboseOutputSwitch = view.findViewById(R.id.verbose_output_switch);
-        // G-code输入框
-        etCommandInput = view.findViewById(R.id.et_command_input);
+        // 输出详细命令 switch
+        switchMessageDetail = view.findViewById(R.id.switch_message_detail);
+        // 消息列表
+        recyclerViewMessage = view.findViewById(R.id.recycler_view_message);
+        // 消息输入框
+        etMessage = view.findViewById(R.id.et_message);
         // 发送
-        rlSendCommand = view.findViewById(R.id.rl_send_command);
-        // 历史记录
-        rlConsoleHistory = view.findViewById(R.id.rl_console_history);
-        // $$配置
+        tvSendMessage = view.findViewById(R.id.tv_send_message);
+        // $$（配置） 快捷命令
         tvCommandConfig = view.findViewById(R.id.tv_command_config);
-        // $#参数
+        // $#（参数） 快捷命令
         tvCommandParam = view.findViewById(R.id.tv_command_param);
-        // $G状态
+        // $G（状态） 快捷命令
         tvCommandState = view.findViewById(R.id.tv_command_state);
-        // $I版本
+        // $I（版本） 快捷命令
         tvCommandVersion = view.findViewById(R.id.tv_command_version);
-        // RecyclerView
-        recyclerView = view.findViewById(R.id.recycler_view);
     }
 
     /**
      * 初始化数据
      */
     private void initData() {
-        // 开关 verboseOutputSwitch
-        verboseOutputSwitch.setChecked(sharedPref.getBoolean(getString(R.string.preference_console_verbose_mode), false));
-        // 历史数据
-        dataSet = CommandHistory.getHistory("0", "15");
-        commandHistoryAdapter = new CommandHistoryAdapter(dataSet);
-        commandHistoryAdapter.setItemClickListener(onItemClickListener);
-        commandHistoryAdapter.setItemLongClickListener(onItemLongClickListener);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setAdapter(commandHistoryAdapter);
+        // 创建适配器
+        messageAdapter = new MessageAdapter(messageModelList);
+        // 设置布局管理器
+        recyclerViewMessage.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+        // 设置适配器
+        recyclerViewMessage.setAdapter(messageAdapter);
     }
 
     /**
      * 初始化事件监听
      */
     private void setupListeners() {
-        //  开关 verboseOutputSwitch
-        verboseOutputSwitch.setOnCheckedChangeListener((compoundButton, b) -> {
-            MachineStatusListener.getInstance().setVerboseOutput(b);
-            sharedPref.edit().putBoolean(getString(R.string.preference_console_verbose_mode), b).apply();
-        });
-
-        // consoleLogView
-        consoleLogView.setOnTouchListener((v, event) -> {
-            v.getParent().getParent().getParent().getParent().requestDisallowInterceptTouchEvent(true);
-            if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_UP) {
-                v.getParent().getParent().getParent().getParent().requestDisallowInterceptTouchEvent(false);
-            }
-            return false;
-        });
-
         // 发送
-        rlSendCommand.setOnClickListener(new View.OnClickListener() {
+        tvSendMessage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String commandText = etCommandInput.getText().toString();
-                if (commandText.length() > 0) {
-                    GcodeCommand gcodeCommand = new GcodeCommand(commandText);
-                    EventBus.getDefault().post(new FragmentCommandEvent(gcodeCommand.getCommandString()));
-                    CommandHistory.saveToHistory(commandText, gcodeCommand.getCommandString());
-
-                    if (gcodeCommand.getHasRomAccess()) {
-                        EventBus.getDefault().post(new FragmentCommandEvent(GrblUtils.GRBL_VIEW_PARSER_STATE_COMMAND));
-                        EventBus.getDefault().post(new FragmentCommandEvent(GrblUtils.GRBL_VIEW_GCODE_PARAMETERS_COMMAND));
-                    }
-
-                    if (gcodeCommand.getCommandString().toUpperCase().contains("G43.1Z")) {
-                        EventBus.getDefault().post(new FragmentCommandEvent(GrblUtils.GRBL_VIEW_GCODE_PARAMETERS_COMMAND));
-                    }
-
-                    if (gcodeCommand.getCommandString().equals("$32=1"))
-                        machineStatus.setLaserModeEnabled(true);
-                    if (gcodeCommand.getCommandString().equals("$32=0"))
-                        machineStatus.setLaserModeEnabled(false);
-                    etCommandInput.setText(null);
-                    viewSwitcher.setDisplayedChild(0);
+                String message = etMessage.getText().toString();
+                if (!TextUtils.isEmpty(message)) {
+                    // 发送消息
+                    sendMessage(message);
+                    // 清空输入框
+                    etMessage.setText("");
+                } else {
+                    Toast.makeText(requireContext(), "发送的消息不能为空", Toast.LENGTH_SHORT).show();
                 }
             }
         });
 
-        // 发送 长按
-        rlSendCommand.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                BaseDialog.showCustomDialog(getContext(), "温馨提示", "确认清除命令消息？"
-                        , "确定", "取消",
-                        v1 -> {
-                            consoleLogger.clearMessages();
-                        },
-                        v1 -> {
-
-                        });
-                return true;
-            }
-        });
-
-        // 历史记录
-        rlConsoleHistory.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                viewSwitcher.showNext();
-            }
-        });
-
-        // $$配置
+        // $$（配置） 快捷命令
         tvCommandConfig.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                GcodeCommand gcodeCommand = new GcodeCommand("$$");
-                EventBus.getDefault().post(new FragmentCommandEvent(gcodeCommand.getCommandString()));
-                CommandHistory.saveToHistory("$$", gcodeCommand.getCommandString());
+                sendMessage("$$");
             }
         });
 
-        // $#参数
+        // $#（参数） 快捷命令
         tvCommandParam.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                GcodeCommand gcodeCommand = new GcodeCommand("$#");
-                EventBus.getDefault().post(new FragmentCommandEvent(gcodeCommand.getCommandString()));
-                CommandHistory.saveToHistory("$#", gcodeCommand.getCommandString());
+                sendMessage("$#");
             }
         });
 
-        // $G状态
+        // $G（状态） 快捷命令
         tvCommandState.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                GcodeCommand gcodeCommand = new GcodeCommand("$G");
-                EventBus.getDefault().post(new FragmentCommandEvent(gcodeCommand.getCommandString()));
-                CommandHistory.saveToHistory("$G", gcodeCommand.getCommandString());
+                sendMessage("$G");
             }
         });
 
-        // $I版本
+        // $I（版本） 快捷命令
         tvCommandVersion.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                GcodeCommand gcodeCommand = new GcodeCommand("$I");
-                EventBus.getDefault().post(new FragmentCommandEvent(gcodeCommand.getCommandString()));
-                CommandHistory.saveToHistory("$I", gcodeCommand.getCommandString());
+                sendMessage("$I");
             }
         });
 
-        // RecycleView
-        recyclerView.addOnScrollListener(new EndlessRecyclerViewScrollListener(new LinearLayoutManager(getContext())) {
-            @Override
-            public void onLoadMore(int page, int totalItemsCount) {
-                String offset = String.valueOf(page * 15);
-                List<CommandHistory> moreItems = CommandHistory.getHistory(offset, "15");
-                dataSet.addAll(moreItems);
-                commandHistoryAdapter.notifyItemRangeInserted(commandHistoryAdapter.getItemCount(), dataSet.size() - 1);
-            }
-        });
     }
 
     /**
-     * item项点击
+     * 发送消息方法
      */
-    private final View.OnClickListener onItemClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-            RecyclerView.ViewHolder viewHolder = (RecyclerView.ViewHolder) view.getTag();
-            int position = viewHolder.getAbsoluteAdapterPosition();
-            if(position == RecyclerView.NO_POSITION) return;
-            CommandHistory commandHistory = dataSet.get(position);
-            etCommandInput.append(commandHistory.getCommand());
-        }
-    };
+    private void sendMessage(String message) {
+        // 发送命令
+        sendJogCommand(message);
+
+        // 发送消息后添加到消息列表并更新 RecyclerView
+        messageModelList.add(new MessageModel(message, true));  // true 表示消息是自己发送的
+        messageAdapter.notifyItemInserted(messageModelList.size() - 1);  // 通知适配器插入新项
+        recyclerViewMessage.scrollToPosition(messageModelList.size() - 1);  // 滚动到最新的消息
+
+    }
 
     /**
-     * 长按
+     * 发送命令
+     *
+     * @param command 命令
      */
-    private final View.OnLongClickListener onItemLongClickListener = new View.OnLongClickListener() {
-
-        @Override
-        public boolean onLongClick(View view) {
-            final RecyclerView.ViewHolder viewHolder = (RecyclerView.ViewHolder) view.getTag();
-            final int position = viewHolder.getAbsoluteAdapterPosition();
-            if(position == RecyclerView.NO_POSITION) return false;
-            final CommandHistory commandHistory = dataSet.get(position);
-
-            new AlertDialog.Builder(getActivity())
-                    .setTitle(commandHistory.getCommand())
-                    .setMessage(getString(R.string.text_delete_command_history_confirm))
-                    .setPositiveButton(requireActivity().getString(R.string.text_yes_confirm), (dialog, which) -> {
-                        commandHistory.delete();
-                        dataSet.remove(position);
-                        commandHistoryAdapter.notifyItemRemoved(position);
-                        commandHistoryAdapter.notifyItemRangeChanged(position, dataSet.size());
-                    }).setNegativeButton(requireActivity().getString(R.string.text_cancel), null).setCancelable(true).show();
-
-            return true;
+    private void sendJogCommand(String command) {
+        boolean isConnected = NettyClient.getInstance().getConnectStatus();
+        Log.d(TAG, "isConnected=" + isConnected);
+        if (isConnected) {
+            Log.d(TAG, "command=" + command);
+            NettyClient.getInstance(new Handler(new Handler.Callback() {
+                @Override
+                public boolean handleMessage(@NonNull Message msg) {
+                    return false;
+                }
+            })).sendMsgToServer((command + "\r\n").getBytes(StandardCharsets.UTF_8), null);
+        } else {
+            Log.d(TAG, "未连接上设备");
         }
-    };
+    }
+
+
+    /**
+     * ServiceMessageEvent
+     *
+     * @param event
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onServiceMessageEvent(ServiceMessageEvent event) {
+        if (!event.getMessage().isEmpty()) {
+            String receivedMessage = event.getMessage().toString().trim();
+            Log.d(TAG, "接收到的消息: " + receivedMessage);
+            // 消息是以 “<” 开头
+            if (receivedMessage.startsWith("<")) {
+                // 如果 switch 开启
+                if (!switchMessageDetail.isChecked()) {
+                    // 不进行添加
+                    Log.d(TAG, "消息过滤");
+                } else {
+                    // 如果 Switch 关闭，接收所有消息
+                    messageModelList.add(new MessageModel(receivedMessage, false));  // false 表示接收到的消息
+                    messageAdapter.notifyItemInserted(messageModelList.size() - 1);  // 通知适配器插入新项
+                    recyclerViewMessage.scrollToPosition(messageModelList.size() - 1);  // 滚动到最后一条消息
+                }
+            } else {
+                // 如果 Switch 关闭，接收所有消息
+                messageModelList.add(new MessageModel(receivedMessage, false));  // false 表示接收到的消息
+                messageAdapter.notifyItemInserted(messageModelList.size() - 1);  // 通知适配器插入新项
+                recyclerViewMessage.scrollToPosition(messageModelList.size() - 1);  // 滚动到最后一条消息
+            }
+        }
+    }
 
 }
