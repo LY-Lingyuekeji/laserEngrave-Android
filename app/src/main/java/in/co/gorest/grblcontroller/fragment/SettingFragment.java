@@ -34,6 +34,7 @@ import in.co.gorest.grblcontroller.activity.SettingsActivity;
 import in.co.gorest.grblcontroller.base.BaseDialog;
 import in.co.gorest.grblcontroller.events.LanguageChangeEvent;
 import in.co.gorest.grblcontroller.events.ModelChangeEvent;
+import in.co.gorest.grblcontroller.events.NewVersionEvent;
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 import in.co.gorest.grblcontroller.util.DataCleanManager;
 
@@ -62,6 +63,8 @@ public class SettingFragment extends Fragment {
     private RelativeLayout rlSettingSettings;
     // 关于
     private RelativeLayout rlSettingAbout;
+    // 新版本提示
+    private RelativeLayout rlNewVersionTips;
     // 版本
     private TextView tvVersionName;
 
@@ -131,6 +134,8 @@ public class SettingFragment extends Fragment {
         rlSettingSettings = view.findViewById(R.id.rl_setting_settings);
         // 关于
         rlSettingAbout = view.findViewById(R.id.rl_setting_about);
+        // 新版本提示
+        rlNewVersionTips = view.findViewById(R.id.rl_new_version_tips);
         // 版本
         tvVersionName = view.findViewById(R.id.tv_version_name);
     }
@@ -282,6 +287,22 @@ public class SettingFragment extends Fragment {
 
         }
     }
+
+    /**
+     * 新版本提示
+     *
+     * @param event {@link NewVersionEvent}
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void OnNewVersionEvent(NewVersionEvent event) {
+        String version = event.getMessage();
+        if (!version.isEmpty()) {
+            rlNewVersionTips.setVisibility(View.VISIBLE);
+        } else {
+            rlNewVersionTips.setVisibility(View.GONE);
+        }
+    }
+
 
     /**
      * 语言

@@ -18,8 +18,8 @@ android {
     defaultConfig {
         applicationId "com.lingyue.laserengraving"
         minSdkVersion 26
-        versionCode 1112
-        versionName "1.1.12"
+        versionCode 1117
+        versionName "1.1.17"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
@@ -28,13 +28,13 @@ android {
         release {
             debuggable false
             minifyEnabled true
-            shrinkResources false
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         debug {
             debuggable true
             minifyEnabled true
-            shrinkResources false
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
 
             // 添加以下代码以在文件名中加入日期
@@ -48,6 +48,16 @@ android {
 //    dataBinding {
 //        enabled = true
 //    }
+
+//    splits {
+//        abi {
+//            enable true
+//            reset()
+//            include "x86", "armeabi-v7a", "arm64-v8a"
+//            universalApk false // 不生成通用 APK
+//        }
+//    }
+
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -147,6 +157,12 @@ dependencies {
     // 新手引导图
     implementation 'com.github.xuexiangjys:XUI:1.2.1'
 //    implementation 'com.github.faruktoptas:FancyShowCaseView:1.4.0'
+    // APP内置更新
+    implementation 'com.github.ZuoHailong:AppUpdate:0.2.6'
+    // 画板
+    implementation 'com.github.jenly1314:drawboard:1.1.0'
+    // 图片裁剪
+    implementation 'com.github.yalantis:ucrop:2.2.10'
 
 }
 

@@ -70,10 +70,10 @@
 
 
             <TextView
+                android:id="@+id/tv_about_update"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="15dp"
-
                 android:layout_alignParentBottom="true"
                 android:gravity="center"
                 android:background="@drawable/bg_green_1e853a_r10"

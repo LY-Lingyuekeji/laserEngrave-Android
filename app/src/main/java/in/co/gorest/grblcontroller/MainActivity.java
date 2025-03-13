@@ -1,13 +1,11 @@
 package in.co.gorest.grblcontroller;
 
-import static in.co.gorest.grblcontroller.util.ImgUtil.REQUEST_CODE_CAMERA;
-
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.Network;
@@ -39,29 +37,37 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
+import com.hailong.appupdate.AppUpdateManager;
+import com.yalantis.ucrop.UCrop;
+
 import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
+
+import java.io.File;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import in.co.gorest.grblcontroller.activity.BeginEngraveActivity;
 import in.co.gorest.grblcontroller.activity.EditActivity;
-import in.co.gorest.grblcontroller.activity.EngraveActivity;
 import in.co.gorest.grblcontroller.adapters.ViewPagerAdapter;
 import in.co.gorest.grblcontroller.base.BaseActivity;
 import in.co.gorest.grblcontroller.base.BaseDialog;
 import in.co.gorest.grblcontroller.events.DeviceConnectEvent;
-import in.co.gorest.grblcontroller.events.ServiceMessageEvent;
+import in.co.gorest.grblcontroller.events.NewVersionEvent;
 import in.co.gorest.grblcontroller.fragment.HomeFragment;
 import in.co.gorest.grblcontroller.fragment.SettingFragment;
-import in.co.gorest.grblcontroller.model.Constants;
 import in.co.gorest.grblcontroller.util.ImgUtil;
 import in.co.gorest.grblcontroller.util.NettyClient;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 @SuppressLint("CustomSplashScreen")
 public class MainActivity extends BaseActivity {
@@ -104,6 +110,23 @@ public class MainActivity extends BaseActivity {
      * 是否显示雕刻弹窗
      */
     private boolean isShowEngravingDialog = false;
+
+    /**
+     * 更新内容
+     */
+    private static String[] arrayContent = new String[]{""};
+    /**
+     * 服务器版本号
+     */
+    private int serverVersionCode;
+    /**
+     * 服务器版本名
+     */
+    private String serverVersionName;
+    /**
+     * 当前版本
+     */
+    private int currentVersionCode;
 
 
     /**
@@ -286,6 +309,9 @@ public class MainActivity extends BaseActivity {
 //                }
 //            }
 //        }
+
+        // 获取服务器版本信息
+        fetchVersionInfo();
     }
 
     /**
@@ -397,23 +423,156 @@ public class MainActivity extends BaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK) {
+            Uri destinationUri = getImageOutputUri();
             if (requestCode == ImgUtil.CHOOSE_PHOTO) {
                 Uri selectedImageUri = data.getData();
-                Intent intent = new Intent(MainActivity.this, EditActivity.class);
-                intent.putExtra("type", "5");
-                intent.putExtra(BuildConfig.APPLICATION_ID + ".InputUri", selectedImageUri);
-                intent.putExtra("businessType", 1);
-                startActivity(intent);
+                UCrop.of(selectedImageUri, destinationUri)
+                        .start(this);
             } else if (requestCode == ImgUtil.TAKE_PHOTO) {
+                UCrop.of(ImgUtil.imageUri, destinationUri)
+                        .start(this);
+            } else if (requestCode == UCrop.REQUEST_CROP) {
+                final Uri resultUri = UCrop.getOutput(data);
+
                 Intent intent = new Intent(MainActivity.this, EditActivity.class);
                 intent.putExtra("type", "5");
-                intent.putExtra(BuildConfig.APPLICATION_ID + ".InputUri", ImgUtil.imageUri);
+                intent.putExtra(BuildConfig.APPLICATION_ID + ".InputUri", resultUri);
                 intent.putExtra("businessType", 1);
                 startActivity(intent);
             }
 
         }
     }
+
+
+    /**
+     * 读取 versionInfo 模拟接口
+     */
+    public void fetchVersionInfo() {
+        OkHttpClient client = new OkHttpClient();
+
+        String url = "http://47.243.173.178/version-info.txt"; // 接口地址
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Response response = client.newCall(request).execute();
+                    if (response.isSuccessful()) {
+                        // 使用 UTF-8 编码读取文件内容
+                        String versionInfo = new String(response.body().bytes(), StandardCharsets.UTF_8);
+                        // 处理 versionInfo
+                        parseVersionInfo(versionInfo);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
+    /**
+     * 处理 versionInfo
+     *
+     * @param content 内容
+     */
+    private void parseVersionInfo(String content) {
+        String[] lines = content.split("\n");
+        String versionCode = lines[0].split("=")[1].trim();
+        String versionName = lines[1].split("=")[1].trim();
+        String versionContent = lines[2].split("=")[1].trim();
+        // 1. 去掉首尾的中括号（即删除第一个和最后一个字符）
+        versionContent = versionContent.substring(1, versionContent.length() - 1).trim();
+
+        // 2. 按照逗号分割字符串
+        String[] contentArray = versionContent.split(",");
+
+        // 3. 去掉引号并将处理后的内容添加到一个 ArrayList 中
+        ArrayList<String> arrayList = new ArrayList<>();
+        for (String item : contentArray) {
+            // 去掉每个元素的引号并添加到 ArrayList
+            arrayList.add(item.replace("\"", "").trim());
+        }
+
+        // 在这里根据 versionCode, versionName 和 versionContent 进行版本检查等逻辑
+        Log.d(TAG, "Version Code: " + versionCode);
+        Log.d(TAG, "Version Name: " + versionName);
+        Log.d(TAG, "Content: " + versionContent);
+
+        serverVersionCode = Integer.parseInt(versionCode);
+        serverVersionName = versionName;
+        // 4. 将 ArrayList 转换为 String[] 并赋值给 arrayContent
+        arrayContent = arrayList.toArray(new String[0]);
+
+        // 获取当前版本
+        getCurrentAppVersion();
+
+    }
+
+    /**
+     * 获取当前应用的 versionCode 和 versionName
+     */
+    private void getCurrentAppVersion() {
+        try {
+            PackageManager packageManager = getPackageManager();
+            PackageInfo packageInfo = packageManager.getPackageInfo(getPackageName(), 0);
+            currentVersionCode = packageInfo.versionCode;
+            String currentVersionName = packageInfo.versionName;
+
+            // 打印当前应用的 versionCode 和 versionName
+            Log.d(TAG, "Current versionCode: " + currentVersionCode);
+            Log.d(TAG, "Current versionName: " + currentVersionName);
+
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+
+
+        // 获取当前日期并转换为yyyyMMdd格式
+        String formattedDate = getCurrentDate();
+        Log.d(TAG, "CurrentDate：" + formattedDate);  // 输出当前日期
+
+        // 版本对比
+        if (serverVersionCode > currentVersionCode) {
+            // TODO 通知有新版本
+
+            EventBus.getDefault().post(new NewVersionEvent("new"));
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            AppUpdateManager.Builder builder = new AppUpdateManager.Builder(MainActivity.this);
+                            builder.apkUrl("http://47.243.173.178/apk/iklestar-" + serverVersionName + "-" + formattedDate + ".apk")
+                                    .updateContent(arrayContent)
+                                    .updateForce(false)
+                                    .build();
+                        }
+                    });
+                }
+            }).start();
+
+        } else {
+            Toast.makeText(MainActivity.this, "已经是最新版本", Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+    /**
+     * 获取当前日期并格式化为yyyyMMdd
+     */
+    private String getCurrentDate() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        Date date = new Date();  // 获取当前日期
+        return sdf.format(date);  // 返回格式化后的日期
+    }
+
+
 
     /**
      * 通过SSID和密码连接WIFI（适用于Android版本大于Android Q）
@@ -531,6 +690,7 @@ public class MainActivity extends BaseActivity {
         });
     }
 
+
 //    /**
 //     * ServiceMessageEvent
 //     *
@@ -563,4 +723,14 @@ public class MainActivity extends BaseActivity {
 //            }
 //        }
 //    }
+
+    /**
+     * 输出裁剪的图片文件路径
+     * @return 图片文件路径
+     */
+    private Uri getImageOutputUri() {
+        File file = new File(getExternalCacheDir(), "cropped_image.jpg"); // 指定输出文件路径
+        return FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", file);
+    }
+
 }

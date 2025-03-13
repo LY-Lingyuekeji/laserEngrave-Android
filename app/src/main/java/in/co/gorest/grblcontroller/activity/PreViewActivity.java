@@ -157,8 +157,6 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
     private Bitmap finalBitmap;
     // 是否正在改变标志类
     private boolean isUpdating = false;
-    // 是否巡边标志类
-    private boolean isLineJudge = false;
     // 写入的nc
     private List<String> strcontent = new ArrayList<>();
     // 最终位图文件
@@ -800,6 +798,11 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
                         Bitmap adjustBitmap = ImageProcess.imageResize(bitmaps, printWidth, printHeight, resol);
                         FileManager.get().addDelPath(zoomViewBean.getUri().getPath());
 
+                        Log.d(TAG, "type=" + zoomViewBean.getTypes() + "----wx=" + zoomViewBean.getEditWideX() + "----hy=" + zoomViewBean.getEditHighY());
+                        Log.d(TAG, "zw=" + zoomViewBean.getWide() + "----zh=" + zoomViewBean.getHeight());
+                        Log.d(TAG, "w=" + etWidth.getText().toString() + "----h=" + etHeight.getText().toString());
+
+
 
                         switch (zoomViewBean.getTypes()) {
                             case "1"://灰度图
@@ -1137,7 +1140,7 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
     private void showNotKinfeConfirm(String bitmapFilePath, String filePath) {
         BaseDialog.showCustomDialog(this,
                 "温馨提示",
-                "不对刀存在一定的风险，可能导致雕刻达不到预期的效果，是否取消？",
+                "不对焦存在一定的风险，可能导致雕刻达不到预期的效果，是否取消？",
                 "确定",
                 "取消",
                 v -> {

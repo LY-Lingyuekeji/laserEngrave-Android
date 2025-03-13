@@ -121,7 +121,7 @@ public class ToolChooseBottomSheetFragment extends BottomSheetDialogFragment {
      */
     private void initData() {
         // 获取共享偏好设置保存的运动参数实例
-        strToolName = sharedPref.getString(getString(R.string.preference_draw_board_tool_name), "pen");
+//        strToolName = sharedPref.getString(getString(R.string.preference_draw_board_tool_name), "pen");
         // 设置选中项
         if ("pen".equals(strToolName)) {
             rbToolPen.setChecked(true);
@@ -157,7 +157,7 @@ public class ToolChooseBottomSheetFragment extends BottomSheetDialogFragment {
                 switch (checkedId) {
                     case R.id.rb_tool_pen:
                         // 设置共享偏好设置保存的工具实例为 画笔
-                        sharedPref.edit().putString(getString(R.string.preference_draw_board_tool_name), "pen").apply();
+//                        sharedPref.edit().putString(getString(R.string.preference_draw_board_tool_name), "pen").apply();
                         // 设置选中
                         rbToolPen.setChecked(true);
                         // 传递toolName给Activity
@@ -167,7 +167,7 @@ public class ToolChooseBottomSheetFragment extends BottomSheetDialogFragment {
                         break;
                     case R.id.rb_tool_line:
                         // 设置共享偏好设置保存的工具实例为 直线
-                        sharedPref.edit().putString(getString(R.string.preference_draw_board_tool_name), "line").apply();
+//                        sharedPref.edit().putString(getString(R.string.preference_draw_board_tool_name), "line").apply();
                         // 设置选中
                         rbToolLine.setChecked(true);
                         // 传递toolName给Activity
@@ -177,7 +177,7 @@ public class ToolChooseBottomSheetFragment extends BottomSheetDialogFragment {
                         break;
                     case R.id.rb_tool_triangle:
                         // 设置共享偏好设置保存的工具实例为 三角形
-                        sharedPref.edit().putString(getString(R.string.preference_draw_board_tool_name), "triangle").apply();
+//                        sharedPref.edit().putString(getString(R.string.preference_draw_board_tool_name), "triangle").apply();
                         // 设置选中
                         rbToolTriangle.setChecked(true);
                         // 传递toolName给Activity
@@ -187,7 +187,7 @@ public class ToolChooseBottomSheetFragment extends BottomSheetDialogFragment {
                         break;
                     case R.id.rb_tool_rectangle:
                         // 设置共享偏好设置保存的工具实例为 矩形
-                        sharedPref.edit().putString(getString(R.string.preference_draw_board_tool_name), "rectangle").apply();
+//                        sharedPref.edit().putString(getString(R.string.preference_draw_board_tool_name), "rectangle").apply();
                         // 设置选中
                         rbToolRectangle.setChecked(true);
                         // 传递toolName给Activity
@@ -197,7 +197,7 @@ public class ToolChooseBottomSheetFragment extends BottomSheetDialogFragment {
                         break;
                     case R.id.rb_tool_circle:
                         // 设置共享偏好设置保存的工具实例为 圆形
-                        sharedPref.edit().putString(getString(R.string.preference_draw_board_tool_name), "circle").apply();
+//                        sharedPref.edit().putString(getString(R.string.preference_draw_board_tool_name), "circle").apply();
                         // 设置选中
                         rbToolCircle.setChecked(true);
                         // 传递toolName给Activity
@@ -207,7 +207,7 @@ public class ToolChooseBottomSheetFragment extends BottomSheetDialogFragment {
                         break;
                     case R.id.rb_tool_eraser:
                         // 设置共享偏好设置保存的工具实例为 圆形
-                        sharedPref.edit().putString(getString(R.string.preference_draw_board_tool_name), "eraser").apply();
+//                        sharedPref.edit().putString(getString(R.string.preference_draw_board_tool_name), "eraser").apply();
                         // 设置选中
                         rbToolEraser.setChecked(true);
                         // 传递toolName给Activity

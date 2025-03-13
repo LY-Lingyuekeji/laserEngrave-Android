@@ -6,18 +6,22 @@ import android.bluetooth.le.ScanSettings;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatDelegate;
+
 import com.joanzapata.iconify.Iconify;
 import com.joanzapata.iconify.fonts.FontAwesomeModule;
 import com.orm.SugarApp;
 import com.zhy.http.okhttp.OkHttpUtils;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
 import cn.wandersnail.ble.EasyBLE;
 import cn.wandersnail.ble.ScanConfiguration;
 import cn.wandersnail.ble.ScannerType;
@@ -26,6 +30,9 @@ import cn.wandersnail.commons.poster.ThreadMode;
 import es.dmoral.toasty.Toasty;
 import in.co.gorest.grblcontroller.service.BLEService;
 import in.co.gorest.grblcontroller.util.NettyClient;
+import me.jessyan.autosize.AutoSize;
+import me.jessyan.autosize.AutoSizeConfig;
+import me.jessyan.autosize.onAdaptListener;
 import okhttp3.OkHttpClient;
 
 //     .--..--..--..--..--..--.
@@ -43,7 +50,7 @@ import okhttp3.OkHttpClient;
 //  |     |   |   | |   |    |
 //  '-----'   '---' '---'    '
 
-public class GrblController extends SugarApp  {
+public class GrblController extends SugarApp {
 
 
     // 单例模式： GrblController实例
@@ -126,9 +133,14 @@ public class GrblController extends SugarApp  {
                 Log.i("onDestroyed------", "---------");
             }
         });
+
+
+        AutoSizeConfig.getInstance()
+                .setCustomFragment(true)
+                .setLog(false)
+                .setBaseOnWidth(false)
+                .setUseDeviceSize(true);
     }
-
-
 
 
     public static ExecutorService getPrintTask() {

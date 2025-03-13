@@ -7,40 +7,36 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Paint;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.text.InputFilter;
-import android.text.Spanned;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowInsetsController;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
-import com.bumptech.glide.Glide;
+
+import com.king.drawboard.view.DrawBoardView;
+
 import java.io.File;
+
 import in.co.gorest.grblcontroller.BuildConfig;
 import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.fragment.ColorChooseBottomSheetFragment;
 import in.co.gorest.grblcontroller.fragment.SizeChooseBottomSheetFragment;
-import in.co.gorest.grblcontroller.fragment.ToolChooseBottomSheetFragment;
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
-import in.co.gorest.grblcontroller.util.DrawingView;
 import in.co.gorest.grblcontroller.util.ImgUtil;
 
-public class DrawBoardActivity extends AppCompatActivity implements ColorChooseBottomSheetFragment.OnColorSelectedListener,
-        SizeChooseBottomSheetFragment.OnSizeSelectedListener, ToolChooseBottomSheetFragment.OnToolSelectedListener {
+public class DrawBoardActivity extends AppCompatActivity implements ColorChooseBottomSheetFragment.OnColorSelectedListener, SizeChooseBottomSheetFragment.OnSizeSelectedListener {
     // 用于日志记录的标签
     private final static String TAG = DrawBoardActivity.class.getSimpleName();
     // 用于管理和访问增强的共享偏好设置实例
@@ -52,23 +48,23 @@ public class DrawBoardActivity extends AppCompatActivity implements ColorChooseB
     // 内容中心
     private LinearLayout llContainer;
     // 画板
-    private DrawingView drawingView;
-    // 文字
-    private LinearLayout llText;
-    // 条形码
-    private LinearLayout llBarCode;
-    // 二维码
-    private LinearLayout llQrCode;
-    // 文本输入框
-    private EditText etInput;
-    // 确定
-    private TextView tvConfirm;
-    // 工具
-    private LinearLayout llTool;
-    // 工具图标
-    private ImageView ivTool;
-    // 工具名称
-    private TextView tvTool;
+    private DrawBoardView drawBoardView;
+    // 绘画模式
+    private TextView tvDrawMode;
+    // 路径
+    private LinearLayout llPath;
+    // 直线
+    private LinearLayout llLine;
+    // 矩形
+    private LinearLayout llRectangle;
+    // 椭圆
+    private LinearLayout llOval;
+    // 圆形
+    private LinearLayout llCircle;
+    // 马赛克
+    private LinearLayout llMosic;
+    // 橡皮擦
+    private LinearLayout llEraser;
     // 颜色
     private LinearLayout llColor;
     // 颜色显示
@@ -82,8 +78,6 @@ public class DrawBoardActivity extends AppCompatActivity implements ColorChooseB
     // 清除
     private LinearLayout llClean;
 
-    // 默认模式
-    private int defaultModel = -1;
 
     // 启用矢量图支持，确保在应用中可以正确显示矢量图形
     static {
@@ -129,23 +123,23 @@ public class DrawBoardActivity extends AppCompatActivity implements ColorChooseB
         // 内容中心
         llContainer = findViewById(R.id.ll_container);
         // 画板
-        drawingView = findViewById(R.id.drawingView);
-        // 文字
-        llText = findViewById(R.id.ll_text);
-        // 条形码
-        llBarCode = findViewById(R.id.ll_bar_code);
-        // 二维码
-        llQrCode = findViewById(R.id.ll_qr_code);
-        // 文本输入框
-        etInput = findViewById(R.id.et_input);
-        // 确定
-        tvConfirm = findViewById(R.id.tv_confirm);
-        // 工具
-        llTool = findViewById(R.id.ll_tool);
-        // 工具图标
-        ivTool = findViewById(R.id.iv_tool);
-        // 工具名称
-        tvTool = findViewById(R.id.tv_tool);
+        drawBoardView = findViewById(R.id.drawBoardView);
+        // 绘画模式
+        tvDrawMode = findViewById(R.id.tv_draw_mode);
+        // 路径
+        llPath = findViewById(R.id.ll_path);
+        // 直线
+        llLine = findViewById(R.id.ll_line);
+        // 矩形
+        llRectangle = findViewById(R.id.ll_rectangle);
+        // 椭圆
+        llOval = findViewById(R.id.ll_oval);
+        // 圆形
+        llCircle = findViewById(R.id.ll_circle);
+        // 马赛克
+        llMosic = findViewById(R.id.ll_mosic);
+        // 橡皮擦
+        llEraser = findViewById(R.id.ll_eraser);
         // 颜色
         llColor = findViewById(R.id.ll_color);
         // 颜色显示
@@ -164,55 +158,42 @@ public class DrawBoardActivity extends AppCompatActivity implements ColorChooseB
      * 初始化数据
      */
     private void initData() {
-        // 获取共享偏好设置保存的运动参数实例
-        String strToolName = sharedPref.getString(getString(R.string.preference_draw_board_tool_name), "pen");
-        // 设置选中项
-        if ("pen".equals(strToolName)) {
-            drawingView.setCurrentTool(DrawingView.TOOL_PEN);
-            Glide.with(DrawBoardActivity.this).load(R.drawable.icon_tool_pen_white).into(ivTool);
-            tvTool.setText("画笔");
-        } else if ("line".equals(strToolName)) {
-            drawingView.setCurrentTool(DrawingView.TOOL_LINE);
-            Glide.with(DrawBoardActivity.this).load(R.drawable.icon_tool_line_white).into(ivTool);
-            tvTool.setText("直线");
-        } else if ("triangle".equals(strToolName)) {
-            drawingView.setCurrentTool(DrawingView.TOOL_TRIANGLE);
-            Glide.with(DrawBoardActivity.this).load(R.drawable.icon_tool_triangle_white).into(ivTool);
-            tvTool.setText("三角形");
-        } else if ("rectangle".equals(strToolName)) {
-            drawingView.setCurrentTool(DrawingView.TOOL_RECTANGLE);
-            Glide.with(DrawBoardActivity.this).load(R.drawable.icon_tool_rectangle_white).into(ivTool);
-            tvTool.setText("矩形");
-        } else if ("circle".equals(strToolName)) {
-            drawingView.setCurrentTool(DrawingView.TOOL_CIRCLE);
-            Glide.with(DrawBoardActivity.this).load(R.drawable.icon_tool_circle_white).into(ivTool);
-            tvTool.setText("圆形");
-        } else if ("eraser".equals(strToolName)) {
-            drawingView.setCurrentTool(DrawingView.TOOL_ERASER);
-            Glide.with(DrawBoardActivity.this).load(R.drawable.icon_tool_eraser_white).into(ivTool);
-            tvTool.setText("橡皮擦");
-        } else if ("text".equals(strToolName)){
-            drawingView.setCurrentTool(DrawingView.TOOL_TEXT);
-            Glide.with(DrawBoardActivity.this).load(R.drawable.icon_text).into(ivTool);
-            tvTool.setText("文字");
-            llText.setSelected(true);
-            llBarCode.setSelected(false);
-            llQrCode.setSelected(false);
-        } else if ("barcode".equals(strToolName)){
-            drawingView.setCurrentTool(DrawingView.TOOL_BARCODE);
-            Glide.with(DrawBoardActivity.this).load(R.drawable.icon_bar_code).into(ivTool);
-            tvTool.setText("条形码");
-            llText.setSelected(false);
-            llBarCode.setSelected(true);
-            llQrCode.setSelected(false);
-        } else if ("qrcode".equals(strToolName)){
-            drawingView.setCurrentTool(DrawingView.TOOL_QR_CODE);
-            Glide.with(DrawBoardActivity.this).load(R.drawable.icon_qr_code).into(ivTool);
-            tvTool.setText("二维码");
-            llText.setSelected(false);
-            llBarCode.setSelected(false);
-            llQrCode.setSelected(true);
+        // 绘画模式
+        switch (drawBoardView.getDrawMode()) {
+            case 1:
+                tvDrawMode.setText("路径");
+                break;
+            case 2:
+                tvDrawMode.setText("点");
+                break;
+            case 3:
+                tvDrawMode.setText("线");
+                break;
+            case 4:
+                tvDrawMode.setText("矩形");
+                break;
+            case 5:
+                tvDrawMode.setText("椭圆");
+                break;
+            case 6:
+                tvDrawMode.setText("圆");
+                break;
+            case 7:
+                tvDrawMode.setText("文本");
+                break;
+            case 9:
+                tvDrawMode.setText("橡皮擦");
+                break;
+            case 10:
+                tvDrawMode.setText("马赛克");
+                break;
         }
+
+
+        // 设置画笔颜色
+        drawBoardView.setPaintColor(Color.parseColor("#000000"));
+
+
     }
 
     /**
@@ -246,113 +227,66 @@ public class DrawBoardActivity extends AppCompatActivity implements ColorChooseB
             }
         });
 
-        // 文字
-        llText.setOnClickListener(new View.OnClickListener() {
+        // 路径
+        llPath.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                llText.setSelected(true);
-                llBarCode.setSelected(false);
-                llQrCode.setSelected(false);
-                defaultModel = 0;
-                Glide.with(DrawBoardActivity.this).load(R.drawable.icon_text).into(ivTool);
-                tvTool.setText("文字");
-                sharedPref.edit().putString(getString(R.string.preference_draw_board_tool_name), "text").apply();
-                // 设置输入框为不受限制
-                etInput.setFilters(new InputFilter[0]);  // 移除任何过滤器
+                // 设置模式为路径
+                drawBoardView.setDrawMode(DrawBoardView.DrawMode.DRAW_PATH);
             }
         });
 
-        // 条形码
-        llBarCode.setOnClickListener(new View.OnClickListener() {
+        // 直线
+        llLine.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                llText.setSelected(false);
-                llBarCode.setSelected(true);
-                llQrCode.setSelected(false);
-                defaultModel = 1;
-                Glide.with(DrawBoardActivity.this).load(R.drawable.icon_bar_code).into(ivTool);
-                tvTool.setText("条形码");
-                sharedPref.edit().putString(getString(R.string.preference_draw_board_tool_name), "barcode").apply();
-                // 限制条形码只接受字母和数字
-                InputFilter[] filters = new InputFilter[]{
-                        new InputFilter() {
-                            @Override
-                            public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
-                                // 只允许字母和数字
-                                if (source != null && !source.toString().matches("[a-zA-Z0-9]*")) {
-                                    return "";  // 非字母或数字的字符将被忽略
-                                }
-                                return null;
-                            }
-                        }
-                };
-                etInput.setFilters(filters);  // 设置过滤器
+                // 设置模式为直线
+                drawBoardView.setDrawMode(DrawBoardView.DrawMode.DRAW_LINE);
             }
         });
 
-        // 二维码
-        llQrCode.setOnClickListener(new View.OnClickListener() {
+        // 矩形
+        llRectangle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                llText.setSelected(false);
-                llBarCode.setSelected(false);
-                llQrCode.setSelected(true);
-                defaultModel = 2;
-                Glide.with(DrawBoardActivity.this).load(R.drawable.icon_qr_code).into(ivTool);
-                tvTool.setText("二维码");
-                sharedPref.edit().putString(getString(R.string.preference_draw_board_tool_name), "qrcode").apply();
-                // 设置输入框为不受限制
-                etInput.setFilters(new InputFilter[0]);  // 移除任何过滤器
+                // 设置模式为矩形
+                drawBoardView.setDrawMode(DrawBoardView.DrawMode.DRAW_RECT);
             }
         });
 
-        // 确认
-        tvConfirm.setOnClickListener(new View.OnClickListener() {
+        // 椭圆
+        llOval.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (defaultModel == -1) {
-                    Toast.makeText(DrawBoardActivity.this, "请先选中模式后插入", Toast.LENGTH_SHORT).show();
-                } else {
-                    String inputText = etInput.getText().toString();
-                    if (TextUtils.isEmpty(inputText)) {
-                        Toast.makeText(DrawBoardActivity.this, "请输入要插入的内容", Toast.LENGTH_SHORT).show();
-                    } else {
-                        switch (defaultModel) {
-                            case 0:
-                                drawingView.setCurrentTool(DrawingView.TOOL_TEXT);
-                                DrawingView.TextShape textShape = new DrawingView.TextShape(inputText, 100, 100, new Paint());
-                                drawingView.drawShape(textShape);
-                                break;
-                            case 1:
-                                drawingView.setCurrentTool(DrawingView.TOOL_BARCODE);
-                                DrawingView.BarcodeShape barcodeShape = new DrawingView.BarcodeShape(inputText, 100, 100, new Paint());
-                                drawingView.drawShape(barcodeShape);
-                                break;
-                            case 2:
-                                drawingView.setCurrentTool(DrawingView.TOOL_QR_CODE);
-                                DrawingView.QRCodeShape qrCodeShape = new DrawingView.QRCodeShape(inputText, 100, 100, new Paint());
-                                drawingView.drawShape(qrCodeShape);  // 绘制二维码
-                                break;
-                        }
-
-                        // 清空输入框
-                        etInput.setText("");
-                        // 收起键盘
-                        hideKeyboard(etInput);
-                        // 让输入框失去焦点
-                        etInput.clearFocus();
-                    }
-                }
+                // 设置模式为椭圆
+                drawBoardView.setDrawMode(DrawBoardView.DrawMode.DRAW_OVAL);
             }
         });
 
-        // 工具
-        llTool.setOnClickListener(new View.OnClickListener() {
+        // 圆形
+        llCircle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // 显示工具选择弹窗
-                ToolChooseBottomSheetFragment toolChooseBottomSheetFragment = new ToolChooseBottomSheetFragment();
-                toolChooseBottomSheetFragment.show(getSupportFragmentManager(), "");
+                // 设置模式为圆形
+                drawBoardView.setDrawMode(DrawBoardView.DrawMode.DRAW_CIRCLE);
+            }
+        });
+
+        // 马赛克
+        llMosic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 设置模式为马赛克
+                drawBoardView.setDrawMode(DrawBoardView.DrawMode.MOSAIC);
+            }
+        });
+
+        // 橡皮擦
+        llEraser.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 设置模式为橡皮擦
+                drawBoardView.setDrawMode(DrawBoardView.DrawMode.ERASER);
             }
         });
 
@@ -380,7 +314,7 @@ public class DrawBoardActivity extends AppCompatActivity implements ColorChooseB
         llUndo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                drawBoardView.undo();
             }
         });
 
@@ -388,7 +322,7 @@ public class DrawBoardActivity extends AppCompatActivity implements ColorChooseB
         llRedo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                drawBoardView.redo();
             }
         });
 
@@ -397,8 +331,7 @@ public class DrawBoardActivity extends AppCompatActivity implements ColorChooseB
         llClean.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // 调用 DrawingView 的 clear() 方法清除所有内容
-                drawingView.clear();
+                drawBoardView.clear();
             }
         });
     }
@@ -413,93 +346,39 @@ public class DrawBoardActivity extends AppCompatActivity implements ColorChooseB
         }
     }
 
+
     /**
-     * 颜色选择
+     * 画笔颜色
      *
-     * @param color 颜色
+     * @param color 选择的画笔颜色
      */
     @Override
     public void onColorSelected(int color) {
         Log.d(TAG, "color=" + color);
         ivColor.setBackgroundColor(color);
-        drawingView.setPenColor(color);
+        drawBoardView.setPaintColor(color);
     }
 
     /**
-     * 粗细选择
+     * 画笔粗细
      *
-     * @param size 粗细
+     * @param size
      */
     @Override
     public void onSizeSelected(int size) {
         Log.d(TAG, "size=" + size);
         sharedPref.edit().putInt(getString(R.string.preference_draw_board_pen_size), size).apply();
-        drawingView.setPenWidth(size);
-    }
-
-    /**
-     * 工具选择
-     *
-     * @param tool 工具
-     */
-    @Override
-    public void onToolSelected(String tool) {
-        Log.d(TAG, "tool=" + tool);
-        switch (tool) {
-            case "pen":
-                Glide.with(DrawBoardActivity.this).load(R.drawable.icon_tool_pen_white).into(ivTool);
-                tvTool.setText("画笔");
-                drawingView.setCurrentTool(DrawingView.TOOL_PEN);
-                // 清除 文字 & 条形码 & 二维码的选中
-                llText.setSelected(false);
-                llBarCode.setSelected(false);
-                llQrCode.setSelected(false);
+        switch (drawBoardView.getDrawMode()) {
+            case 9:
+                drawBoardView.setEraserStrokeWidth(size);
                 break;
-            case "line":
-                Glide.with(DrawBoardActivity.this).load(R.drawable.icon_tool_line_white).into(ivTool);
-                tvTool.setText("直线");
-                drawingView.setCurrentTool(DrawingView.TOOL_LINE);
-                // 清除 文字 & 条形码 & 二维码的选中
-                llText.setSelected(false);
-                llBarCode.setSelected(false);
-                llQrCode.setSelected(false);
+            case 10:
+                drawBoardView.setMosaicStrokeWidth(size);
                 break;
-            case "triangle":
-                Glide.with(DrawBoardActivity.this).load(R.drawable.icon_tool_triangle_white).into(ivTool);
-                tvTool.setText("三角形");
-                drawingView.setCurrentTool(DrawingView.TOOL_TRIANGLE);
-                // 清除 文字 & 条形码 & 二维码的选中
-                llText.setSelected(false);
-                llBarCode.setSelected(false);
-                llQrCode.setSelected(false);
-                break;
-            case "rectangle":
-                Glide.with(DrawBoardActivity.this).load(R.drawable.icon_tool_rectangle_white).into(ivTool);
-                tvTool.setText("矩形");
-                drawingView.setCurrentTool(DrawingView.TOOL_RECTANGLE);
-                // 清除 文字 & 条形码 & 二维码的选中
-                llText.setSelected(false);
-                llBarCode.setSelected(false);
-                llQrCode.setSelected(false);
-                break;
-            case "circle":
-                Glide.with(DrawBoardActivity.this).load(R.drawable.icon_tool_circle_white).into(ivTool);
-                tvTool.setText("圆形");
-                drawingView.setCurrentTool(DrawingView.TOOL_CIRCLE);
-                // 清除 文字 & 条形码 & 二维码的选中
-                llText.setSelected(false);
-                llBarCode.setSelected(false);
-                llQrCode.setSelected(false);
-                break;
-            case "eraser":
-                Glide.with(DrawBoardActivity.this).load(R.drawable.icon_tool_eraser_white).into(ivTool);
-                tvTool.setText("橡皮擦");
-                drawingView.setCurrentTool(DrawingView.TOOL_ERASER);
-                // 清除 文字 & 条形码 & 二维码的选中
-                llText.setSelected(false);
-                llBarCode.setSelected(false);
-                llQrCode.setSelected(false);
+            default:
+                drawBoardView.setLineStrokeWidth(size);
                 break;
         }
+
     }
 }

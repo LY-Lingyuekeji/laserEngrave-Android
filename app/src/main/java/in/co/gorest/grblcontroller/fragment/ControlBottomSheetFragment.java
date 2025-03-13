@@ -219,8 +219,8 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
         sharedPref = EnhancedSharedPreferences.getInstance(GrblController.getInstance(), getString(R.string.shared_preference_key));
 
         // 获取共享偏好设置保存的运动参数实例
-        int radioButtonStep = sharedPref.getInt(getString(R.string.preference_radio_button_step), 1);
-        int radioButtonSpeed = sharedPref.getInt(getString(R.string.preference_radio_button_speed), 1);
+        int radioButtonStep = sharedPref.getInt(getString(R.string.preference_radio_button_step), 3);
+        int radioButtonSpeed = sharedPref.getInt(getString(R.string.preference_radio_button_speed), 3);
         // 步长（短）
         Double stepShort = sharedPref.getDouble(getString(R.string.preference_step_short), 0.1);
         rbStepShort.setText(stepShort + "mm");

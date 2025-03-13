@@ -2,7 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" package="in.co.gorest.grblcontroller" >
 
-
     <uses-permission android:name="android.permission.BLUETOOTH_SCAN"/>
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -25,6 +24,15 @@
     <uses-feature android:name="android.hardware.usb.host" android:required="false" />
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="true" />
     <uses-feature android:name="android.hardware.camera" android:required="true"/>
+
+
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <uses-permission
+        android:name="android.permission.INSTALL_PACKAGES"
+        tools:ignore="ProtectedPermissions" />
+
+
+
 
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
 
@@ -75,6 +83,12 @@
             android:theme="@style/AppTheme.NoActionBar"
             tools:targetApi="n"
             tools:ignore="LockedOrientationActivity,NonResizeableActivity" />
+
+
+        <activity
+            android:name="com.yalantis.ucrop.UCropActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
 
         <activity
             android:name=".activity.AddDeviceActivity"
@@ -193,19 +207,19 @@
             android:theme="@style/AppTheme.NoActionBar"
             tools:ignore="NonResizeableActivity" />
 
-                <activity
-                    android:name=".activity.TextCreateActivity"
-                    android:resizeableActivity="false"
-                    android:supportsPictureInPicture="false"
-                    android:theme="@style/AppTheme.NoActionBar"
-                    tools:ignore="NonResizeableActivity" />
+        <activity
+            android:name=".activity.TextCreateActivity"
+            android:resizeableActivity="false"
+            android:supportsPictureInPicture="false"
+            android:theme="@style/AppTheme.NoActionBar"
+            tools:ignore="NonResizeableActivity" />
 
-                <activity
-                    android:name=".activity.DrawBoardActivity"
-                    android:resizeableActivity="false"
-                    android:supportsPictureInPicture="false"
-                    android:theme="@style/AppTheme.NoActionBar"
-                    tools:ignore="NonResizeableActivity" />
+        <activity
+            android:name=".activity.DrawBoardActivity"
+            android:resizeableActivity="false"
+            android:supportsPictureInPicture="false"
+            android:theme="@style/AppTheme.NoActionBar"
+            tools:ignore="NonResizeableActivity" />
 
 
         <activity
@@ -320,14 +334,14 @@
             tools:targetApi="n"
             tools:ignore="LockedOrientationActivity,NonResizeableActivity"/>
 
-<!--        <activity-->
-<!--            android:name=".activity.CheckStaModelActivity"-->
-<!--            android:resizeableActivity="false"-->
-<!--            android:screenOrientation="portrait"-->
-<!--            android:supportsPictureInPicture="false"-->
-<!--            android:theme="@style/AppTheme.NoActionBar"-->
-<!--            tools:targetApi="n"-->
-<!--            tools:ignore="LockedOrientationActivity,NonResizeableActivity"/>-->
+        <!--        <activity-->
+        <!--            android:name=".activity.CheckStaModelActivity"-->
+        <!--            android:resizeableActivity="false"-->
+        <!--            android:screenOrientation="portrait"-->
+        <!--            android:supportsPictureInPicture="false"-->
+        <!--            android:theme="@style/AppTheme.NoActionBar"-->
+        <!--            tools:targetApi="n"-->
+        <!--            tools:ignore="LockedOrientationActivity,NonResizeableActivity"/>-->
 
         <activity
             android:name=".activity.MachineValueSettingActivity"
@@ -439,12 +453,12 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-<!--        <receiver android:name=".recevier.WifiReceiver">-->
-<!--            <intent-filter>-->
-<!--                <action android:name="android.net.wifi.WIFI_STATE_CHANGED"/>-->
-<!--                <action android:name="android.net.wifi.STATE_CHANGE"/>-->
-<!--            </intent-filter>-->
-<!--        </receiver>-->
+        <!--        <receiver android:name=".recevier.WifiReceiver">-->
+        <!--            <intent-filter>-->
+        <!--                <action android:name="android.net.wifi.WIFI_STATE_CHANGED"/>-->
+        <!--                <action android:name="android.net.wifi.STATE_CHANGE"/>-->
+        <!--            </intent-filter>-->
+        <!--        </receiver>-->
 
 
         <meta-data
@@ -462,7 +476,10 @@
             android:value="414"/>
         <meta-data
             android:name="design_height_in_dp"
-            android:value="896"/>
+            android:value="920"/>
+
+
+
 
     </application>
 

@@ -520,7 +520,7 @@
                     android:gravity="center"
                     android:text="快速"
                     android:textColor="@drawable/step_text_color_selector"
-                    android:textSize="12sp" />
+                    android:textSize="16sp" />
 
                 <RadioButton
                     android:id="@+id/rb_speed_prestissimo"

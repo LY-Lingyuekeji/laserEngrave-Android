@@ -109,7 +109,7 @@ public class SizeChooseBottomSheetFragment extends BottomSheetDialogFragment {
     private void initData() {
         seekbarSize.setProgressMin(1);
         seekbarSize.setProgressMax(100);
-        defaultSize =  sharedPref.getInt(getString(R.string.preference_draw_board_pen_size), 5);
+        defaultSize =  sharedPref.getInt(getString(R.string.preference_draw_board_pen_size), 6);
         seekbarSize.setProgressDefault(defaultSize);
         tvSize.setText(String.valueOf(seekbarSize.getProgressDefault()));
     }

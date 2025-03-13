@@ -52,7 +52,8 @@
                     android:layout_height="24dp"
                     android:src="@drawable/ic_add_photo"
                     android:layout_marginHorizontal="10dp"
-                    android:visibility="gone"/>
+                    android:visibility="gone"
+                    />
 
                 <Button
                     android:id="@+id/btn_engrave"

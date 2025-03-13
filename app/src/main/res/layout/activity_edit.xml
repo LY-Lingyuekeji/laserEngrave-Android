@@ -5,8 +5,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:background="@color/ColorGray">
+        android:background="@color/ColorGray"
+        android:orientation="vertical">
 
         <!-- Top status bar -->
         <RelativeLayout
@@ -56,8 +56,7 @@
         <!-- main content -->
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-           >
+            android:layout_height="match_parent">
 
             <!-- Material -->
             <RelativeLayout
@@ -69,10 +68,10 @@
 
                 <ImageView
                     android:id="@+id/iv_material"
-                    android:layout_width="200dp"
-                    android:layout_height="200dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
                     android:layout_centerInParent="true"
-                    android:scaleType="centerInside" />
+                     />
 
                 <ImageView
                     android:id="@+id/iv_mirror"
@@ -129,6 +128,7 @@
                 android:id="@+id/ll_bottom_model"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="center"
                 android:layout_alignParentBottom="true"
                 android:layout_centerHorizontal="true"
                 android:background="@color/colorWhite"
@@ -140,12 +140,12 @@
                     android:id="@+id/tab_model"
                     android:layout_width="match_parent"
                     android:layout_height="40dp"
+                    android:layout_gravity="center"
                     android:background="@color/colorWhite"
                     app:tabBackground="@color/colorBlack"
                     app:tabIndicatorHeight="0dp"
                     app:tabMode="scrollable"
                     app:tabRippleColor="@color/colorBlack" />
-
 
                 <!-- Contrast -->
                 <LinearLayout
@@ -154,7 +154,8 @@
                     android:layout_marginTop="10dp"
                     android:background="@drawable/bg_gray_e6e6e6_r10"
                     android:orientation="vertical"
-                    android:padding="10dp">
+                    android:padding="10dp"
+                    android:visibility="gone">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -234,7 +235,8 @@
                     android:layout_marginTop="10dp"
                     android:background="@drawable/bg_gray_e6e6e6_r10"
                     android:orientation="vertical"
-                    android:padding="10dp">
+                    android:padding="10dp"
+                    android:visibility="gone">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -314,7 +316,8 @@
                     android:layout_marginTop="10dp"
                     android:background="@drawable/bg_gray_e6e6e6_r10"
                     android:orientation="vertical"
-                    android:padding="10dp">
+                    android:padding="10dp"
+                    android:visibility="gone">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -395,7 +398,8 @@
                     android:layout_marginBottom="10dp"
                     android:background="@drawable/bg_gray_e6e6e6_r10"
                     android:orientation="vertical"
-                    android:padding="10dp">
+                    android:padding="10dp"
+                    android:visibility="gone">
 
                     <LinearLayout
                         android:layout_width="match_parent"

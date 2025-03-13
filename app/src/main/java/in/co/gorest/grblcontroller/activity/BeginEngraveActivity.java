@@ -23,11 +23,17 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.yalantis.ucrop.UCrop;
+
 import org.json.JSONArray;
 import org.json.JSONException;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import in.co.gorest.grblcontroller.BuildConfig;
@@ -246,17 +252,20 @@ public class BeginEngraveActivity extends AppCompatActivity implements EngraveLi
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK) {
+            Uri destinationUri = getImageOutputUri();
             if (requestCode == ImgUtil.CHOOSE_PHOTO) {
                 Uri selectedImageUri = data.getData();
-                Intent intent = new Intent(BeginEngraveActivity.this, EditActivity.class);
-                intent.putExtra("type", "5");
-                intent.putExtra(BuildConfig.APPLICATION_ID + ".InputUri", selectedImageUri);
-                intent.putExtra("businessType", 1);
-                startActivity(intent);
+                UCrop.of(selectedImageUri, destinationUri)
+                        .start(this);
             } else if (requestCode == ImgUtil.TAKE_PHOTO) {
+                UCrop.of(ImgUtil.imageUri, destinationUri)
+                        .start(this);
+            } else if (requestCode == UCrop.REQUEST_CROP) {
+                final Uri resultUri = UCrop.getOutput(data);
+
                 Intent intent = new Intent(BeginEngraveActivity.this, EditActivity.class);
                 intent.putExtra("type", "5");
-                intent.putExtra(BuildConfig.APPLICATION_ID + ".InputUri", ImgUtil.imageUri);
+                intent.putExtra(BuildConfig.APPLICATION_ID + ".InputUri", resultUri);
                 intent.putExtra("businessType", 1);
                 startActivity(intent);
             }
@@ -276,5 +285,14 @@ public class BeginEngraveActivity extends AppCompatActivity implements EngraveLi
                 Toast.makeText(BeginEngraveActivity.this, "相机权限被拒绝", Toast.LENGTH_SHORT).show();
             }
         }
+    }
+
+    /**
+     * 输出裁剪的图片文件路径
+     * @return 图片文件路径
+     */
+    private Uri getImageOutputUri() {
+        File file = new File(getExternalCacheDir(), "cropped_image.jpg"); // 指定输出文件路径
+        return FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", file);
     }
 }

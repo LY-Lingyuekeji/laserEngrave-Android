@@ -18,33 +18,33 @@
         android:layout_width="match_parent"
         android:layout_height="150dp"
         android:layout_marginTop="30dp"
-        android:padding="15dp"
         android:background="@drawable/bg_white_ffffff_r20"
+        android:gravity="center"
         android:orientation="horizontal"
-        android:gravity="center">
+        android:padding="15dp">
 
         <LinearLayout
             android:id="@+id/ll_setting_guide"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:background="@drawable/bg_gray_eef3f6_r20"
             android:gravity="center"
-            android:orientation="vertical"
-            android:background="@drawable/bg_gray_eef3f6_r20">
+            android:orientation="vertical">
 
             <ImageView
                 android:layout_width="50dp"
                 android:layout_height="50dp"
-                android:src="@mipmap/icon_guide"/>
+                android:src="@mipmap/icon_guide" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:text="使用指南"
-                android:textSize="13sp"
                 android:textColor="@color/colorBlack"
-                android:textStyle="bold"/>
+                android:textSize="13sp"
+                android:textStyle="bold" />
 
 
         </LinearLayout>
@@ -53,30 +53,28 @@
             android:id="@+id/ll_setting_question"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center"
             android:layout_marginStart="10dp"
-            android:orientation="vertical"
-            android:background="@drawable/bg_gray_eef3f6_r20">
+            android:layout_weight="1"
+            android:background="@drawable/bg_gray_eef3f6_r20"
+            android:gravity="center"
+            android:orientation="vertical">
 
             <ImageView
                 android:layout_width="50dp"
                 android:layout_height="50dp"
-                android:src="@mipmap/icon_question"/>
+                android:src="@mipmap/icon_question" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:text="常见问题"
-                android:textSize="13sp"
                 android:textColor="@color/colorBlack"
-                android:textStyle="bold"
-                />
+                android:textSize="13sp"
+                android:textStyle="bold" />
 
 
         </LinearLayout>
-
 
 
     </LinearLayout>
@@ -85,27 +83,26 @@
         android:id="@+id/rl_setting_model"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:padding="15dp"
         android:layout_marginTop="40dp"
         android:background="@drawable/bg_white_ffffff_r20"
-        >
+        android:padding="15dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="操作模式"
-            android:textSize="14sp"
-            android:textColor="@color/colorBlack"
-            android:textStyle="bold"
+            android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:layout_alignParentStart="true"/>
+            android:text="操作模式"
+            android:textColor="@color/colorBlack"
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
             android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
             android:gravity="center"
             android:orientation="horizontal">
 
@@ -113,21 +110,18 @@
                 android:id="@+id/tv_setting_model"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="简易模式"
                 android:layout_marginEnd="10dp"
-                android:textSize="14sp"
+                android:text="简易模式"
                 android:textColor="#999999"
-                android:textStyle="bold"
-               />
+                android:textSize="14sp"
+                android:textStyle="bold" />
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_arrow_right"
-               />
+                android:src="@drawable/ic_arrow_right" />
 
         </LinearLayout>
-
 
 
     </RelativeLayout>
@@ -136,26 +130,25 @@
         android:id="@+id/rl_setting_language"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:padding="15dp"
         android:layout_marginTop="15dp"
         android:background="@drawable/bg_white_ffffff_r20"
-        >
+        android:padding="15dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="语言"
-            android:textSize="14sp"
-            android:textColor="@color/colorBlack"
-            android:textStyle="bold"
+            android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:layout_alignParentStart="true"/>
+            android:text="语言"
+            android:textColor="@color/colorBlack"
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
             android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
             android:gravity="center"
             android:orientation="horizontal">
 
@@ -163,18 +156,16 @@
                 android:id="@+id/tv_language"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="跟随系统"
                 android:layout_marginEnd="10dp"
-                android:textSize="14sp"
+                android:text="跟随系统"
                 android:textColor="#999999"
-                android:textStyle="bold"
-                />
+                android:textSize="14sp"
+                android:textStyle="bold" />
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_arrow_right"
-                />
+                android:src="@drawable/ic_arrow_right" />
 
         </LinearLayout>
 
@@ -185,27 +176,26 @@
         android:id="@+id/rl_setting_agreement"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:padding="15dp"
         android:layout_marginTop="15dp"
         android:background="@drawable/bg_white_ffffff_r20"
-        >
+        android:padding="15dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="用户协议"
-            android:textSize="14sp"
-            android:textColor="@color/colorBlack"
-            android:textStyle="bold"
+            android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:layout_alignParentStart="true"/>
+            android:text="用户协议"
+            android:textColor="@color/colorBlack"
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_arrow_right"
+            android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:layout_alignParentEnd="true"/>
+            android:src="@drawable/ic_arrow_right" />
 
 
     </RelativeLayout>
@@ -214,26 +204,25 @@
         android:id="@+id/rl_setting_clean"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:padding="15dp"
         android:layout_marginTop="15dp"
         android:background="@drawable/bg_white_ffffff_r20"
-        >
+        android:padding="15dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="清除缓存"
-            android:textSize="14sp"
-            android:textColor="@color/colorBlack"
-            android:textStyle="bold"
+            android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:layout_alignParentStart="true"/>
+            android:text="清除缓存"
+            android:textColor="@color/colorBlack"
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
             android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
             android:gravity="center"
             android:orientation="horizontal">
 
@@ -241,18 +230,16 @@
                 android:id="@+id/tv_memory_size"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0"
                 android:layout_marginEnd="10dp"
-                android:textSize="14sp"
+                android:text="0"
                 android:textColor="#999999"
-                android:textStyle="bold"
-                />
+                android:textSize="14sp"
+                android:textStyle="bold" />
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_arrow_right"
-                />
+                android:src="@drawable/ic_arrow_right" />
 
         </LinearLayout>
 
@@ -263,28 +250,27 @@
         android:id="@+id/rl_setting_settings"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:padding="15dp"
         android:layout_marginTop="15dp"
         android:background="@drawable/bg_white_ffffff_r20"
-        >
+        android:padding="15dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="设置"
-            android:textSize="14sp"
-            android:textColor="@color/colorBlack"
-            android:textStyle="bold"
+            android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:layout_alignParentStart="true"/>
+            android:text="设置"
+            android:textColor="@color/colorBlack"
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_arrow_right"
+            android:layout_alignParentEnd="true"
 
             android:layout_centerVertical="true"
-            android:layout_alignParentEnd="true"/>
+            android:src="@drawable/ic_arrow_right" />
 
 
     </RelativeLayout>
@@ -293,45 +279,65 @@
         android:id="@+id/rl_setting_about"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:padding="15dp"
         android:layout_marginTop="15dp"
         android:background="@drawable/bg_white_ffffff_r20"
-        >
+        android:padding="10dp">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="关于"
-            android:textSize="14sp"
-            android:textColor="@color/colorBlack"
-            android:textStyle="bold"
+            android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:layout_alignParentStart="true"/>
+            android:text="关于"
+            android:textColor="@color/colorBlack"
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
         <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
+            android:layout_height="match_parent"
             android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
             android:gravity="center"
             android:orientation="horizontal">
+
+
+            <RelativeLayout
+                android:id="@+id/rl_new_version_tips"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
+                android:background="@drawable/bg_red_fc2d00_r30"
+                android:paddingHorizontal="8dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_centerVertical="true"
+                    android:gravity="center"
+                    android:text="新版本"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="12sp" />
+
+
+            </RelativeLayout>
 
             <TextView
                 android:id="@+id/tv_version_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="5dp"
                 android:text="V1.0.0"
-                android:layout_marginEnd="10dp"
-                android:textSize="14sp"
                 android:textColor="#999999"
-                android:textStyle="bold"
-                />
+                android:textSize="14sp"
+                android:textStyle="bold" />
 
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_margin="5dp"
                 android:src="@drawable/ic_arrow_right"
-
                 />
 
         </LinearLayout>

@@ -40,8 +40,9 @@ import in.co.gorest.grblcontroller.fragment.LaserSetupLineJudgeBottomSheetFragme
 import in.co.gorest.grblcontroller.fragment.StepSetUpBottomSheetFragment;
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 import in.co.gorest.grblcontroller.util.NettyClient;
+import me.jessyan.autosize.internal.CustomAdapt;
 
-public class TelnetConnectionActivity extends BaseActivity {
+public class TelnetConnectionActivity extends BaseActivity implements CustomAdapt {
     // 用于日志记录的标签
     private static final String TAG = TelnetConnectionActivity.class.getSimpleName();
     // 用于管理和访问增强的共享偏好设置实例
@@ -206,7 +207,7 @@ public class TelnetConnectionActivity extends BaseActivity {
         jog_y_negative = findViewById(R.id.jog_y_negative);
         // jog_z_positive
         jog_z_positive = findViewById(R.id.jog_z_positive);
-        // jog_y_negative
+        // jog_z_negative
         jog_z_negative = findViewById(R.id.jog_z_negative);
         // 步长
         rgStep = findViewById(R.id.rg_step);
@@ -258,8 +259,8 @@ public class TelnetConnectionActivity extends BaseActivity {
         syncData();
 
         // 获取共享偏好设置保存的运动参数实例
-        int radioButtonStep = sharedPref.getInt(getString(R.string.preference_radio_button_step), 1);
-        int radioButtonSpeed = sharedPref.getInt(getString(R.string.preference_radio_button_speed), 1);
+        int radioButtonStep = sharedPref.getInt(getString(R.string.preference_radio_button_step), 3);
+        int radioButtonSpeed = sharedPref.getInt(getString(R.string.preference_radio_button_speed), 3);
         // 步长（短）
         Double stepShort = sharedPref.getDouble(getString(R.string.preference_step_short), 0.1);
         rbStepShort.setText(stepShort + "mm");
@@ -761,5 +762,24 @@ public class TelnetConnectionActivity extends BaseActivity {
             tvWposY.setText(WposParts[1]);
             tvWposZ.setText(WposParts[2]);
         }
+    }
+
+    @Override
+    public boolean isBaseOnWidth() {
+        if (isTablet(getApplicationContext())) {
+            return true;
+        } else  {
+            return false;
+        }
+    }
+
+    @Override
+    public float getSizeInDp() {
+        if (isTablet(getApplicationContext())) {
+            return 580;
+        } else  {
+            return 930;
+        }
+
     }
 }

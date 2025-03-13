@@ -22,6 +22,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
 import com.google.android.material.tabs.TabLayout;
+import com.xuexiang.xui.widget.tabbar.EasyIndicator;
+import com.xuexiang.xui.widget.tabbar.TabControlView;
+
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Core;
 import java.io.File;
@@ -178,6 +181,7 @@ public class EditActivity extends AppCompatActivity {
         ivSave = findViewById(R.id.iv_save);
         // tab_model
         tabModel = findViewById(R.id.tab_model);
+
 //        // 对比度
 //        tvContrast = findViewById(R.id.tv_contrast);
 //        seekBarContrast = findViewById(R.id.seekbar_contrast);
@@ -220,6 +224,7 @@ public class EditActivity extends AppCompatActivity {
         // 初始化Tab
         tabModel.setTitle(title);
         tabModel.getTabAt(1).select();
+
         // 创建素材
         handler.postDelayed(new Runnable() {
             @Override
