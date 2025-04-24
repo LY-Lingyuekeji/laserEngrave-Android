@@ -9,8 +9,14 @@ import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.View;
 
+import in.co.gorest.grblcontroller.GrblController;
+import in.co.gorest.grblcontroller.R;
+import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
+
 public class VerticalScaleView extends View {
 
+    // 用于管理和访问增强的共享偏好设置实例。
+    protected EnhancedSharedPreferences sharedPref;
     private Paint mLinePaint;
     private Paint mTextPaint;
     private Paint mRulerPaint;
@@ -38,7 +44,9 @@ public class VerticalScaleView extends View {
     }
 
     private void init() {
-        max = 85;
+        // 初始化共享偏好设置实例
+        sharedPref = EnhancedSharedPreferences.getInstance(GrblController.getInstance(), getContext().getString(R.string.shared_preference_key));
+        max = sharedPref.getInt(getContext().getString(R.string.preference_machine_height), 85);
         startY = new float[max + 1];
         mLineWidth = 1;
         mLinePaint = new Paint();
@@ -63,7 +71,7 @@ public class VerticalScaleView extends View {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         width = getMeasuredWidth();
-        high = (85 + 1) * (mLineWidth + ScreenInchUtils.mmToPx((Activity) getContext(),1)) + 10;
+        high = (sharedPref.getInt(getContext().getString(R.string.preference_machine_height), 85) + 1) * (mLineWidth + ScreenInchUtils.mmToPx((Activity) getContext(),1)) + 10;
         setMeasuredDimension(setMeasureWidth(widthMeasureSpec), high);
     }
 

@@ -43,15 +43,68 @@
         android:orientation="vertical"
         android:padding="10dp">
 
+        <!-- 机器名称 & 连接状态 -->
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_white_ffffff_r20"
+            android:paddingHorizontal="15dp"
+            android:paddingVertical="10dp">
+
+            <TextView
+                android:id="@+id/tv_machine_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_centerVertical="true"
+                android:text=""
+                android:textColor="@color/colorBlack"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="状态："
+                    android:textColor="@color/colorBlack"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_machine_status_tips"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_red_c42b1c_r100"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="5dp"
+                    android:text="未连接"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+
+        </RelativeLayout>
+
         <!-- 坐标 -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="154dp"
+            android:layout_marginTop="15dp"
             android:background="@drawable/bg_white_ffffff_r20"
-            android:orientation="vertical"
             android:gravity="center"
-            android:paddingVertical="10dp"
-            android:paddingHorizontal="15dp">
+            android:orientation="vertical"
+            android:paddingHorizontal="15dp"
+            android:paddingVertical="10dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -61,22 +114,22 @@
                     android:id="@+id/tv_machine_status"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="1"
                     android:layout_gravity="start|center"
+                    android:layout_weight="1"
                     android:text=""
                     android:textColor="@color/colorBlack"
                     android:textSize="17sp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="1"
                     android:layout_gravity="start|center"
+                    android:layout_weight="1"
                     android:text="MPos"
                     android:textColor="@color/colorBlack"
                     android:textSize="17sp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="0dp"
@@ -86,24 +139,23 @@
                     android:text="WPos"
                     android:textColor="@color/colorBlack"
                     android:textSize="17sp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="24dp"
-                android:layout_marginTop="10dp"
-                >
+                android:layout_marginTop="10dp">
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_weight="1"
                     android:layout_gravity="start|center"
+                    android:layout_weight="1"
                     android:text="X"
                     android:textColor="@color/colorBlack"
                     android:textSize="14sp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tv_mpos_x"
@@ -113,7 +165,7 @@
                     android:text="0.000"
                     android:textColor="@color/colorBlack"
                     android:textSize="14sp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tv_wpos_x"
@@ -125,14 +177,13 @@
                     android:text="0.000"
                     android:textColor="@color/colorBlack"
                     android:textSize="14sp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="24dp"
-                android:layout_marginTop="10dp"
-                >
+                android:layout_marginTop="10dp">
 
                 <TextView
                     android:layout_width="0dp"
@@ -141,7 +192,7 @@
                     android:text="Y"
                     android:textColor="@color/colorBlack"
                     android:textSize="14sp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tv_mpos_y"
@@ -151,7 +202,7 @@
                     android:text="0.000"
                     android:textColor="@color/colorBlack"
                     android:textSize="14sp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tv_wpos_y"
@@ -163,14 +214,13 @@
                     android:text="0.000"
                     android:textColor="@color/colorBlack"
                     android:textSize="14sp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="24dp"
-                android:layout_marginTop="10dp"
-               >
+                android:layout_marginTop="10dp">
 
                 <TextView
                     android:layout_width="0dp"
@@ -179,7 +229,7 @@
                     android:text="Z"
                     android:textColor="@color/colorBlack"
                     android:textSize="14sp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tv_mpos_z"
@@ -189,7 +239,7 @@
                     android:text="0.000"
                     android:textColor="@color/colorBlack"
                     android:textSize="14sp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tv_wpos_z"
@@ -201,7 +251,7 @@
                     android:text="0.000"
                     android:textColor="@color/colorBlack"
                     android:textSize="14sp"
-                    android:textStyle="bold"/>
+                    android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>
 
@@ -209,8 +259,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="203dp"
-            android:layout_marginTop="15dp"
-            >
+            android:layout_marginTop="15dp">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -233,10 +282,9 @@
                         android:layout_height="30dp"
                         android:layout_alignParentTop="true"
                         android:layout_centerHorizontal="true"
-                        android:src="@drawable/ic_arrow_up"
-                        android:tag="$J=%s G91 Y%s F%s"
                         android:background="?attr/selectableItemBackgroundBorderless"
-                        />
+                        android:src="@drawable/ic_arrow_up"
+                        android:tag="$J=%s G91 Y%s F%s" />
 
                     <ImageView
                         android:id="@+id/jog_x_positive"
@@ -244,9 +292,9 @@
                         android:layout_height="70dp"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
+                        android:background="?attr/selectableItemBackgroundBorderless"
                         android:src="@drawable/ic_arrow_right"
-                        android:tag="$J=%s G91 X%s F%s"
-                        android:background="?attr/selectableItemBackgroundBorderless"/>
+                        android:tag="$J=%s G91 X%s F%s" />
 
                     <ImageView
                         android:id="@+id/jog_y_negative"
@@ -254,9 +302,9 @@
                         android:layout_height="30dp"
                         android:layout_alignParentBottom="true"
                         android:layout_centerHorizontal="true"
+                        android:background="?attr/selectableItemBackgroundBorderless"
                         android:src="@drawable/ic_arrow_down"
-                        android:tag="$J=%s G91 Y-%s F%s"
-                        android:background="?attr/selectableItemBackgroundBorderless"/>
+                        android:tag="$J=%s G91 Y-%s F%s" />
 
                     <ImageView
                         android:id="@+id/jog_x_negative"
@@ -264,9 +312,9 @@
                         android:layout_height="70dp"
                         android:layout_alignParentStart="true"
                         android:layout_centerVertical="true"
+                        android:background="?attr/selectableItemBackgroundBorderless"
                         android:src="@drawable/ic_arrow_left"
-                        android:tag="$J=%s G91 X-%s F%s"
-                        android:background="?attr/selectableItemBackgroundBorderless"/>
+                        android:tag="$J=%s G91 X-%s F%s" />
                 </RelativeLayout>
 
                 <View
@@ -303,7 +351,7 @@
                         android:text="Home"
                         android:textColor="@color/colorBlack"
                         android:textSize="14sp"
-                        android:textStyle="bold"/>
+                        android:textStyle="bold" />
                 </LinearLayout>
 
                 <RelativeLayout
@@ -320,10 +368,10 @@
                         android:layout_height="wrap_content"
                         android:layout_alignParentTop="true"
                         android:layout_centerHorizontal="true"
-                        android:tag="$J=%s G91 Z%s F%s"
                         android:layout_marginTop="10dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
                         android:src="@drawable/ic_arrow_up"
-                        android:background="?attr/selectableItemBackgroundBorderless"/>
+                        android:tag="$J=%s G91 Z%s F%s" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -340,9 +388,9 @@
                         android:layout_alignParentBottom="true"
                         android:layout_centerHorizontal="true"
                         android:layout_marginBottom="10dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
                         android:src="@drawable/ic_arrow_down"
-                        android:tag="$J=%s G91 Z-%s F%s"
-                        android:background="?attr/selectableItemBackgroundBorderless"/>
+                        android:tag="$J=%s G91 Z-%s F%s" />
                 </RelativeLayout>
 
                 <RelativeLayout
@@ -359,8 +407,8 @@
                         android:layout_alignParentTop="true"
                         android:layout_centerHorizontal="true"
                         android:layout_marginTop="10dp"
-                        android:src="@drawable/ic_arrow_up"
-                        android:background="?attr/selectableItemBackgroundBorderless"/>
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/ic_arrow_up" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -376,10 +424,85 @@
                         android:layout_alignParentBottom="true"
                         android:layout_centerHorizontal="true"
                         android:layout_marginBottom="10dp"
-                        android:src="@drawable/ic_arrow_down"
-                        android:background="?attr/selectableItemBackgroundBorderless"/>
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/ic_arrow_down" />
                 </RelativeLayout>
             </androidx.constraintlayout.widget.ConstraintLayout>
+        </LinearLayout>
+
+
+        <!-- 主轴启停 & 速度 & 减速 & 加速  -->
+        <LinearLayout
+            android:id="@+id/ll_cnc_funcation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/bg_white_ffffff_r20"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tv_cnc_funcations_main_shaft"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/bg_gray_edebee_r100"
+                android:gravity="center"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="8dp"
+                android:text="启动主轴"
+                android:textColor="@color/colorBlack"
+                android:textSize="16sp"
+                android:tag="openMainShaft"/>
+
+            <TextView
+                android:id="@+id/tv_cnc_funcations_main_shaft_level"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_white_gray_bdbdbd_r100"
+                android:gravity="center"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="8dp"
+                android:text="50%"
+                android:drawableRight="@drawable/ic_arrow_down"
+                android:textColor="@color/colorBlack"
+                android:textSize="16sp"/>
+
+            <TextView
+                android:id="@+id/tv_cnc_funcations_main_shaft_level_sub"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_gray_edebee_r100"
+                android:gravity="center"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="8dp"
+                android:text="-10%"
+                android:drawableLeft="@drawable/ic_arrow_left"
+                android:textColor="@color/colorBlack"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/tv_cnc_funcations_main_shaft_level_add"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="5dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_gray_edebee_r100"
+                android:gravity="center"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="8dp"
+                android:text="+10%"
+                android:drawableRight="@drawable/ic_arrow_right"
+                android:textColor="@color/colorBlack"
+                android:textSize="16sp" />
+
+
         </LinearLayout>
 
         <!-- 步长和速度 -->
@@ -387,12 +510,11 @@
             android:layout_width="match_parent"
             android:layout_height="136dp"
             android:layout_marginTop="20dp"
-            android:paddingHorizontal="16dp"
-            android:paddingVertical="8dp"
-            android:gravity="center"
             android:background="@drawable/bg_white_ffffff_r20"
+            android:gravity="center"
             android:orientation="vertical"
-            >
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp">
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -546,8 +668,8 @@
             android:layout_marginTop="14dp"
             android:background="@drawable/bg_white_ffffff_r20"
             android:orientation="vertical"
-            android:paddingVertical="7dp"
-            android:paddingHorizontal="15dp">
+            android:paddingHorizontal="15dp"
+            android:paddingVertical="7dp">
 
             <TextView
                 android:layout_width="match_parent"
@@ -557,252 +679,518 @@
                 android:textSize="16sp" />
 
             <LinearLayout
+                android:id="@+id/ll_laser_funcations_common"
                 android:layout_width="match_parent"
-                android:layout_height="53dp"
-                android:layout_marginTop="5dp"
-                android:orientation="horizontal">
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="5dp">
 
                 <LinearLayout
-                    android:id="@+id/ll_clean_alarm"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_gray_edebee_r100"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:paddingLeft="10dp"
-                    android:paddingTop="4dp"
-                    android:paddingRight="10dp"
-                    android:paddingBottom="4dp">
+                    android:layout_width="match_parent"
+                    android:layout_height="53dp"
+                    android:orientation="horizontal">
 
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/ic_clean_notifi" />
+                    <LinearLayout
+                        android:id="@+id/ll_clean_alarm"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_gray_edebee_r100"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingLeft="10dp"
+                        android:paddingTop="4dp"
+                        android:paddingRight="10dp"
+                        android:paddingBottom="4dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_clean_notifi" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="解除报警"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_clean_hold"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="解除报警"
-                        android:textColor="@color/colorBlack"
-                        android:textSize="12sp"
-                        android:textStyle="bold"/>
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_gray_edebee_r100"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingLeft="10dp"
+                        android:paddingTop="4dp"
+                        android:paddingRight="10dp"
+                        android:paddingBottom="4dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_clean_notifi" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="解除暂停"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_xy_zero"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_gray_edebee_r100"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingLeft="10dp"
+                        android:paddingTop="4dp"
+                        android:paddingRight="10dp"
+                        android:paddingBottom="4dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_clean_pos" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="XY清零"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_z_zero"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_gray_edebee_r100"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingLeft="10dp"
+                        android:paddingTop="4dp"
+                        android:paddingRight="10dp"
+                        android:paddingBottom="4dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_clean_pos" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Z轴清零"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/ll_clean_hold"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_gray_edebee_r100"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:paddingLeft="10dp"
-                    android:paddingTop="4dp"
-                    android:paddingRight="10dp"
-                    android:paddingBottom="4dp">
+                    android:layout_width="match_parent"
+                    android:layout_height="53dp"
+                    android:layout_marginTop="7dp"
+                    android:orientation="horizontal">
 
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/ic_clean_notifi" />
+                    <LinearLayout
+                        android:id="@+id/ll_set_origin"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_gray_edebee_r100"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingLeft="10dp"
+                        android:paddingTop="4dp"
+                        android:paddingRight="10dp"
+                        android:paddingBottom="4dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_tour" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="设置起点"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_go_to_origin"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_gray_edebee_r100"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingLeft="10dp"
+                        android:paddingTop="4dp"
+                        android:paddingRight="10dp"
+                        android:paddingBottom="4dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_origin" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="回起点"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_laser"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_gray_edebee_r100"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingLeft="10dp"
+                        android:paddingTop="4dp"
+                        android:paddingRight="10dp"
+                        android:paddingBottom="4dp"
+                        android:tag="openLaser">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_laserlight" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="激光"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_auto_focus"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="解除暂停"
-                        android:textColor="@color/colorBlack"
-                        android:textSize="12sp"
-                        android:textStyle="bold"/>
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_gray_edebee_r100"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingLeft="10dp"
+                        android:paddingTop="4dp"
+                        android:paddingRight="10dp"
+                        android:paddingBottom="4dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_clean_pos" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="自动对焦"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
                 </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/ll_xy_zero"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_marginStart="8dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_gray_edebee_r100"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:paddingLeft="10dp"
-                    android:paddingTop="4dp"
-                    android:paddingRight="10dp"
-                    android:paddingBottom="4dp">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/ic_clean_pos" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="XY清零"
-                        android:textColor="@color/colorBlack"
-                        android:textSize="12sp"
-                        android:textStyle="bold"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/ll_z_zero"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_marginStart="8dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_gray_edebee_r100"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:paddingLeft="10dp"
-                    android:paddingTop="4dp"
-                    android:paddingRight="10dp"
-                    android:paddingBottom="4dp">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/ic_clean_pos" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="Z轴清零"
-                        android:textColor="@color/colorBlack"
-                        android:textSize="12sp"
-                        android:textStyle="bold"/>
-                </LinearLayout>
-
 
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/ll_cnc_funcations_common"
                 android:layout_width="match_parent"
-                android:layout_height="53dp"
-                android:layout_marginTop="7dp"
-                android:orientation="horizontal">
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="5dp"
+                android:visibility="gone">
 
                 <LinearLayout
-                    android:id="@+id/ll_set_origin"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_gray_edebee_r100"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:paddingLeft="10dp"
-                    android:paddingTop="4dp"
-                    android:paddingRight="10dp"
-                    android:paddingBottom="4dp">
+                    android:layout_width="match_parent"
+                    android:layout_height="53dp"
+                    android:orientation="horizontal">
 
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/ic_tour" />
+                    <LinearLayout
+                        android:id="@+id/ll_cnc_clean_alarm"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_gray_edebee_r100"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingLeft="10dp"
+                        android:paddingTop="4dp"
+                        android:paddingRight="10dp"
+                        android:paddingBottom="4dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_clean_notifi" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="解除报警"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_cnc_clean_hold"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="设置起点"
-                        android:textColor="@color/colorBlack"
-                        android:textSize="12sp"
-                        android:textStyle="bold"/>
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_gray_edebee_r100"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingLeft="10dp"
+                        android:paddingTop="4dp"
+                        android:paddingRight="10dp"
+                        android:paddingBottom="4dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_clean_notifi" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="解除暂停"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_cnc_xy_zero"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_gray_edebee_r100"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingLeft="10dp"
+                        android:paddingTop="4dp"
+                        android:paddingRight="10dp"
+                        android:paddingBottom="4dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_clean_pos" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="XY清零"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_cnc_z_zero"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_gray_edebee_r100"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingLeft="10dp"
+                        android:paddingTop="4dp"
+                        android:paddingRight="10dp"
+                        android:paddingBottom="4dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_clean_pos" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Z轴清零"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
                 </LinearLayout>
 
                 <LinearLayout
-                    android:id="@+id/ll_go_to_origin"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_marginStart="8dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_gray_edebee_r100"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:paddingLeft="10dp"
-                    android:paddingTop="4dp"
-                    android:paddingRight="10dp"
-                    android:paddingBottom="4dp">
+                    android:layout_width="match_parent"
+                    android:layout_height="53dp"
+                    android:layout_marginTop="7dp"
+                    android:orientation="horizontal">
 
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/ic_origin" />
+                    <LinearLayout
+                        android:id="@+id/ll_cnc_go_to_origin"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_gray_edebee_r100"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingLeft="10dp"
+                        android:paddingTop="4dp"
+                        android:paddingRight="10dp"
+                        android:paddingBottom="4dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_origin" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="回起点"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_cnc_auto_focus"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="回起点"
-                        android:textColor="@color/colorBlack"
-                        android:textSize="12sp"
-                        android:textStyle="bold"/>
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_gray_edebee_r100"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingLeft="10dp"
+                        android:paddingTop="4dp"
+                        android:paddingRight="10dp"
+                        android:paddingBottom="4dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_clean_pos" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="自动对刀"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_cnc_funcations_common_command_one"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_gray_edebee_r100"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingLeft="10dp"
+                        android:paddingTop="4dp"
+                        android:paddingRight="10dp"
+                        android:paddingBottom="4dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_code" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="指令1"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_cnc_funcations_common_command_two"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_gray_edebee_r100"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:paddingLeft="10dp"
+                        android:paddingTop="4dp"
+                        android:paddingRight="10dp"
+                        android:paddingBottom="4dp"
+                        android:tag="openLaser">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_code" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="指令2"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
                 </LinearLayout>
 
-                <LinearLayout
-                    android:id="@+id/ll_laser"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_marginStart="8dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_gray_edebee_r100"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:paddingLeft="10dp"
-                    android:paddingTop="4dp"
-                    android:paddingRight="10dp"
-                    android:paddingBottom="4dp"
-                    android:tag="openLaser">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/ic_laserlight" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="激光"
-                        android:textColor="@color/colorBlack"
-                        android:textSize="12sp"
-                        android:textStyle="bold"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/ll_auto_focus"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:layout_weight="1"
-                    android:background="@drawable/bg_gray_edebee_r100"
-                    android:gravity="center"
-                    android:orientation="vertical"
-                    android:paddingLeft="10dp"
-                    android:paddingTop="4dp"
-                    android:paddingRight="10dp"
-                    android:paddingBottom="4dp">
-
-                    <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/ic_clean_pos" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="自动对焦"
-                        android:textColor="@color/colorBlack"
-                        android:textSize="12sp"
-                        android:textStyle="bold"/>
-                </LinearLayout>
             </LinearLayout>
+
+
         </LinearLayout>
+
     </LinearLayout>
 
     <LinearLayout

@@ -5,13 +5,15 @@ public class LaserParameter {
     private String laserModel;
     private int recommendedSpeed; // 推荐雕刻速度
     private int recommendedPower; // 推荐激光功率
+    private String operationMode;  // 添加加工模式（"engraving" 或 "cutting"）
 
     // 构造方法
-    public LaserParameter(String materialType, String laserModel, int recommendedSpeed, int recommendedPower) {
+    public LaserParameter(String materialType, String laserModel, int recommendedSpeed, int recommendedPower, String operationMode) {
         this.materialType = materialType;
         this.laserModel = laserModel;
         this.recommendedSpeed = recommendedSpeed;
         this.recommendedPower = recommendedPower;
+        this.operationMode = operationMode;
     }
 
     // Getter和Setter方法
@@ -29,5 +31,9 @@ public class LaserParameter {
 
     public int getRecommendedPower() {
         return recommendedPower;
+    }
+
+    public String getOperationMode() {
+        return operationMode;
     }
 }

@@ -25,6 +25,12 @@
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="true" />
     <uses-feature android:name="android.hardware.camera" android:required="true"/>
 
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"/>
+
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+
+
 
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission
@@ -206,6 +212,11 @@
             android:supportsPictureInPicture="false"
             android:theme="@style/AppTheme.NoActionBar"
             tools:ignore="NonResizeableActivity" />
+
+        <activity
+            android:name=".activity.MyCaptureActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar"/>
 
         <activity
             android:name=".activity.TextCreateActivity"
@@ -417,6 +428,8 @@
             tools:ignore="LockedOrientationActivity,NonResizeableActivity" />
 
         <activity android:name=".NotificationArchiveActivity" />
+
+
 
 
         <service

@@ -1,7 +1,9 @@
 package in.co.gorest.grblcontroller.adapters;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,15 +14,23 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.imageview.ShapeableImageView;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.util.List;
 
 import in.co.gorest.grblcontroller.R;
+import in.co.gorest.grblcontroller.events.MaterialSelectedEvent;
+import in.co.gorest.grblcontroller.fragment.ParameterBottomSheetFragment;
 import in.co.gorest.grblcontroller.model.Material;
 
 public class MaterialLibraryAdapter extends RecyclerView.Adapter<MaterialLibraryAdapter.LaserMaterialViewHolder> {
 
+
+    // 用于日志记录的标签
+    private final static String TAG = MaterialLibraryAdapter.class.getSimpleName();
     private Context context;
     private List<Material> materialList;
+
 
     // 构造器
     public MaterialLibraryAdapter(Context context, List<Material> materialList) {
@@ -42,6 +52,20 @@ public class MaterialLibraryAdapter extends RecyclerView.Adapter<MaterialLibrary
         Material material = materialList.get(position);
         holder.nameTextView.setText(material.getName());
         holder.imageView.setImageResource(material.getImageResId());
+        // 点击
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG,"MaterialName=" + holder.nameTextView.getText().toString());
+
+                EventBus.getDefault().post(new MaterialSelectedEvent(holder.nameTextView.getText().toString()));
+
+                if (context instanceof Activity) {
+                    Activity activity = (Activity) context;
+                    activity.finish();
+                }
+            }
+        });
 
     }
 

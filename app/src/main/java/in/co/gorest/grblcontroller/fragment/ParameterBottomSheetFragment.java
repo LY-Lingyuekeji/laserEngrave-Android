@@ -1,39 +1,35 @@
 package in.co.gorest.grblcontroller.fragment;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.Spinner;
-import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.ViewSwitcher;
-
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import java.util.ArrayList;
 import java.util.List;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.activity.MaterialLibraryActivity;
 import in.co.gorest.grblcontroller.adapters.LaserMaterialAdapter;
+import in.co.gorest.grblcontroller.events.MaterialSelectedEvent;
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 import in.co.gorest.grblcontroller.model.LaserParameter;
 import in.co.gorest.grblcontroller.model.Material;
 
-public class ParameterBottomSheetFragment extends BottomSheetDialogFragment implements LaserMaterialAdapter.OnItemSelectedListener{
+public class ParameterBottomSheetFragment extends BottomSheetDialogFragment implements LaserMaterialAdapter.OnItemSelectedListener, ParameterOperationModeBottomSheetFragment.OnOperationModeSelectedListener {
 
     // 用于日志记录的标签
     private final static String TAG = ParameterBottomSheetFragment.class.getSimpleName();
@@ -45,6 +41,12 @@ public class ParameterBottomSheetFragment extends BottomSheetDialogFragment impl
     private ImageView ivMoreMaterial;
     // 材料类型
     private TextView tvMaterialName;
+    // 加工类型(标题)
+    private LinearLayout llParameterOperationMode;
+    // 加工类型（整体-激光雕刻/激光切割）
+    private LinearLayout llParameterEngraveOrCutting;
+    // 加工类型
+    private TextView tvParameterEngraveOrCutting;
     // 激光功率（整体）
     private LinearLayout llParameterLaserLevel;
     // 激光功率
@@ -60,10 +62,19 @@ public class ParameterBottomSheetFragment extends BottomSheetDialogFragment impl
     // 激光型号
     private String laserModule;
 
+    // 定义加工模式，默认为雕刻
+    private String selectedOperationMode = "engraving";
+
+    // 设置适配器
+    LaserMaterialAdapter adapter;
+
+    private static final String ARG_INDEX = "target_index";
+    private int targetIndex = -1;
+
 
     // 定义一个接口，用于传递数据
     public interface OnLaserParametersSelectedListener {
-        void onLaserParametersSelected(int power, int speed);
+        void onLaserParametersSelected(int targetIndex, int power, int speed);
     }
 
     // 创建一个接口实例变量
@@ -74,8 +85,12 @@ public class ParameterBottomSheetFragment extends BottomSheetDialogFragment impl
     }
 
     // 单例模式
-    public static ParameterBottomSheetFragment newInstance() {
-        return new ParameterBottomSheetFragment();
+    public static ParameterBottomSheetFragment newInstance(int index) {
+        ParameterBottomSheetFragment fragment = new ParameterBottomSheetFragment();
+        Bundle args = new Bundle();
+        args.putInt(ARG_INDEX, index);
+        fragment.setArguments(args);
+        return fragment;
     }
 
     // 在 Fragment 中设置 Activity 的回调
@@ -100,8 +115,22 @@ public class ParameterBottomSheetFragment extends BottomSheetDialogFragment impl
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         sharedPref = EnhancedSharedPreferences.getInstance(getActivity(), getString(R.string.shared_preference_key));
+
+        if (getArguments() != null) {
+            targetIndex = getArguments().getInt(ARG_INDEX, -1);
+        }
+
+        // 注册EventBus
+        EventBus.getDefault().register(this);
     }
 
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        // 注销EventBus
+        EventBus.getDefault().unregister(this);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -132,6 +161,12 @@ public class ParameterBottomSheetFragment extends BottomSheetDialogFragment impl
         ivMoreMaterial = view.findViewById(R.id.iv_more_material);
         // 材料类型
         tvMaterialName = view.findViewById(R.id.tv_material_name);
+        // 加工类型（整体）
+        llParameterOperationMode = view.findViewById(R.id.ll_parameter_operation_mode);
+        // 加工类型（整体-激光雕刻/激光切割）
+        llParameterEngraveOrCutting = view.findViewById(R.id.ll_parameter_engrave_or_cutting);
+        // 加工类型
+        tvParameterEngraveOrCutting = view.findViewById(R.id.tv_parameter_engrave_or_cutting);
         // 激光功率（整体）
         llParameterLaserLevel = view.findViewById(R.id.ll_parameter_laser_level);
         // 激光功率
@@ -149,53 +184,245 @@ public class ParameterBottomSheetFragment extends BottomSheetDialogFragment impl
      * 初始化数据
      */
     private void initData() {
+        // 获取传递的 tag
+        String tag = getTag();
+        if ("isCutting".equals(tag)) {
+            // 处理切割模式
+            llParameterOperationMode.setVisibility(View.VISIBLE);
+        } else if ("isEngraving".equals(tag)) {
+            // 处理雕刻模式
+            llParameterOperationMode.setVisibility(View.GONE);
+        }
+
+        // 设置加工类型
+        if (selectedOperationMode.equals("engraving")) {
+            tvParameterEngraveOrCutting.setText("雕刻");
+        } else {
+            tvParameterEngraveOrCutting.setText("切割");
+        }
+
+        // 激光型号
+        laserModule = sharedPref.getString(getString(R.string.preference_laser_module), "LdT-3W");
+        Log.d(TAG, "激光型号=" + laserModule);
+
+
         // 初始化 RecyclerView
         materialRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
 
         // 创建数据源
         List<Material> materialList = new ArrayList<>();
-        materialList.add(new Material("木板", R.mipmap.ic_sc_muban));
-        materialList.add(new Material("纸板", R.mipmap.ic_sc_zhiban));
+        materialList.add(new Material("胶合板(2mm)", R.mipmap.ic_sc_muban));
+        materialList.add(new Material("胶合板(5mm)", R.mipmap.ic_sc_muban));
+        materialList.add(new Material("胶合板(8mm)", R.mipmap.ic_sc_muban));
+        materialList.add(new Material("纸板(2mm)", R.mipmap.ic_sc_zhiban));
+        materialList.add(new Material("牛皮纸(250g)", R.mipmap.ic_sc_niupizhi));
         materialList.add(new Material("平安树叶", R.mipmap.ic_sc_pinganye));
         materialList.add(new Material("不锈钢", R.mipmap.ic_sc_buxiugang));
-        materialList.add(new Material("皮革", R.mipmap.ic_sc_pige));
-        materialList.add(new Material("亚克力", R.mipmap.ic_sc_yakeli));
+        materialList.add(new Material("金属漆面", R.mipmap.ic_sc_jinshuqimian));
+        materialList.add(new Material("皮革（1mm）", R.mipmap.ic_sc_pige));
+        materialList.add(new Material("PVC/塑料", R.mipmap.ic_sc_suliao));
+        materialList.add(new Material("黑色亚克力", R.mipmap.ic_sc_yakeli));
+        materialList.add(new Material("橡胶印章", R.mipmap.ic_sc_xiangjiaoyinzhang));
+        materialList.add(new Material("MDF板", R.mipmap.ic_sc_miduban));
+        materialList.add(new Material("竹子", R.mipmap.ic_sc_zhuzi));
+        materialList.add(new Material("软磁贴片", R.mipmap.ic_sc_ruancitiepian));
+        materialList.add(new Material("食物", R.mipmap.ic_sc_shiwu));
+        materialList.add(new Material("玻璃", R.mipmap.ic_sc_boli));
+        materialList.add(new Material("布料", R.mipmap.ic_sc_buliao));
+        materialList.add(new Material("陶瓷", R.mipmap.ic_sc_taoci));
+        materialList.add(new Material("黄铜", R.mipmap.ic_sc_huangtong));
+        materialList.add(new Material("纯铝", R.mipmap.ic_sc_chunlv));
+        materialList.add(new Material("电路铜板", R.mipmap.ic_sc_dianlutongban));
+        materialList.add(new Material("板岩", R.mipmap.ic_sc_banyan));
 
-        // 设置适配器
-        LaserMaterialAdapter adapter = new LaserMaterialAdapter(requireContext(), materialList, this);
+        adapter = new LaserMaterialAdapter(requireContext(), materialList, this);
         materialRecyclerView.setAdapter(adapter);
 
-        // 激光型号
-        laserModule = sharedPref.getString(getString(R.string.preference_laser_module), "LdT-3W");
-        Log.d(TAG, "激光型号=" + laserModule);
+
         // 激光参数列表
         laserParameters = new ArrayList<>();
-        // 木材
-        laserParameters.add(new LaserParameter("木板", "LdT-3W", 3000, 80));
-        laserParameters.add(new LaserParameter("木板", "LdT4-10W", 7000, 50));
-        laserParameters.add(new LaserParameter("木板", "LdT4-20W", 7000, 30));
-        // 纸板
-        laserParameters.add(new LaserParameter("纸板", "LdT-3W", 3000, 80));
-        laserParameters.add(new LaserParameter("纸板", "LdT4-10W", 10000, 60));
-        laserParameters.add(new LaserParameter("纸板", "LdT4-20W", 15000, 50));
+
+        /************************************* 胶合板(2mm) *************************************/
+        // 胶合板(2mm)
+        laserParameters.add(new LaserParameter("胶合板(2mm)", "LdT-3W", 3000, 80, "engraving"));
+        // 胶合板(2mm) 雕刻
+        laserParameters.add(new LaserParameter("胶合板(2mm)", "LdT4-10W", 7000, 50, "engraving"));
+        laserParameters.add(new LaserParameter("胶合板(2mm)", "LdT4-20W", 7000, 30, "engraving"));
+        // 胶合板(2mm) 切割
+        laserParameters.add(new LaserParameter("胶合板(2mm)", "LdT4-10W", 500, 100, "cutting"));
+        laserParameters.add(new LaserParameter("胶合板(2mm)", "LdT4-20W", 700, 90, "cutting"));
+
+        /************************************* 胶合板(5mm) *************************************/
+        // 胶合板(5mm)
+        laserParameters.add(new LaserParameter("胶合板(5mm)", "LdT-3W", 3000, 80, "engraving"));
+        // 胶合板(5mm) 雕刻
+        laserParameters.add(new LaserParameter("胶合板(5mm)", "LdT4-10W", 7000, 50, "engraving"));
+        laserParameters.add(new LaserParameter("胶合板(5mm)", "LdT4-20W", 7000, 30, "engraving"));
+        // 胶合板(5mm) 切割
+        laserParameters.add(new LaserParameter("胶合板(5mm)", "LdT4-10W", 250, 100, "cutting"));
+        laserParameters.add(new LaserParameter("胶合板(5mm)", "LdT4-20W", 300, 90, "cutting"));
+
+        /************************************* 胶合板(8mm) *************************************/
+        // 胶合板(8mm)
+        laserParameters.add(new LaserParameter("胶合板(8mm)", "LdT-3W", 3000, 80, "engraving"));
+        // 胶合板(8mm) 雕刻
+        laserParameters.add(new LaserParameter("胶合板(8mm)", "LdT4-10W", 7000, 50, "engraving"));
+        laserParameters.add(new LaserParameter("胶合板(8mm)", "LdT4-20W", 7000, 30, "engraving"));
+        // 胶合板(8mm) 切割
+        laserParameters.add(new LaserParameter("胶合板(8mm)", "LdT4-10W", 100, 100, "cutting"));
+        laserParameters.add(new LaserParameter("胶合板(8mm)", "LdT4-20W", 150, 100, "cutting"));
+
+        /************************************* 纸板(2mm) *************************************/
+        // 纸板(2mm)
+        laserParameters.add(new LaserParameter("纸板(2mm)", "LdT-3W", 3000, 80, "engraving"));
+        // 纸板(2mm) 雕刻
+        laserParameters.add(new LaserParameter("纸板(2mm)", "LdT4-10W", 10000, 60, "engraving"));
+        laserParameters.add(new LaserParameter("纸板(2mm)", "LdT4-20W", 15000, 50, "engraving"));
+        // 纸板(2mm) 切割
+        laserParameters.add(new LaserParameter("纸板(2mm)", "LdT4-10W", 500, 100, "cutting"));
+        laserParameters.add(new LaserParameter("纸板(2mm)", "LdT4-20W", 500, 90, "cutting"));
+
+        /************************************* 牛皮纸(250g) *************************************/
+        // 牛皮纸(250g)
+        laserParameters.add(new LaserParameter("牛皮纸(250g)", "LdT-3W", 3000, 80, "engraving"));
+        // 牛皮纸(250g)) 雕刻
+        laserParameters.add(new LaserParameter("牛皮纸(250g)", "LdT4-10W", 10000, 70, "engraving"));
+        laserParameters.add(new LaserParameter("牛皮纸(250g)", "LdT4-20W", 20000, 70, "engraving"));
+        // 牛皮纸(250g) 切割
+        laserParameters.add(new LaserParameter("牛皮纸(250g)", "LdT4-10W", 300, 90, "cutting"));
+        laserParameters.add(new LaserParameter("牛皮纸(250g)", "LdT4-20W", 300, 70, "cutting"));
+
+        /************************************* 平安树叶 *************************************/
         // 平安树叶
-        laserParameters.add(new LaserParameter("平安树叶", "LdT-3W", 8000, 100));
-        laserParameters.add(new LaserParameter("平安树叶", "LdT4-10W", 20000, 50));
-        laserParameters.add(new LaserParameter("平安树叶", "LdT4-20W", 25000, 40));
+        laserParameters.add(new LaserParameter("平安树叶", "LdT-3W", 8000, 100, "engraving"));
+        laserParameters.add(new LaserParameter("平安树叶", "LdT4-10W", 22000, 60, "engraving"));
+        laserParameters.add(new LaserParameter("平安树叶", "LdT4-20W", 22000, 40, "engraving"));
+
+
+        /************************************* 不锈钢 *************************************/
         // 不锈钢
-        laserParameters.add(new LaserParameter("不锈钢", "LdT4-10W", 300, 100));
-        laserParameters.add(new LaserParameter("不锈钢", "LdT4-20W", 500, 100));
-        // 皮革
-        laserParameters.add(new LaserParameter("皮革", "LdT-3W", 3000, 80));
-        laserParameters.add(new LaserParameter("皮革", "LdT4-10W", 20000, 50));
-        laserParameters.add(new LaserParameter("皮革", "LdT4-20W", 20000, 40));
-        // 亚克力
-        laserParameters.add(new LaserParameter("亚克力", "LdT-3W", 3000, 100));
-        laserParameters.add(new LaserParameter("亚克力", "LdT4-10W", 10000, 70));
-        laserParameters.add(new LaserParameter("亚克力", "LdT4-20W", 15000, 70));
+        laserParameters.add(new LaserParameter("不锈钢", "LdT-3W", 4000, 100, "engraving"));
+        laserParameters.add(new LaserParameter("不锈钢", "LdT4-10W", 600, 100, "engraving"));
+        laserParameters.add(new LaserParameter("不锈钢", "LdT4-20W", 800, 100, "engraving"));
+
+        /************************************* 金属漆面 *************************************/
+        // 金属漆面
+        laserParameters.add(new LaserParameter("金属漆面", "LdT-3W", 5000, 100, "engraving"));
+        laserParameters.add(new LaserParameter("金属漆面", "LdT4-10W", 600, 100, "engraving"));
+        laserParameters.add(new LaserParameter("金属漆面", "LdT4-20W", 800, 100, "engraving"));
+
+
+        /************************************* 皮革(1mm) *************************************/
+        // 皮革(1mm)
+        laserParameters.add(new LaserParameter("皮革(1mm)", "LdT-3W", 3000, 80, "engraving"));
+        // 皮革(1mm) 雕刻
+        laserParameters.add(new LaserParameter("皮革(1mm)", "LdT4-10W", 10000, 50, "engraving"));
+        laserParameters.add(new LaserParameter("皮革(1mm)", "LdT4-20W", 15000, 40, "engraving"));
+        // 皮革(1mm) 切割
+        laserParameters.add(new LaserParameter("皮革(1mm)", "LdT4-10W", 600, 100, "cutting"));
+        laserParameters.add(new LaserParameter("皮革(1mm)", "LdT4-20W", 500, 90, "cutting"));
+
+        /************************************* PVC/塑料 *************************************/
+        // PVC/塑料
+        laserParameters.add(new LaserParameter("PVC/塑料", "LdT-3W", 4000, 100, "engraving"));
+        // PVC/塑料 雕刻
+        laserParameters.add(new LaserParameter("PVC/塑料", "LdT4-10W", 10000, 70, "engraving"));
+        laserParameters.add(new LaserParameter("PVC/塑料", "LdT4-20W", 15000, 70, "engraving"));
+        // PVC/塑料 切割
+        laserParameters.add(new LaserParameter("PVC/塑料", "LdT4-10W", 600, 100, "cutting"));
+        laserParameters.add(new LaserParameter("PVC/塑料", "LdT4-20W", 800, 100, "cutting"));
+
+        /************************************* PVC/塑料 *************************************/
+        // 黑色亚克力
+        laserParameters.add(new LaserParameter("黑色亚克力", "LdT-3W", 4000, 100, "engraving"));
+        // 黑色亚克力 雕刻
+        laserParameters.add(new LaserParameter("黑色亚克力", "LdT4-10W", 10000, 70, "engraving"));
+        laserParameters.add(new LaserParameter("黑色亚克力", "LdT4-20W", 15000, 70, "engraving"));
+        // 黑色亚克力 切割
+        laserParameters.add(new LaserParameter("黑色亚克力", "LdT4-10W", 150, 100, "cutting"));
+        laserParameters.add(new LaserParameter("黑色亚克力", "LdT4-20W", 300, 100, "cutting"));
+
+        /************************************* 橡胶印章 *************************************/
+        // 橡胶印章
+        laserParameters.add(new LaserParameter("橡胶印章", "LdT-3W", 4000, 100, "engraving"));
+        laserParameters.add(new LaserParameter("橡胶印章", "LdT4-10W", 5000, 70, "engraving"));
+        laserParameters.add(new LaserParameter("橡胶印章", "LdT4-20W", 8000, 70, "engraving"));
+
+        /************************************* MDF板 *************************************/
+        // MDF板
+        laserParameters.add(new LaserParameter("MDF板", "LdT-3W", 1200, 100, "engraving"));
+        laserParameters.add(new LaserParameter("MDF板", "LdT4-10W", 10000, 70, "engraving"));
+        laserParameters.add(new LaserParameter("MDF板", "LdT4-20W", 15000, 70, "engraving"));
+
+        /************************************* 竹子 *************************************/
+        // 竹子
+        laserParameters.add(new LaserParameter("竹子", "LdT-3W", 4000, 100, "engraving"));
+        laserParameters.add(new LaserParameter("竹子", "LdT4-10W", 8000, 70, "engraving"));
+        laserParameters.add(new LaserParameter("竹子", "LdT4-20W", 10000, 70, "engraving"));
+
+        /************************************* 软磁贴片 *************************************/
+        // 软磁贴片
+        laserParameters.add(new LaserParameter("软磁贴片", "LdT-3W", 4000, 100, "engraving"));
+        laserParameters.add(new LaserParameter("软磁贴片", "LdT4-10W", 5000, 70, "engraving"));
+        laserParameters.add(new LaserParameter("软磁贴片", "LdT4-20W", 8000, 70, "engraving"));
+
+        /************************************* 食物 *************************************/
+        // 食物
+        laserParameters.add(new LaserParameter("食物", "LdT-3W", 4000, 100, "engraving"));
+        laserParameters.add(new LaserParameter("食物", "LdT4-10W", 10000, 70, "engraving"));
+        laserParameters.add(new LaserParameter("食物", "LdT4-20W", 15000, 70, "engraving"));
+
+        /************************************* 玻璃 *************************************/
+        // 玻璃
+        laserParameters.add(new LaserParameter("玻璃", "LdT-3W", 1800, 100, "engraving"));
+        laserParameters.add(new LaserParameter("玻璃", "LdT4-10W", 600, 90, "engraving"));
+        laserParameters.add(new LaserParameter("玻璃", "LdT4-20W", 800, 90, "engraving"));
+
+        /************************************* 布料 *************************************/
+        // 布料
+        laserParameters.add(new LaserParameter("布料", "LdT-3W", 4000, 100, "engraving"));
+        // 布料 雕刻
+        laserParameters.add(new LaserParameter("布料", "LdT4-10W", 7000, 50, "engraving"));
+        laserParameters.add(new LaserParameter("布料", "LdT4-20W", 7000, 30, "engraving"));
+        // 布料 切割
+        laserParameters.add(new LaserParameter("布料", "LdT4-10W", 600, 100, "cutting"));
+        laserParameters.add(new LaserParameter("布料", "LdT4-20W", 300, 90, "cutting"));
+
+        /************************************* 陶瓷 *************************************/
+        // 陶瓷
+        laserParameters.add(new LaserParameter("陶瓷", "LdT-3W", 1800, 100, "engraving"));
+        laserParameters.add(new LaserParameter("陶瓷", "LdT4-10W", 7000, 70, "engraving"));
+        laserParameters.add(new LaserParameter("陶瓷", "LdT4-20W", 7000, 50, "engraving"));
+
+
+        /************************************* 黄铜 *************************************/
+        // 黄铜
+        laserParameters.add(new LaserParameter("黄铜", "LdT-3W", 1800, 100, "engraving"));
+        laserParameters.add(new LaserParameter("黄铜", "LdT4-10W", 7000, 70, "engraving"));
+        laserParameters.add(new LaserParameter("黄铜", "LdT4-20W", 7000, 50, "engraving"));
+
+        /************************************* 纯铝 *************************************/
+        // 纯铝
+        laserParameters.add(new LaserParameter("纯铝", "LdT-3W", 1800, 100, "engraving"));
+        laserParameters.add(new LaserParameter("纯铝", "LdT4-10W", 7000, 70, "engraving"));
+        laserParameters.add(new LaserParameter("纯铝", "LdT4-20W", 7000, 50, "engraving"));
+
+        /************************************* 电路铜板 *************************************/
+        // 电路铜板
+        laserParameters.add(new LaserParameter("电路铜板", "LdT-3W", 1800, 100, "engraving"));
+        laserParameters.add(new LaserParameter("电路铜板", "LdT4-10W", 7000, 70, "engraving"));
+        laserParameters.add(new LaserParameter("电路铜板", "LdT4-20W", 7000, 50, "engraving"));
+
+        /************************************* 板岩 *************************************/
+        // 板岩
+        laserParameters.add(new LaserParameter("板岩", "LdT-3W", 1500, 100, "engraving"));
+        laserParameters.add(new LaserParameter("板岩", "LdT4-10W", 6000, 100, "engraving"));
+        laserParameters.add(new LaserParameter("板岩", "LdT4-20W", 10000, 100, "engraving"));
 
         // 查找并设置推荐的功率和速度
-        setRecommendedLaserParameters("木板");
+        setRecommendedLaserParameters("胶合板(2mm)");
+
+
     }
 
     /**
@@ -208,6 +435,16 @@ public class ParameterBottomSheetFragment extends BottomSheetDialogFragment impl
             public void onClick(View v) {
                 // 跳转素材库
                 startActivity(new Intent(requireActivity(), MaterialLibraryActivity.class));
+            }
+        });
+
+        // 加工类型
+        llParameterEngraveOrCutting.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ParameterOperationModeBottomSheetFragment parameterOperationModeBottomSheetFragment = new ParameterOperationModeBottomSheetFragment();
+                parameterOperationModeBottomSheetFragment.setListener(ParameterBottomSheetFragment.this);
+                parameterOperationModeBottomSheetFragment.show(getParentFragmentManager(), selectedOperationMode);
             }
         });
 
@@ -252,16 +489,15 @@ public class ParameterBottomSheetFragment extends BottomSheetDialogFragment impl
         tvConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 // 获取激光功率和速度
                 int power = Integer.parseInt(tvParameterLaserLevel.getText().toString().replace("%", ""));
                 int speed = Integer.parseInt(tvParameterSpeedLevel.getText().toString().replace("mm/min", ""));
 
-                Log.d(TAG, "power=" + power + "------speed=" + speed);
+                Log.d(TAG, "targetIndex=" + targetIndex + "------power=" + power + "------speed=" + speed);
 
                 // 通过接口回调传递数据给 Activity
                 if (listener != null) {
-                    listener.onLaserParametersSelected(power, speed);
+                    listener.onLaserParametersSelected(targetIndex, power, speed);
                 }
 
                 // 关闭当前的底部弹窗
@@ -283,9 +519,12 @@ public class ParameterBottomSheetFragment extends BottomSheetDialogFragment impl
     }
 
     private void setRecommendedLaserParameters(String materialName) {
+
+        boolean isSupported = false;
+
         for (LaserParameter parameter : laserParameters) {
             // 找到对应的材料和激光模块
-            if (parameter.getMaterialType().equals(materialName) && parameter.getLaserModel().equals(laserModule)) {
+            if (parameter.getMaterialType().equals(materialName) && parameter.getLaserModel().equals(laserModule) && parameter.getOperationMode().equals(selectedOperationMode)) {
                 // 设置推荐的功率和速度
                 tvParameterLaserLevel.setText(parameter.getRecommendedPower() + "%");
                 tvParameterSpeedLevel.setText(parameter.getRecommendedSpeed() + "mm/min");
@@ -294,8 +533,65 @@ public class ParameterBottomSheetFragment extends BottomSheetDialogFragment impl
                 sharedPref.edit().putInt(getString(R.string.preference_recommended_power), parameter.getRecommendedPower()).apply();
                 sharedPref.edit().putInt(getString(R.string.preference_recommended_speed), parameter.getRecommendedSpeed()).apply();
 
+                isSupported = true;
+
+                // 设置按钮可用
+                tvConfirm.setEnabled(true);
+                tvConfirm.setClickable(true);
+                tvConfirm.setBackgroundResource(R.drawable.bg_green_1e853a_r100);
 
                 break;
+            }
+        }
+
+        // 如果没有找到匹配的参数，提示用户不支持
+        if (!isSupported) {
+            // 也可以弹出提示框或 Toast
+            Toast.makeText(requireContext(), "当前材料或激光模组不支持", Toast.LENGTH_SHORT).show();
+
+            // 设置按钮可用
+            tvConfirm.setEnabled(false);
+            tvConfirm.setClickable(false);
+            tvConfirm.setBackgroundResource(R.drawable.bg_gray_999999_r30);
+
+        }
+    }
+
+
+    @Override
+    public void onOperationModeSelected(String operationMode) {
+        Log.d(TAG, "operationMode=" + operationMode);
+        selectedOperationMode = operationMode;
+        if (operationMode.equals("engraving")) {
+            tvParameterEngraveOrCutting.setText("雕刻");
+            initData();
+        } else if (operationMode.equals("cutting")) {
+            tvParameterEngraveOrCutting.setText("切割");
+            initData();
+        }
+    }
+
+
+    /**
+     * MaterialSelectedEvent
+     *
+     * @param event
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMaterialSelectedEventEvent(MaterialSelectedEvent event) {
+        if (!event.getMessage().isEmpty()) {
+            String materialName = event.getMessage().toString();
+            // 这里你可以接收选中的名称，并在 Fragment 中做处理
+            Log.d(TAG, "Selected Material=" + materialName);
+            // 设置材料类型
+            tvMaterialName.setText(materialName);
+            // 查找并设置推荐的功率和速度
+            setRecommendedLaserParameters(materialName);
+            //
+            if (adapter != null) {
+                adapter.setSelectedMaterial(materialName);
+
+                materialRecyclerView.scrollToPosition(adapter.getSelectedPosition());
             }
         }
     }

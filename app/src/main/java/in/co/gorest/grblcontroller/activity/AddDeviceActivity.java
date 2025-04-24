@@ -4,25 +4,19 @@ package in.co.gorest.grblcontroller.activity;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowInsetsController;
 import android.widget.ImageView;
-import android.widget.TextView;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.adapters.AddDeviceAdapter;
 import in.co.gorest.grblcontroller.model.Device;

@@ -78,8 +78,21 @@
     <string name="preference_speed_middle" translatable="false">preference_speed_middle</string>
     <string name="preference_speed_fast" translatable="false">preference_speed_fast</string>
     <string name="preference_speed_prestissimo" translatable="false">preference_speed_prestissimo</string>
+
+    <string name="preference_step_short_cnc" translatable="false">preference_step_short_cnc</string>
+    <string name="preference_step_general_cnc" translatable="false">preference_step_general_cnc</string>
+    <string name="preference_step_middle_cnc" translatable="false">preference_step_middle_cnc</string>
+    <string name="preference_step_long_cnc" translatable="false">preference_step_long_cnc</string>
+    <string name="preference_speed_slow_cnc" translatable="false">preference_speed_slow_cnc</string>
+    <string name="preference_speed_middle_cnc" translatable="false">preference_speed_middle_cnc</string>
+    <string name="preference_speed_fast_cnc" translatable="false">preference_speed_fast_cnc</string>
+    <string name="preference_speed_prestissimo_cnc" translatable="false">preference_speed_prestissimo_cnc</string>
+
     <string name="preference_radio_button_step" translatable="false">preference_radio_button_step</string>
     <string name="preference_radio_button_speed" translatable="false">preference_radio_button_speed</string>
+
+    <string name="preference_radio_button_step_cnc" translatable="false">preference_radio_button_step_cnc</string>
+    <string name="preference_radio_button_speed_cnc" translatable="false">preference_radio_button_speed_cnc</string>
     <string name="preference_laser_level" translatable="false">preference_laser_level</string>
     <string name="preference_auto_connect" translatable="false">preference_auto_connect</string>
     <string name="preference_wifi_ssid" translatable="false">preference_wifi_ssid</string>
@@ -101,8 +114,18 @@
     <string name="preference_recommended_speed" translatable="false">preference_recommended_speed</string>
     <string name="preference_scandevice_guide_isshow" translatable="false">preference_scandevice_guide_isshow</string>
     <string name="preference_connectdevice_guide_isshow" translatable="false">preference_connectdevice_guide_isshow</string>
+    <string name="preference_main_shaft_level" translatable="false">preference_main_shaft_level</string>
+    <string name="ll_cnc_funcations_common_command_one_content" translatable="false">ll_cnc_funcations_common_command_one_content</string>
+    <string name="ll_cnc_funcations_common_command_two_content" translatable="false">ll_cnc_funcations_common_command_two_content</string>
 
+    <string name="preference_air_module" translatable="false">preference_air_module</string>
+    <string name="preference_machine_width" translatable="false">preference_machine_width</string>
+    <string name="preference_machine_height" translatable="false">preference_machine_height</string>
+    <string name="preference_machine_width_cnc" translatable="false">preference_machine_width_cnc</string>
+    <string name="preference_machine_height_cnc" translatable="false">preference_machine_height_cnc</string>
 
+    <string name="preference_vibrate_alert" translatable="false">preference_vibrate_alert</string>
+    <string name="preference_vibrate_alert_time" translatable="false">preference_vibrate_alert_time</string>
 
     <string name="connect_type" translatable="false">connect_type</string>
 
@@ -459,13 +482,5 @@
     <string name="dummy_content">DUMMY\nCONTENT</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
-
-
-    <string-array name="laser_modules">
-        <item>请选择</item>
-        <item>LdT-3W</item>
-        <item>LdT4-10W</item>
-        <item>LdT4-20W</item>
-    </string-array>
 
 </resources>

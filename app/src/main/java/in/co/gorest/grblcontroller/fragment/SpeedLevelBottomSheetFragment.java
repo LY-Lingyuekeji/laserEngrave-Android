@@ -1,25 +1,23 @@
 package in.co.gorest.grblcontroller.fragment;
 
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.TextView;
-
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-import org.greenrobot.eventbus.EventBus;
 import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
-import in.co.gorest.grblcontroller.events.SpeedLevelUpdateMessageEvent;
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 
 public class SpeedLevelBottomSheetFragment extends BottomSheetDialogFragment {
@@ -30,6 +28,11 @@ public class SpeedLevelBottomSheetFragment extends BottomSheetDialogFragment {
     protected EnhancedSharedPreferences sharedPref;
     // 记录选中项的索引
     private int selectedPosition = -1;  // 默认没有选中任何项
+    // 自定义雕刻速度
+    private EditText etCustomizeSpeedLevel;
+    // 确定
+    private TextView tvConfirmCustomizeSpeedLevel;
+
     // ListView
     private ListView listView;
     // 选项
@@ -72,7 +75,7 @@ public class SpeedLevelBottomSheetFragment extends BottomSheetDialogFragment {
         }
 
         // 获取保存的激光功率（假设保存的是一个百分比值，范围从 0 到 100）
-        int savedSpeedLevel = sharedPref.getInt(getString(R.string.preference_recommended_speed), 1000);  // 默认为10%
+        int savedSpeedLevel = sharedPref.getInt(getString(R.string.preference_recommended_speed), 1000);  // 默认为1000
 
         // 恢复上次选中的项
         selectedPosition = getIndexFromSpeed(savedSpeedLevel);
@@ -93,6 +96,10 @@ public class SpeedLevelBottomSheetFragment extends BottomSheetDialogFragment {
     private void initView(View view) {
         // ListView
         listView = view.findViewById(R.id.lv_speed_level_options);
+        // 自定义雕刻速度
+        etCustomizeSpeedLevel = view.findViewById(R.id.et_customize_speed_level);
+        // 确定
+        tvConfirmCustomizeSpeedLevel = view.findViewById(R.id.tv_confirm_customize_speed_level);
     }
 
     /**
@@ -123,6 +130,35 @@ public class SpeedLevelBottomSheetFragment extends BottomSheetDialogFragment {
         if (selectedPosition != -1) {
             listView.setSelection(selectedPosition);  // 滚动到选中的位置
         }
+
+
+        // 确定
+        tvConfirmCustomizeSpeedLevel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "CustomizeSpeedLevel=" + etCustomizeSpeedLevel.getText().toString());
+
+                if (TextUtils.isEmpty(etCustomizeSpeedLevel.getText().toString())) {
+                    Toast.makeText(requireContext(), "请先输入自定义的速度", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (Integer.valueOf(etCustomizeSpeedLevel.getText().toString()) <= 0) {
+                    Toast.makeText(requireContext(), "请输入非0的速度", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (Integer.valueOf(etCustomizeSpeedLevel.getText().toString()) > 30000) {
+                    Toast.makeText(requireContext(), "最大速度仅支持30000mm/min", Toast.LENGTH_SHORT).show();
+                    etCustomizeSpeedLevel.setText("30000");
+                    return;
+                }
+
+                listener.OnSpeedLevelSelectedListener(etCustomizeSpeedLevel.getText().toString() + "mm/min");
+                sharedPref.edit().putInt(getString(R.string.preference_recommended_speed), Integer.valueOf(etCustomizeSpeedLevel.getText().toString())).apply();
+                dismiss();
+            }
+        });
     }
 
     /**
@@ -136,7 +172,7 @@ public class SpeedLevelBottomSheetFragment extends BottomSheetDialogFragment {
             ((ArrayAdapter) listView.getAdapter()).notifyDataSetChanged();  // 更新视图
 
             if (listener != null) {
-                Log.d(TAG, "Calling listener onLaserPowerSelected");
+                Log.d(TAG, "Calling listener onSpeedLevelSelected");
                 listener.OnSpeedLevelSelectedListener(options[position]);
                 sharedPref.edit().putInt(getString(R.string.preference_recommended_speed), Integer.valueOf(options[position].toString().replace("mm/min", ""))).apply();
             }

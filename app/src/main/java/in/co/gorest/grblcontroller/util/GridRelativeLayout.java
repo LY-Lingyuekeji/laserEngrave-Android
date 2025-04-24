@@ -11,7 +11,13 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
+import in.co.gorest.grblcontroller.GrblController;
+import in.co.gorest.grblcontroller.R;
+import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
+
 public class GridRelativeLayout extends View {
+    // 用于管理和访问增强的共享偏好设置实例。
+    protected EnhancedSharedPreferences sharedPref;
     public final static int NONE = 0;
     /**
      * 按下
@@ -109,9 +115,11 @@ public class GridRelativeLayout extends View {
     }
 
     private void init() {
-        max = 85;
+        // 初始化共享偏好设置实例
+        sharedPref = EnhancedSharedPreferences.getInstance(GrblController.getInstance(), getContext().getString(R.string.shared_preference_key));
+        max = sharedPref.getInt(getContext().getString(R.string.preference_machine_height), 85);
         startY = new float[max + 1];
-        maxs = 85;
+        maxs = sharedPref.getInt(getContext().getString(R.string.preference_machine_width), 85);;
         startXs = new float[maxs + 1];
         mLineWidth = 1;
         mLinePaint = new Paint();
@@ -134,8 +142,8 @@ public class GridRelativeLayout extends View {
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-        int wh = 85 * (mLineWidth + ScreenInchUtils.mmToPx((Activity) getContext(),1));
-        int hg =  85 * (mLineWidth + ScreenInchUtils.mmToPx((Activity) getContext(),1))+10;
+        int wh = sharedPref.getInt(getContext().getString(R.string.preference_machine_width), 85) * (mLineWidth + ScreenInchUtils.mmToPx((Activity) getContext(),1));
+        int hg = sharedPref.getInt(getContext().getString(R.string.preference_machine_height), 85) * (mLineWidth + ScreenInchUtils.mmToPx((Activity) getContext(),1))+10;
         int whs = getMeasuredWidth();
         int hgs = getMeasuredHeight();
         width = wh < whs ? whs : wh;

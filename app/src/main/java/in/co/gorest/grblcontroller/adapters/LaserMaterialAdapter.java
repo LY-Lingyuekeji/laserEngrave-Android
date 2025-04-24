@@ -97,4 +97,18 @@ public class LaserMaterialAdapter extends RecyclerView.Adapter<LaserMaterialAdap
     public interface OnItemSelectedListener {
         void onItemSelected(String materialName); // 回调方法，传递选中的材料名称
     }
+
+    public void setSelectedMaterial(String materialName) {
+        for (int i = 0; i < materialList.size(); i++) {
+            if (materialList.get(i).getName().equals(materialName)) {
+                selectedPosition = i;
+                notifyDataSetChanged();  // 通知 RecyclerView 刷新 UI
+                break;
+            }
+        }
+    }
+
+    public int getSelectedPosition() {
+        return selectedPosition;
+    }
 }

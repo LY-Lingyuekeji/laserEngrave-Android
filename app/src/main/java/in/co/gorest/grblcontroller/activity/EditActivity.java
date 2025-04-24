@@ -2,40 +2,63 @@
 package in.co.gorest.grblcontroller.activity;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.Dialog;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
+import android.os.Message;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowInsetsController;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
 import com.google.android.material.tabs.TabLayout;
-import com.xuexiang.xui.widget.tabbar.EasyIndicator;
-import com.xuexiang.xui.widget.tabbar.TabControlView;
-
-import org.opencv.android.OpenCVLoader;
-import org.opencv.core.Core;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import in.co.gorest.grblcontroller.BuildConfig;
+import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
+import in.co.gorest.grblcontroller.events.ServiceMessageEvent;
+import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
+import in.co.gorest.grblcontroller.model.Constants;
 import in.co.gorest.grblcontroller.model.EffectBean;
 import in.co.gorest.grblcontroller.util.FileManager;
 import in.co.gorest.grblcontroller.util.FileUtils;
@@ -43,6 +66,7 @@ import in.co.gorest.grblcontroller.util.ImageProcess;
 import in.co.gorest.grblcontroller.util.ImgUtil;
 import in.co.gorest.grblcontroller.util.MySeekBar;
 import in.co.gorest.grblcontroller.util.MyTabLayout;
+import in.co.gorest.grblcontroller.util.NettyClient;
 import in.co.gorest.grblcontroller.util.PictureUtil;
 import in.co.gorest.grblcontroller.util.ScreenInchUtils;
 import io.reactivex.Observable;
@@ -57,6 +81,8 @@ public class EditActivity extends AppCompatActivity {
 
     // 用于日志记录的标签
     private final static String TAG = EditActivity.class.getSimpleName();
+    // 用于管理和访问增强的共享偏好设置实例。
+    protected EnhancedSharedPreferences sharedPref;
     // CompositeDisposable容器
     private static CompositeDisposable mCompositeDisposable;
     // 页面跳转Code
@@ -65,6 +91,10 @@ public class EditActivity extends AppCompatActivity {
     private ImageView ivBack;
     // 下一步
     private Button btnNext;
+    // 机器名称
+    private TextView tvMachineName;
+    // 机器状态提示
+    private TextView tvMachineStatusTips;
     // 素材
     private ImageView ivMaterial;
     // 镜像
@@ -77,18 +107,15 @@ public class EditActivity extends AppCompatActivity {
     private ImageView ivSave;
     // tab_model
     private MyTabLayout tabModel;
-//    // 对比度
-//    private TextView tvContrast;
-//    private MySeekBar seekBarContrast;
-//    // 亮度
-//    private TextView tvBrightness;
-//    private MySeekBar seekBarBrightness;
-//    // 锐化
-//    private TextView tvSharpening;
-//    private MySeekBar seekBarSharpening;
-//    // 高光
-//    private TextView tvHighlights;
-//    private MySeekBar seekBarHighlights;
+    // 对比度
+    private TextView tvContrast;
+    private MySeekBar seekBarContrast;
+    // 亮度
+    private TextView tvBrightness;
+    private MySeekBar seekBarBrightness;
+    // 锐化
+    private TextView tvSharpening;
+    private MySeekBar seekBarSharpening;
     // seekBars类型
     private int seekBars;
     // 业务模式
@@ -103,31 +130,30 @@ public class EditActivity extends AppCompatActivity {
     private boolean andReverse;
     // locations
     private float locations;
-    // bitmapWidth
-    private int bitmapWidth;
-    // bitmapHeight
-    private int bitmapHeight;
-    // 初始比例
-    private float aspectRatio = 1.0f;
     // tab title
     private List<String> title = Arrays.asList("灰度图", "黑白图", "轮廓", "素描");
-    // 对比度
-//    private int contrast = 50;
-    // 亮度
-//    private int brightness = 50;
     // 锐化
     private int sharp = 127;
-    // 高光
-//    private int highlights = 50;
+    // 对比度
+    private int contrast = 50;
+    private float contrastLevel = 1.0f; // 初始对比度
+
     // tabPosition
     private int tabPosition = 1;
     // 分辨率
-    private float resols = 0.08f;
+    private float resols = 0.05f;
+    // 亮度
+    private int brightness = 50;
+    private float brightnessLevel = 0; // 初始亮度
     // 效果
     private List<EffectBean> effectBeans = new ArrayList<>();
     // handler
     public Handler handler = new Handler();
 
+    // 是否震动提醒
+    private boolean isOpenVibrateAlert;
+    // 震动提醒持续时长
+    private int vibrateAlertTime;
 
     // 启用矢量图支持，确保在应用中可以正确显示矢量图形
     static {
@@ -152,6 +178,11 @@ public class EditActivity extends AppCompatActivity {
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
         }
 
+        // 初始化共享偏好设置实例
+        sharedPref = EnhancedSharedPreferences.getInstance(GrblController.getInstance(), getString(R.string.shared_preference_key));
+
+        // 注册EventBus
+        EventBus.getDefault().register(this);
 
         // 初始化界面
         initView();
@@ -169,6 +200,10 @@ public class EditActivity extends AppCompatActivity {
         ivBack = findViewById(R.id.iv_back);
         // 下一步
         btnNext = findViewById(R.id.btn_next);
+        // 机器名称
+        tvMachineName = findViewById(R.id.tv_machine_name);
+        // 机器状态提示
+        tvMachineStatusTips = findViewById(R.id.tv_machine_status_tips);
         // 素材
         ivMaterial = findViewById(R.id.iv_material);
         // 镜像
@@ -181,29 +216,25 @@ public class EditActivity extends AppCompatActivity {
         ivSave = findViewById(R.id.iv_save);
         // tab_model
         tabModel = findViewById(R.id.tab_model);
-
-//        // 对比度
-//        tvContrast = findViewById(R.id.tv_contrast);
-//        seekBarContrast = findViewById(R.id.seekbar_contrast);
+        // 对比度
+        tvContrast = findViewById(R.id.tv_contrast);
+        seekBarContrast = findViewById(R.id.seekbar_contrast);
         // 亮度
-//        tvBrightness = findViewById(R.id.tv_brightness);
-//        seekBarBrightness = findViewById(R.id.seekbar_brightness);
-//        // 锐化
-//        tvSharpening = findViewById(R.id.tv_sharpening);
-//        seekBarSharpening = findViewById(R.id.seekbar_sharpening);
-//        // 高光
-//        tvHighlights = findViewById(R.id.tv_highlights);
-//        seekBarHighlights = findViewById(R.id.seekbar_highlights);
-
-
+        tvBrightness = findViewById(R.id.tv_brightness);
+        seekBarBrightness = findViewById(R.id.seekbar_brightness);
     }
 
     /**
      * 初始化数据
      */
     private void initData() {
+        // 根据机器设置布局
+        String machineName = getIntent().getStringExtra("machineName");
+        if (!TextUtils.isEmpty(machineName)) {
+            tvMachineName.setText(machineName);
+        }
+
         locations = ScreenInchUtils.mmToPx(this, 1) + 1;
-        // 初始化进度值
         seekBars = 1;
         businessType = getIntent().getIntExtra("businessType", 1);
         Log.d(TAG, "businessType=" + businessType);
@@ -218,7 +249,6 @@ public class EditActivity extends AppCompatActivity {
             Log.d(TAG, "initBitmap_failed" + e);
             finish();
         }
-
         mCompositeDisposable = new CompositeDisposable();
 
         // 初始化Tab
@@ -233,21 +263,35 @@ public class EditActivity extends AppCompatActivity {
             }
         }, 100);
 
-        // 初始化参数
-        initParameter();
+
+        // 对比度
+        seekBarContrast.setProgressMin(1);
+        seekBarContrast.setProgressMax(100);
+        seekBarContrast.setProgressDefault(50);
+        tvContrast.setText(seekBarContrast.getProgressDefault() + "%");
+
+        // 亮度
+        seekBarBrightness.setProgressMin(1);
+        seekBarBrightness.setProgressMax(100);
+        seekBarBrightness.setProgressDefault(50);
+        tvBrightness.setText(seekBarBrightness.getProgressDefault() + "%");
+
+//        if (!OpenCVLoader.initLocal()) {
+//            try {
+//                System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+//            } catch (UnsatisfiedLinkError e) {
+//                Log.e("OpenCV", "Cannot load OpenCV library", e);
+//            }
+//        } else {
+//            // OpenCV initialized successfully
+//            Log.d(TAG, "OpenCV initialized successfully");
+//        }
 
 
-        if (!OpenCVLoader.initLocal()) {
-            try {
-                System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-            } catch (UnsatisfiedLinkError e) {
-                Log.e("OpenCV", "Cannot load OpenCV library", e);
-            }
-        } else {
-            // OpenCV initialized successfully
-            Log.d(TAG, "OpenCV initialized successfully");
-        }
-
+        // 获取保存的危险警报震动提醒实例值
+        isOpenVibrateAlert = sharedPref.getBoolean(getString(R.string.preference_vibrate_alert), true);
+        // 获取保存的危险警报震动提醒时长实例值
+        vibrateAlertTime = sharedPref.getInt(getString(R.string.preference_vibrate_alert_time), 1);
 
     }
 
@@ -275,16 +319,16 @@ public class EditActivity extends AppCompatActivity {
                 mCropOptionsBundle.putString("type", "" + (tabPosition + 1));
                 mCropOptionsBundle.putFloat("resols", resols);
                 mCropOptionsBundle.putInt("Sharp", sharp);
+                mCropOptionsBundle.putInt("operationMode", tabPosition);
                 mCropOptionsBundle.putBoolean("andReverse", andReverse);
                 mCropOptionsBundle.putSerializable("effectBeans", (Serializable) effectBeans);
                 mCropOptionsBundle.putParcelable(BuildConfig.APPLICATION_ID + ".InputUri", imageUris);
                 mCropOptionsBundle.putParcelable("initedBitmapUri", Uri.fromFile(ImgUtil.saveBitmap("initedBitmap_" + System.currentTimeMillis() + ".png", initedBitmap)));
-                mCropOptionsBundle.putInt("bitmapWidth", bitmapWidth);
-                mCropOptionsBundle.putInt("bitmapHeight", bitmapHeight);
-                mCropOptionsBundle.putFloat("aspectRatio", aspectRatio);
 
                 if (businessType == 1) {
                     Intent intent = new Intent(EditActivity.this, PreViewActivity.class);
+                    intent.putExtra("machineName", tvMachineName.getText().toString());
+//                    intent.putExtra("operationMode", tabPosition);
                     intent.putExtras(mCropOptionsBundle);
                     startActivityForResult(intent, ACTIVITY_CODE_FINISH);
                 } else {
@@ -293,51 +337,42 @@ public class EditActivity extends AppCompatActivity {
                     setResult(RESULT_OK, data);
                     finish();
                 }
-
-
-//                intent.putExtra("type", String.valueOf(tabPosition + 1));
-//                intent.putExtra("resols", resols);
-//                intent.putExtra("Sharp", sharp);
-//                intent.putExtra("andReverse", andReverse);
-//                intent.putExtra("effectBeans", (Serializable) effectBeans);
-//                intent.putExtra(BuildConfig.APPLICATION_ID + ".InputUri", imageUris);
-//                intent.putExtra("initedBitmapUri", Uri.fromFile(ImgUtil.saveBitmap("initedBitmap_" + System.currentTimeMillis() + ".png", initedBitmap)));
-//                intent.putExtra("bitmapWidth", bitmapWidth);
-//                intent.putExtra("bitmapHeight", bitmapHeight);
-//                intent.putExtra("aspectRatio", aspectRatio);
-
-
-
-//                File finalBitmapFile = ImgUtil.saveBitmap("2_finalBitmap_" + System.currentTimeMillis() + ".png", finalBitmap);
-//
-//                new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        Image2Gcode image2Gcode = new Image2Gcode();
-//                        Bitmap adjustBitmap = ImageProcess.imageResize(finalBitmap, Integer.valueOf(Math.round(initedBitmap.getWidth() * 1.0f / locations)), Integer.valueOf(Math.round(initedBitmap.getHeight() * 1.0f / locations)), resols);
-//                        strcontent = image2Gcode.image2Gcode(adjustBitmap, resols, 1000, 200, 0, 0);
-//                        FileUtils.writeTxtToFile(strcontent, GrblController.getInstance().getExternalFilesDir(null) + "/laser/", System.currentTimeMillis() + ".nc", new GcodeResults() {
-//                            @Override
-//                            public void onGcodeResults(String results, File file) {
-//                                Log.d(TAG, "file:" + file.getPath());
-//
-//                                Intent intent = new Intent(EditActivity.this, EngraveActivity.class);
-//                                intent.putExtra("imagePath",finalBitmapFile.getAbsolutePath());
-//                                intent.putExtra("filePath",file.getPath());
-//                                startActivity(intent);
-//                                finish();
-//                            }
-//
-//                            @Override
-//                            public void onGcodeResults(List<String> gcode) {
-//
-//                            }
-//                        });
-//                    }
-//                }).start();
-
             }
         });
+
+        // 机器状态
+        tvMachineStatusTips.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (tvMachineStatusTips.getText().equals("工作中")) {
+                    Intent intent = new Intent(EditActivity.this, EngraveActivity.class);
+                    String imagePath = sharedPref.getString(getString(R.string.preference_image_path), "");
+                    String filePath = sharedPref.getString(getString(R.string.preference_file_path), "");
+                    intent.putExtra("imagePath", imagePath);
+                    intent.putExtra("filePath", filePath);
+                    startActivity(intent);
+                } else if (tvMachineStatusTips.getText().equals("暂停")){
+                    // 解除暂停
+                    NettyClient.getInstance(new Handler(new Handler.Callback() {
+                        @Override
+                        public boolean handleMessage(@NonNull Message msg) {
+                            return false;
+                        }
+                    })).sendMsgToServer(("\u0018" + "\r\n").getBytes(StandardCharsets.UTF_8), null);
+                } else if (tvMachineStatusTips.getText().equals("警告")){
+                    // 解除警告
+                    NettyClient.getInstance(new Handler(new Handler.Callback() {
+                        @Override
+                        public boolean handleMessage(@NonNull Message msg) {
+                            return false;
+                        }
+                    })).sendMsgToServer(("$X" + "\r\n").getBytes(StandardCharsets.UTF_8), null);
+                } else {
+                    Log.d(TAG, "无效点击");
+                }
+            }
+        });
+
 
         // 镜像
         ivMirror.setOnClickListener(new View.OnClickListener() {
@@ -376,7 +411,16 @@ public class EditActivity extends AppCompatActivity {
         ivSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(EditActivity.this, "功能调试中，敬请期待！", Toast.LENGTH_SHORT).show();
+                // 获取 ImageView 的 Bitmap
+                ivSave.setDrawingCacheEnabled(true);
+                Bitmap bitmap = Bitmap.createBitmap(ivSave.getDrawingCache());
+                ivSave.setDrawingCacheEnabled(false);
+
+                if (bitmap != null) {
+                    saveBitmapToGallery(v.getContext(), finalBitmap, "my_image_" + System.currentTimeMillis());
+                } else {
+                    Toast.makeText(v.getContext(), "获取图片失败", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -387,6 +431,8 @@ public class EditActivity extends AppCompatActivity {
                 if (tabPosition == tab.getPosition())
                     return;
                 tabPosition = tab.getPosition();
+
+                Log.d(TAG, "tabPosition=" + tabPosition);
 
                 createEffectBitmap(tabPosition);
             }
@@ -402,65 +448,47 @@ public class EditActivity extends AppCompatActivity {
             }
         });
 
-//        // 对比度
-//        seekBarContrast.setProgressChanged(new MySeekBar.onProgressChanged() {
-//            @Override
-//            public void onProgress(int Progress) {
-//                contrast = Progress;
-//                tvContrast.setText(Progress + "%");
-//                createEffectBitmap(tabPosition);
-//            }
-//
-//            @Override
-//            public void onStop(int Progress) {
-//
-//            }
-//        });
+        // 对比度
+        seekBarContrast.setProgressChanged(new MySeekBar.onProgressChanged() {
+            @Override
+            public void onProgress(int Progress) {
+                contrast = Progress;
 
-//        // 亮度
-//        seekBarBrightness.setProgressChanged(new MySeekBar.onProgressChanged() {
-//            @Override
-//            public void onProgress(int Progress) {
-//                brightness = Progress;
-//                tvBrightness.setText(Progress + "%");
-//            }
-//
-//            @Override
-//            public void onStop(int Progress) {
-//
-//            }
-//        });
+                // 映射对比度值到 0.5f ~ 2.0f
+                contrastLevel = 0.5f + (contrast - 1) * (1.5f / 99);
 
-//        // 锐化
-//        seekBarSharpening.setProgressChanged(new MySeekBar.onProgressChanged() {
-//            @Override
-//            public void onProgress(int Progress) {
-//                sharp = Progress;
-//                tvSharpening.setText(String.valueOf(Progress));
-//                createEffectBitmap(tabPosition);
-//            }
-//
-//            @Override
-//            public void onStop(int Progress) {
-//
-//            }
-//        });
+                tvContrast.setText(Progress + "%");
 
-//        // 高光
-//        seekBarHighlights.setProgressChanged(new MySeekBar.onProgressChanged() {
-//            @Override
-//            public void onProgress(int Progress) {
-//                highlights = Progress;
-//                tvHighlights.setText(Progress + "%");
-//            }
-//
-//            @Override
-//            public void onStop(int Progress) {
-//
-//            }
-//        });
+                // 重新生成图片效果
+                createEffectBitmap(tabPosition);
+            }
 
+            @Override
+            public void onStop(int Progress) {
 
+            }
+        });
+
+        // 亮度
+        seekBarBrightness.setProgressChanged(new MySeekBar.onProgressChanged() {
+            @Override
+            public void onProgress(int Progress) {
+                brightness = Progress;
+
+                // 映射亮度值到 -255 ~ 255
+                brightnessLevel = (brightness - 50) * (255f / 50);
+
+                tvBrightness.setText(Progress + "%");
+
+                // 重新生成图片效果
+                createEffectBitmap(tabPosition);
+            }
+
+            @Override
+            public void onStop(int Progress) {
+
+            }
+        });
     }
 
     /**
@@ -475,48 +503,12 @@ public class EditActivity extends AppCompatActivity {
         inputUribitmaps = ImageProcess.addWhiteBg(inputUribitmaps);
         FileManager.get().addDelPath(saveBitmap.getPath());
 
-        int HIGH = ScreenInchUtils.mmToPx(this, 85) + 1;
-        int ENTER = ScreenInchUtils.mmToPx(this, 85) + 1;
+        int HIGH = ScreenInchUtils.mmToPx(this, sharedPref.getInt(getString(R.string.preference_machine_height), 85)) + 1;
+        int ENTER = ScreenInchUtils.mmToPx(this, sharedPref.getInt(getString(R.string.preference_machine_width), 85)) + 1;
 
         Bitmap whiteEdgeRemovalBitmap = ImageProcess.ImageWhiteEdgeRemoval(inputUribitmaps, HIGH, ENTER);
         initedBitmap = whiteEdgeRemovalBitmap;
         Log.e(TAG, "initedBitmap getWidth:" + initedBitmap.getWidth() + ",getHeight:" + initedBitmap.getHeight());
-
-        // 宽度
-        bitmapWidth = Math.round((((float) initedBitmap.getWidth()) * 1.0f) / locations);
-        // 高度
-        bitmapHeight = Math.round((((float) initedBitmap.getHeight()) * 1.0f) / locations);
-        // 初始比例
-        aspectRatio = ((float) Math.round((((float) initedBitmap.getWidth()) * 1.0f) / locations)) / ((float) Math.round((((float) initedBitmap.getHeight()) * 1.0f) / locations));
-    }
-
-    /**
-     * 初始化参数
-     */
-    private void initParameter() {
-//        // 对比度
-//        seekBarContrast.setProgressMin(1);
-//        seekBarContrast.setProgressMax(100);
-//        seekBarContrast.setProgressDefault(50);
-//        tvContrast.setText(seekBarContrast.getProgressDefault() + "%");
-//
-//        // 亮度
-//        seekBarBrightness.setProgressMin(1);
-//        seekBarBrightness.setProgressMax(100);
-//        seekBarBrightness.setProgressDefault(50);
-//        tvBrightness.setText(seekBarBrightness.getProgressDefault() + "%");
-//
-//        // 锐化
-//        seekBarSharpening.setProgressMin(1);
-//        seekBarSharpening.setProgressMax(255);
-//        seekBarSharpening.setProgressDefault(127);
-//        tvSharpening.setText(String.valueOf(seekBarSharpening.getProgressDefault()));
-//
-//        // 高光
-//        seekBarHighlights.setProgressMin(1);
-//        seekBarHighlights.setProgressMax(100);
-//        seekBarHighlights.setProgressDefault(50);
-//        tvHighlights.setText(seekBarHighlights.getProgressDefault() + "%");
     }
 
     /**
@@ -553,7 +545,7 @@ public class EditActivity extends AppCompatActivity {
                     public void subscribe(final ObservableEmitter<String> e) throws Exception {
                         switch (effect) {
                             case 0://灰度图
-                                finalBitmap = ImageProcess.convertToGreyImage(initedBitmap, initedBitmap.getWidth(), initedBitmap.getHeight(), 1);
+                                finalBitmap = ImageProcess.convertToGreyImage(initedBitmap, initedBitmap.getWidth(), initedBitmap.getHeight(), 1, 1.8f, 1.5f, 1.5f);
                                 break;
                             case 1://黑白图
                                 finalBitmap = ImageProcess.convertToBlackWhiteImage(initedBitmap, initedBitmap.getWidth(), initedBitmap.getHeight(), 1, sharp);
@@ -577,6 +569,10 @@ public class EditActivity extends AppCompatActivity {
                             }
                         }
                         finalBitmap = Bitmap.createBitmap(finalBitmap, 0, 0, finalBitmap.getWidth(), finalBitmap.getHeight(), m, true);
+//                        // 调整对比度
+                        finalBitmap = adjustContrast(finalBitmap, contrastLevel);
+                        // 调整亮度
+                        finalBitmap = adjustBrightness(finalBitmap, brightnessLevel);
                         e.onNext("gcodes");
                         e.onComplete();
                     }
@@ -589,17 +585,21 @@ public class EditActivity extends AppCompatActivity {
                             case 0://灰度图
                                 ivMaterial.setImageDrawable(null);
                                 seekBars = 0;
+                                enableSeekBars(true);
                                 break;
                             case 1://黑白图
                                 ivMaterial.setImageDrawable(null);
                                 seekBars = 1;
+                                enableSeekBars(true);
                                 break;
                             case 2://轮廓
                                 ivMaterial.setImageDrawable(null);
                                 seekBars = 2;
+                                enableSeekBars(false);
                                 break;
                             case 3://素描
                                 seekBars = 3;
+                                enableSeekBars(true);
                                 break;
                         }
                         ivMaterial.setImageBitmap(finalBitmap);
@@ -607,6 +607,143 @@ public class EditActivity extends AppCompatActivity {
                     }
                 }));
     }
+
+    /**
+     * 保存图片至相册
+     * @param context 上下文
+     * @param bitmap 位图
+     * @param fileName 文件名字
+     */
+    public void saveBitmapToGallery(Context context, Bitmap bitmap, String fileName) {
+        ContentResolver resolver = context.getContentResolver();
+        ContentValues values = new ContentValues();
+
+        values.put(MediaStore.Images.Media.DISPLAY_NAME, fileName + ".jpg");
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+        values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis() / 1000);
+        values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
+
+        Uri imageUri;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            values.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/MyApp");
+            values.put(MediaStore.Images.Media.IS_PENDING, 1);
+
+            imageUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+        } else {
+            String imagePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/MyApp";
+            File imageDir = new File(imagePath);
+            if (!imageDir.exists()) {
+                imageDir.mkdirs();
+            }
+            File imageFile = new File(imageDir, fileName + ".jpg");
+            imageUri = Uri.fromFile(imageFile);
+        }
+
+        if (imageUri != null) {
+            try {
+                OutputStream outputStream = resolver.openOutputStream(imageUri);
+                if (outputStream != null) {
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+                    outputStream.close();
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    values.clear();
+                    values.put(MediaStore.Images.Media.IS_PENDING, 0);
+                    resolver.update(imageUri, values, null, null);
+                }
+                Toast.makeText(context, "图片已保存", Toast.LENGTH_SHORT).show();
+            } catch (IOException e) {
+                e.printStackTrace();
+                Toast.makeText(context, "保存失败", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    /**
+     * 调整对比度
+     * @param bitmap  原始位图
+     * @param contrast 对比度调整值 (1.0f = 原始值, 0.5f = 低对比度, 2.0f = 高对比度)
+     * @return 调整后的位图
+     */
+    public static Bitmap adjustContrast(Bitmap bitmap, float contrast) {
+        Bitmap output = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), bitmap.getConfig());
+        Canvas canvas = new Canvas(output);
+        Paint paint = new Paint();
+        ColorMatrix colorMatrix = new ColorMatrix();
+        float scale = contrast;
+        float translate = (-0.5f * scale + 0.5f) * 255.f;
+        colorMatrix.set(new float[]{
+                scale, 0, 0, 0, translate,
+                0, scale, 0, 0, translate,
+                0, 0, scale, 0, translate,
+                0, 0, 0, 1, 0
+        });
+        paint.setColorFilter(new ColorMatrixColorFilter(colorMatrix));
+        canvas.drawBitmap(bitmap, 0, 0, paint);
+        return output;
+    }
+
+    /**
+     * 调整亮度
+     * @param bmp  原始位图
+     * @param brightnessLevel 亮度调整值 (-255 ~ 255)，正值变亮，负值变暗
+     * @return 调整后的位图
+     */
+    public Bitmap adjustBrightness(Bitmap bmp, float brightnessLevel) {
+        Bitmap bitmap = bmp.copy(Bitmap.Config.ARGB_8888, true);
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+
+        int brightness = (int) brightnessLevel;  // 转换为整数
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int pixelColor = bitmap.getPixel(x, y);
+
+                int A = Color.alpha(pixelColor);
+                int R = Color.red(pixelColor);
+                int G = Color.green(pixelColor);
+                int B = Color.blue(pixelColor);
+
+                // 调整亮度
+                R = (int) (R + brightness);
+                G = (int) (G + brightness);
+                B = (int) (B + brightness);
+
+                // 确保 RGB 值在 0 到 255 之间
+                R = Math.min(Math.max(R, 0), 255);
+                G = Math.min(Math.max(G, 0), 255);
+                B = Math.min(Math.max(B, 0), 255);
+
+                bitmap.setPixel(x, y, Color.argb(A, R, G, B));
+            }
+        }
+        return bitmap;
+    }
+
+
+    /**
+     * 启用或禁用 亮度 和 对比度的 seekBar
+     * @param enable 是否启用
+     */
+    private void enableSeekBars(boolean enable) {
+        seekBarBrightness.setDraggable(enable);
+        seekBarContrast.setDraggable(enable);
+
+        // 设置不可点击、不可聚焦，完全禁用交互
+        seekBarBrightness.setFocusable(enable);
+        seekBarBrightness.setClickable(enable);
+        seekBarBrightness.setAlpha(enable ? 1.0f : 0.5f);
+
+        seekBarContrast.setFocusable(enable);
+        seekBarContrast.setClickable(enable);
+        seekBarContrast.setAlpha(enable ? 1.0f : 0.5f);
+    }
+
+
+
+
+
 
 
     @Override
@@ -623,10 +760,182 @@ public class EditActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * ServiceMessageEvent
+     *
+     * @param event
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onServiceMessageEvent(ServiceMessageEvent event) {
+        if (!event.getMessage().isEmpty()) {
+            Activity topActivity = GrblController.getInstance().getTopActivity();
+            if (event.getMessage().startsWith("<")) {
+                Log.d(TAG, "message=" + event.getMessage().toString());
+                String[] parts = event.getMessage().substring(1, event.getMessage().toString().length() - 1).split("\\|");
+                Log.d(TAG, "status=" + parts[0] + " Mpos=" + parts[1] + " Wpos=" + parts[2] + " Fs=" + parts[3]);
+
+                if (parts[0].equals(Constants.MACHINE_STATUS_IDLE)) {
+                    tvMachineStatusTips.setBackgroundResource(R.drawable.bg_green_1e853a_r100);
+                    tvMachineStatusTips.setText("已连接");
+                } else if (parts[0].equals(Constants.MACHINE_STATUS_RUN)) {
+                    tvMachineStatusTips.setBackgroundResource(R.drawable.bg_green_1e853a_r100);
+                    tvMachineStatusTips.setText("工作中");
+                } else if (parts[0].equals(Constants.MACHINE_STATUS_JOG)) {
+                    tvMachineStatusTips.setBackgroundResource(R.drawable.bg_green_1e853a_r100);
+                    tvMachineStatusTips.setText("运动中");
+                } else if (parts[0].contains(Constants.MACHINE_STATUS_HOLD)) {
+                    tvMachineStatusTips.setBackgroundResource(R.drawable.bg_red_c42b1c_r100);
+                    tvMachineStatusTips.setText("暂停");
+                } else if (parts[0].equals(Constants.MACHINE_STATUS_ALARM)) {
+                    tvMachineStatusTips.setBackgroundResource(R.drawable.bg_red_c42b1c_r100);
+                    tvMachineStatusTips.setText("警告");
+                }
+            } else {
+                if (topActivity != this) {
+                    Log.d(TAG, "当前 Activity 不是顶层，不弹窗");
+                    return; // 不是当前页面，直接 return
+                }
+
+                if (event.getMessage().contains("MSG:Safe door err!")  && tvMachineStatusTips.getText().equals("工作中")) {
+                    // TODO 开门弹窗
+                    showDialogDoorWarning();
+                    if (isOpenVibrateAlert) {
+                        vibratePhone(this, vibrateAlertTime * 1000);
+                    }
+                } else if (event.getMessage().contains("MSG:Flame err!")  && tvMachineStatusTips.getText().equals("工作中")) {
+                    // TODO 火焰弹窗
+                    showDialogFireWarning();
+                    if (isOpenVibrateAlert) {
+                        vibratePhone(this, vibrateAlertTime * 1000);
+                    }
+                } else if (event.getMessage().contains("MSG:Probe err!")  && tvMachineStatusTips.getText().equals("工作中")) {
+                    // TODO 倾斜弹窗
+                    showDialogProbeWarning();
+                    if (isOpenVibrateAlert) {
+                        vibratePhone(this, vibrateAlertTime * 1000);
+                    }
+                }
+            }
+
+        }
+    }
+
+    /**
+     * 开门风险提示弹窗
+     */
+    private void showDialogDoorWarning() {
+        Dialog dialog = new Dialog(this, R.style.CustomDialog);
+        dialog.setContentView(R.layout.dialog_door_warning);
+        // 设置窗口背景为透明，以显示圆角效果
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+        // 确认
+        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
+        // 确定
+        tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 隐藏弹窗
+                if (dialog.isShowing()) {
+                    dialog.dismiss();
+                }
+            }
+        });
+        // 设置Dialog的宽高
+        if (dialog.getWindow() != null) {
+            // 设置弹窗宽度为屏幕的80%，高度自适应
+            dialog.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+        // 显示 Dialog
+        dialog.show();
+    }
+
+    /**
+     * 火焰风险提示弹窗
+     */
+    private void showDialogFireWarning() {
+        Dialog dialog = new Dialog(this, R.style.CustomDialog);
+        dialog.setContentView(R.layout.dialog_fire_warning);
+        // 设置窗口背景为透明，以显示圆角效果
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+        // 确认
+        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
+        // 确定
+        tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 隐藏弹窗
+                if (dialog.isShowing()) {
+                    dialog.dismiss();
+                }
+            }
+        });
+        // 设置Dialog的宽高
+        if (dialog.getWindow() != null) {
+            // 设置弹窗宽度为屏幕的80%，高度自适应
+            dialog.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+        // 显示 Dialog
+        dialog.show();
+    }
+
+    /**
+     * 倾斜风险提示弹窗
+     */
+    private void showDialogProbeWarning() {
+        Dialog dialog = new Dialog(this, R.style.CustomDialog);
+        dialog.setContentView(R.layout.dialog_probe_warning);
+        // 设置窗口背景为透明，以显示圆角效果
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+        // 确认
+        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
+        // 确定
+        tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 隐藏弹窗
+                if (dialog.isShowing()) {
+                    dialog.dismiss();
+                }
+            }
+        });
+        // 设置Dialog的宽高
+        if (dialog.getWindow() != null) {
+            // 设置弹窗宽度为屏幕的80%，高度自适应
+            dialog.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+        // 显示 Dialog
+        dialog.show();
+    }
+
+    /**
+     * 震动提醒
+     * @param context 上下文
+     * @param milliseconds 震动时长
+     */
+    public void vibratePhone(Context context, long milliseconds) {
+        Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+        if (vibrator != null && vibrator.hasVibrator()) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                vibrator.vibrate(VibrationEffect.createOneShot(milliseconds, VibrationEffect.DEFAULT_AMPLITUDE));
+            } else {
+                vibrator.vibrate(milliseconds);
+            }
+        }
+    }
+
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        // 注销EventBus
+        EventBus.getDefault().unregister(this);
+
         // 释放资源
         if (initedBitmap != null)
             initedBitmap.recycle();

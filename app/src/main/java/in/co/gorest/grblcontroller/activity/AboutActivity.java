@@ -122,7 +122,7 @@ public class AboutActivity extends AppCompatActivity {
 
                 if (serverVersionCode > currentVersionCode) {
                     AppUpdateManager.Builder builder = new AppUpdateManager.Builder(AboutActivity.this);
-                    builder.apkUrl("http://113.45.165.86/apk/iklestar-" + serverVersionName + "-" + formattedDate + ".apk")
+                    builder.apkUrl("http://47.243.173.178/apk/iklestar-" + serverVersionName + "-" + formattedDate + ".apk")
                             .updateContent(arrayContent)
                             .updateForce(false)
                             .build();
@@ -158,7 +158,7 @@ public class AboutActivity extends AppCompatActivity {
     public void fetchVersionInfo() {
         OkHttpClient client = new OkHttpClient();
 
-        String url = "http://113.45.165.86/version-info.txt"; // 接口地址
+        String url = "http://47.243.173.178/version-info.txt"; // 接口地址
         Request request = new Request.Builder()
                 .url(url)
                 .build();

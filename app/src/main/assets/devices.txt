@@ -11,12 +11,16 @@
   ],
   "cnc": [
     {
-      "name": "CNC-示例1",
-      "travel": "400x400(mm²)"
+      "name": "CNC-3018PRO",
+      "travel": "300x180x45(mm²)"
     },
     {
-      "name": "CNC-示例2",
-      "travel": "500x500(mm²)"
-    }
+      "name": "CNC-3018MAX",
+      "travel": "300x180x45(mm²)"
+    },
+    {
+          "name": "CNC-3020PLUS",
+          "travel": "300x200x45(mm²)"
+        }
   ]
 }

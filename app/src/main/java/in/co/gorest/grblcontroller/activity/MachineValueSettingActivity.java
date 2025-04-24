@@ -5,24 +5,26 @@ import android.annotation.SuppressLint;
 import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowInsetsController;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.Switch;
 import android.widget.TextView;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
 import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
-import in.co.gorest.grblcontroller.base.BaseActivity;
 import in.co.gorest.grblcontroller.events.MachineVauleUpdateMessageEvent;
+import in.co.gorest.grblcontroller.events.VibrateAlertTimeUpdateMessageEvent;
 import in.co.gorest.grblcontroller.fragment.LaserSetupLineJudgeBottomSheetFragment;
+import in.co.gorest.grblcontroller.fragment.VibrateAlertBottomSheetFragment;
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 
 public class MachineValueSettingActivity extends AppCompatActivity {
@@ -37,6 +39,14 @@ public class MachineValueSettingActivity extends AppCompatActivity {
     private RelativeLayout rlLaserLevel;
     // 激光功率
     private TextView tvLaserLevel;
+    // 震动提醒
+    private Switch switchVibrateAlert;
+    // 是否开启危险警报震动提醒
+    private boolean isOpenVibrateAlert;
+    // 震动持续时长 RelativeLayout
+    private RelativeLayout rlVibrateAlertTime;
+    // 震动持续时长 TextView
+    private TextView tvVibrateAlertTime;
 
 
     // 启用矢量图支持，确保在应用中可以正确显示矢量图形
@@ -92,6 +102,12 @@ public class MachineValueSettingActivity extends AppCompatActivity {
         rlLaserLevel = findViewById(R.id.rl_laser_level);
         // 激光功率
         tvLaserLevel = findViewById(R.id.tv_laser_level);
+        // 危险警报震动提醒
+        switchVibrateAlert = findViewById(R.id.switch_vibrate_alert);
+        // 震动持续时长 RelativeLayout
+        rlVibrateAlertTime = findViewById(R.id.rl_vibrate_alert_time);
+        // 震动持续时长 TextView
+        tvVibrateAlertTime = findViewById(R.id.tv_vibrate_alert_time);
 
     }
 
@@ -99,8 +115,19 @@ public class MachineValueSettingActivity extends AppCompatActivity {
      * 初始化数据
      */
     private void initData() {
-        int laserLevel = sharedPref.getInt(getString(R.string.preference_laser_level_line_judge_setting), 1);
+        // 获取保存的激光功率实例值
+        int laserLevel = sharedPref.getInt(getString(R.string.preference_laser_level_line_judge_setting), 2);
         tvLaserLevel.setText(String.valueOf(laserLevel));
+
+        // 获取保存的危险警报震动提醒实例值
+        isOpenVibrateAlert = sharedPref.getBoolean(getString(R.string.preference_vibrate_alert), true);
+        switchVibrateAlert.setChecked(isOpenVibrateAlert);
+        // 设置震动持续时长显示
+        rlVibrateAlertTime.setVisibility(isOpenVibrateAlert ? View.VISIBLE : View.GONE);
+
+        // 获取保存的激光功率实例值
+        int vibrateAlertTime = sharedPref.getInt(getString(R.string.preference_vibrate_alert_time), 1);
+        tvVibrateAlertTime.setText(String.valueOf(vibrateAlertTime));
     }
 
     /**
@@ -123,10 +150,53 @@ public class MachineValueSettingActivity extends AppCompatActivity {
                 laserSetupLineJudgeBottomSheetFragment.show(getSupportFragmentManager(), "");
             }
         });
+
+        // 危险警报震动提醒
+        switchVibrateAlert.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Log.d(TAG, "isOpenVibrateAlert=" + isChecked);
+                if (isChecked) {
+                    sharedPref.edit().putBoolean(getString(R.string.preference_vibrate_alert), true).apply();
+                    // 设置震动持续时长显示
+                    rlVibrateAlertTime.setVisibility(View.VISIBLE);
+                } else {
+                    sharedPref.edit().putBoolean(getString(R.string.preference_vibrate_alert), false).apply();
+                    // 设置震动持续时长隐藏
+                    rlVibrateAlertTime.setVisibility(View.GONE);
+                }
+            }
+        });
+
+        // 设置震动持续时长
+        rlVibrateAlertTime.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                VibrateAlertBottomSheetFragment vibrateAlertBottomSheetFragment = new VibrateAlertBottomSheetFragment();
+                vibrateAlertBottomSheetFragment.show(getSupportFragmentManager(), "");
+            }
+        });
+
     }
 
+    /**
+     * 激光功率
+     * @param event
+     */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onMachineVauleUpdateMessageEvent(MachineVauleUpdateMessageEvent event) {
+        if (event.getMessage() != null) {
+            initData();
+        }
+    }
+
+
+    /**
+     * 震动持续时长
+     * @param event
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onVibrateAlertTimeUpdateMessageEvent(VibrateAlertTimeUpdateMessageEvent event) {
         if (event.getMessage() != null) {
             initData();
         }

@@ -5,18 +5,11 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-
-import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
-import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 
 public class AddPhotoBottomSheetFragment extends BottomSheetDialogFragment {
 

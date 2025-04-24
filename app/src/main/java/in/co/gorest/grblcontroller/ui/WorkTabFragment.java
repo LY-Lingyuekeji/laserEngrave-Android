@@ -478,8 +478,8 @@ public class WorkTabFragment extends BaseFragment {
         inputUribitmaps = ImageProcess.addWhiteBg(inputUribitmaps);
         FileManager.get().addDelPath(saveBitmap.getPath());
 
-        int HIGH = ScreenInchUtils.mmToPx(getActivity(), 85) + 1;
-        int ENTER = ScreenInchUtils.mmToPx(getActivity(), 85) + 1;
+        int HIGH = ScreenInchUtils.mmToPx(getActivity(), sharedPref.getInt(getString(R.string.preference_machine_height), 85)) + 1;
+        int ENTER = ScreenInchUtils.mmToPx(getActivity(), sharedPref.getInt(getString(R.string.preference_machine_width), 85)) + 1;
 
         Bitmap whiteEdgeRemovalBitmap = ImageProcess.ImageWhiteEdgeRemoval(inputUribitmaps, HIGH, ENTER);
         initedBitmap = whiteEdgeRemovalBitmap;
@@ -532,7 +532,7 @@ public class WorkTabFragment extends BaseFragment {
                     public void subscribe(final ObservableEmitter<String> e) throws Exception {
                         switch (effect) {
                             case 0://灰度图
-                                finalBitmap = ImageProcess.convertToGreyImage(initedBitmap, initedBitmap.getWidth(), initedBitmap.getHeight(), 1);
+                                finalBitmap = ImageProcess.convertToGreyImage(initedBitmap, initedBitmap.getWidth(), initedBitmap.getHeight(), 1, 1.35f, 1.8f, 1.0f);
                                 break;
                             case 1://黑白图
                                 finalBitmap = ImageProcess.convertToBlackWhiteImage(initedBitmap, initedBitmap.getWidth(), initedBitmap.getHeight(), 1, sharp);

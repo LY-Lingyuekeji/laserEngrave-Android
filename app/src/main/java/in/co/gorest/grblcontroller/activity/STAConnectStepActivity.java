@@ -377,7 +377,7 @@ public class STAConnectStepActivity extends AppCompatActivity {
                     // 只保留后四位
                     if (address.getHostName().contains(macAddress) || address.getHostName().toString().contains("mks_grbl")) {
                         // 连接Telnet
-                        EventBus.getDefault().post(new DeviceConnectEvent("Telnet", ssid, host));
+                        EventBus.getDefault().post(new DeviceConnectEvent("STA", ssid, host));
                         // 保存ssid 和 host
                         sharedPref.edit().putString(getString(R.string.preference_sta_ssid), ssid).apply();
                         sharedPref.edit().putString(getString(R.string.preference_sta_host), host).apply();

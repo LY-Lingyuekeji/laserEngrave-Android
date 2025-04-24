@@ -99,6 +99,11 @@ public class StepSetUpBottomSheetFragment extends BottomSheetDialogFragment {
     // 速度（超快） Double
     private Double speedPrestissimo;
 
+
+    // 传递的tag
+    private String tag;
+
+
     public StepSetUpBottomSheetFragment() {
     }
 
@@ -190,34 +195,65 @@ public class StepSetUpBottomSheetFragment extends BottomSheetDialogFragment {
      * 初始化数据
      */
     private void initData() {
-        // 获取共享偏好设置保存的运动参数实例
+        // 获取传递的tag
+        tag = getTag();
+        Log.d(TAG, "tag=" + tag);
 
-        // 步长（短）
-        stepShort = sharedPref.getDouble(getString(R.string.preference_step_short), 0.1);
-        tvStepShort.setText(stepShort + "mm");
-        // 步长（常规）
-        stepGeneral = sharedPref.getDouble(getString(R.string.preference_step_general), 1.0);
-        tvStepGeneral.setText(stepGeneral + "mm");
-        // 步长（中）
-        stepMiddle = sharedPref.getDouble(getString(R.string.preference_step_middle), 5.0);
-        tvStepMiddle.setText(stepMiddle + "mm");
-        // 步长（长）
-        stepLong = sharedPref.getDouble(getString(R.string.preference_step_long), 10.0);
-        tvStepLong.setText(stepLong + "mm");
+        // 根据tag获取共享偏好设置保存的运动参数实例
+        if (tag.equals("cnc")) {
+            // 步长（短） for CNC
+            stepShort = sharedPref.getDouble(getString(R.string.preference_step_short_cnc), 0.1);
+            tvStepShort.setText(stepShort + "mm");
+            // 步长（常规） for CNC
+            stepGeneral = sharedPref.getDouble(getString(R.string.preference_step_general_cnc), 1.0);
+            tvStepGeneral.setText(stepGeneral + "mm");
+            // 步长（中） for CNC
+            stepMiddle = sharedPref.getDouble(getString(R.string.preference_step_middle_cnc), 5.0);
+            tvStepMiddle.setText(stepMiddle + "mm");
+            // 步长（长） for CNC
+            stepLong = sharedPref.getDouble(getString(R.string.preference_step_long_cnc), 10.0);
+            tvStepLong.setText(stepLong + "mm");
 
-        // 速度（慢）
-        speedSlow = sharedPref.getDouble(getString(R.string.preference_speed_slow), 2500.0);
-        tvSpeedSlow.setText(speedSlow + "mm/min");
-        // 速度（中等）
-        speedMiddle = sharedPref.getDouble(getString(R.string.preference_speed_middle), 5000.0);
-        tvSpeedMiddle.setText(speedMiddle + "mm/min");
-        // 速度（快）
-        speedFast = sharedPref.getDouble(getString(R.string.preference_speed_fast), 7500.0);
-        tvSpeedFast.setText(speedFast + "mm/min");
-        // 速度（极快）
-        speedPrestissimo = sharedPref.getDouble(getString(R.string.preference_speed_prestissimo), 10000.0);
-        tvSpeedPrestissimo.setText(speedPrestissimo + "mm/min");
+            // 速度（慢） for CNC
+            speedSlow = sharedPref.getDouble(getString(R.string.preference_speed_slow_cnc), 100.0);
+            tvSpeedSlow.setText(speedSlow + "mm/min");
+            // 速度（中等） for CNC
+            speedMiddle = sharedPref.getDouble(getString(R.string.preference_speed_middle_cnc), 300.0);
+            tvSpeedMiddle.setText(speedMiddle + "mm/min");
+            // 速度（快） for CNC
+            speedFast = sharedPref.getDouble(getString(R.string.preference_speed_fast_cnc), 800.0);
+            tvSpeedFast.setText(speedFast + "mm/min");
+            // 速度（极快） for CNC
+            speedPrestissimo = sharedPref.getDouble(getString(R.string.preference_speed_prestissimo_cnc), 1200.0);
+            tvSpeedPrestissimo.setText(speedPrestissimo + "mm/min");
+        } else {
+            // 步长（短） for Laser or Other
+            stepShort = sharedPref.getDouble(getString(R.string.preference_step_short), 0.1);
+            tvStepShort.setText(stepShort + "mm");
+            // 步长（常规） for Laser or Other
+            stepGeneral = sharedPref.getDouble(getString(R.string.preference_step_general), 1.0);
+            tvStepGeneral.setText(stepGeneral + "mm");
+            // 步长（中） for Laser or Other
+            stepMiddle = sharedPref.getDouble(getString(R.string.preference_step_middle), 5.0);
+            tvStepMiddle.setText(stepMiddle + "mm");
+            // 步长（长） for Laser or Other
+            stepLong = sharedPref.getDouble(getString(R.string.preference_step_long), 10.0);
+            tvStepLong.setText(stepLong + "mm");
 
+            // 速度（慢） for Laser or Other
+            speedSlow = sharedPref.getDouble(getString(R.string.preference_speed_slow), 2500.0);
+            tvSpeedSlow.setText(speedSlow + "mm/min");
+            // 速度（中等） for Laser or Other
+            speedMiddle = sharedPref.getDouble(getString(R.string.preference_speed_middle), 5000.0);
+            tvSpeedMiddle.setText(speedMiddle + "mm/min");
+            // 速度（快） for Laser or Other
+            speedFast = sharedPref.getDouble(getString(R.string.preference_speed_fast), 7500.0);
+            tvSpeedFast.setText(speedFast + "mm/min");
+            // 速度（极快） for Laser or Other
+            speedPrestissimo = sharedPref.getDouble(getString(R.string.preference_speed_prestissimo), 10000.0);
+            tvSpeedPrestissimo.setText(speedPrestissimo + "mm/min");
+
+        }
     }
 
     /**
@@ -236,23 +272,47 @@ public class StepSetUpBottomSheetFragment extends BottomSheetDialogFragment {
         tvRest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // 步长（短）
-                sharedPref.edit().putDouble(getString(R.string.preference_step_short), 0.1).apply();
-                // 步长（常规）
-                sharedPref.edit().putDouble(getString(R.string.preference_step_general), 1.0).apply();
-                // 步长（中）
-                sharedPref.edit().putDouble(getString(R.string.preference_step_middle), 5.0).apply();
-                // 步长（长）
-                sharedPref.edit().putDouble(getString(R.string.preference_step_long), 10.0).apply();
+                if (tag.equals("cnc")) {
+                    // 步长（短） for CNC
+                    sharedPref.edit().putDouble(getString(R.string.preference_step_short_cnc), 0.1).apply();
+                    // 步长（常规） for CNC
+                    sharedPref.edit().putDouble(getString(R.string.preference_step_general_cnc), 1.0).apply();
+                    // 步长（中） for CNC
+                    sharedPref.edit().putDouble(getString(R.string.preference_step_middle_cnc), 5.0).apply();
+                    // 步长（长） for CNC
+                    sharedPref.edit().putDouble(getString(R.string.preference_step_long_cnc), 10.0).apply();
 
-                // 速度（慢）
-                sharedPref.edit().putDouble(getString(R.string.preference_speed_slow), 2500.0).apply();
-                // 速度（中等）
-                sharedPref.edit().putDouble(getString(R.string.preference_speed_middle), 5000.0).apply();
-                // 速度（快）
-                sharedPref.edit().putDouble(getString(R.string.preference_speed_fast), 7500.0).apply();
-                // 速度（极快）
-                sharedPref.edit().putDouble(getString(R.string.preference_speed_prestissimo), 10000.0).apply();
+                    // 速度（慢） for CNC
+                    sharedPref.edit().putDouble(getString(R.string.preference_speed_slow_cnc), 100.0).apply();
+                    // 速度（中等） for CNC
+                    sharedPref.edit().putDouble(getString(R.string.preference_speed_middle_cnc), 300.0).apply();
+                    // 速度（快） for CNC
+                    sharedPref.edit().putDouble(getString(R.string.preference_speed_fast_cnc), 800.0).apply();
+                    // 速度（极快） for CNC
+                    sharedPref.edit().putDouble(getString(R.string.preference_speed_prestissimo_cnc), 1200.0).apply();
+                } else {
+                    // 步长（短） for Laser or Other
+                    sharedPref.edit().putDouble(getString(R.string.preference_step_short), 0.1).apply();
+                    // 步长（常规） for Laser or Other
+                    sharedPref.edit().putDouble(getString(R.string.preference_step_general), 1.0).apply();
+                    // 步长（中） for Laser or Other
+                    sharedPref.edit().putDouble(getString(R.string.preference_step_middle), 5.0).apply();
+                    // 步长（长） for Laser or Other
+                    sharedPref.edit().putDouble(getString(R.string.preference_step_long), 10.0).apply();
+
+                    // 速度（慢） for Laser or Other
+                    sharedPref.edit().putDouble(getString(R.string.preference_speed_slow), 2500.0).apply();
+                    // 速度（中等） for Laser or Other
+                    sharedPref.edit().putDouble(getString(R.string.preference_speed_middle), 5000.0).apply();
+                    // 速度（快） for Laser or Other
+                    sharedPref.edit().putDouble(getString(R.string.preference_speed_fast), 7500.0).apply();
+                    // 速度（极快） for Laser or Other
+                    sharedPref.edit().putDouble(getString(R.string.preference_speed_prestissimo), 10000.0).apply();
+                }
+
+                initData();
+                EventBus.getDefault().post(new ConnectStepSetupEvent("update"));
+
             }
         });
 
@@ -260,8 +320,14 @@ public class StepSetUpBottomSheetFragment extends BottomSheetDialogFragment {
         rlStepShort.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                StepShortBottomSheetFragment stepShortBottomSheetFragment = new StepShortBottomSheetFragment();
-                stepShortBottomSheetFragment.show(getActivity().getSupportFragmentManager(), "");
+                if (tag.equals("cnc")) {
+                    StepShortForCNCBottomSheetFragment stepShortForCNCBottomSheetFragment = new StepShortForCNCBottomSheetFragment();
+                    stepShortForCNCBottomSheetFragment.show(getActivity().getSupportFragmentManager(), "");
+                } else {
+                    StepShortBottomSheetFragment stepShortBottomSheetFragment = new StepShortBottomSheetFragment();
+                    stepShortBottomSheetFragment.show(getActivity().getSupportFragmentManager(), "");
+                }
+
             }
         });
 
@@ -269,8 +335,14 @@ public class StepSetUpBottomSheetFragment extends BottomSheetDialogFragment {
         rlStepGeneral.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                StepGeneralBottomSheetFragment stepGeneralBottomSheetFragment = new StepGeneralBottomSheetFragment();
-                stepGeneralBottomSheetFragment.show(getActivity().getSupportFragmentManager(), "");
+                if (tag.equals("cnc")) {
+                    StepGeneralForCNCBottomSheetFragment stepGeneralForCNCBottomSheetFragment = new StepGeneralForCNCBottomSheetFragment();
+                    stepGeneralForCNCBottomSheetFragment.show(getActivity().getSupportFragmentManager(), "");
+                } else {
+                    StepGeneralBottomSheetFragment stepGeneralBottomSheetFragment = new StepGeneralBottomSheetFragment();
+                    stepGeneralBottomSheetFragment.show(getActivity().getSupportFragmentManager(), "");
+                }
+
             }
         });
 
@@ -278,8 +350,13 @@ public class StepSetUpBottomSheetFragment extends BottomSheetDialogFragment {
         rlStepMiddle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                StepMiddleBottomSheetFragment stepMiddleBottomSheetFragment = new StepMiddleBottomSheetFragment();
-                stepMiddleBottomSheetFragment.show(getActivity().getSupportFragmentManager(), "");
+                if (tag.equals("cnc")) {
+                    StepMiddleForCNCBottomSheetFragment stepMiddleForCNCBottomSheetFragment = new StepMiddleForCNCBottomSheetFragment();
+                    stepMiddleForCNCBottomSheetFragment.show(getActivity().getSupportFragmentManager(), "");
+                } else {
+                    StepMiddleBottomSheetFragment stepMiddleBottomSheetFragment = new StepMiddleBottomSheetFragment();
+                    stepMiddleBottomSheetFragment.show(getActivity().getSupportFragmentManager(), "");
+                }
             }
         });
 
@@ -287,8 +364,13 @@ public class StepSetUpBottomSheetFragment extends BottomSheetDialogFragment {
         rlStepLong.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                StepLongBottomSheetFragment stepLongBottomSheetFragment = new StepLongBottomSheetFragment();
-                stepLongBottomSheetFragment.show(getActivity().getSupportFragmentManager(), "");
+                if (tag.equals("cnc")) {
+                    StepLongForCNCBottomSheetFragment stepLongForCNCBottomSheetFragment = new StepLongForCNCBottomSheetFragment();
+                    stepLongForCNCBottomSheetFragment.show(getActivity().getSupportFragmentManager(), "");
+                } else {
+                    StepLongBottomSheetFragment stepLongBottomSheetFragment = new StepLongBottomSheetFragment();
+                    stepLongBottomSheetFragment.show(getActivity().getSupportFragmentManager(), "");
+                }
             }
         });
 
@@ -297,8 +379,13 @@ public class StepSetUpBottomSheetFragment extends BottomSheetDialogFragment {
         rlSpeedSlow.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SpeedSlowBottomSheetFragment speedSlowBottomSheetFragment = new SpeedSlowBottomSheetFragment();
-                speedSlowBottomSheetFragment.show(getActivity().getSupportFragmentManager(), "");
+                if (tag.equals("cnc")) {
+                    SpeedSlowForCNCBottomSheetFragment speedSlowForCNCBottomSheetFragment = new SpeedSlowForCNCBottomSheetFragment();
+                    speedSlowForCNCBottomSheetFragment.show(getActivity().getSupportFragmentManager(), "");
+                } else {
+                    SpeedSlowBottomSheetFragment speedSlowBottomSheetFragment = new SpeedSlowBottomSheetFragment();
+                    speedSlowBottomSheetFragment.show(getActivity().getSupportFragmentManager(), "");
+                }
             }
         });
 
@@ -306,8 +393,13 @@ public class StepSetUpBottomSheetFragment extends BottomSheetDialogFragment {
         rlSpeedMiddle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SpeedMiddleBottomSheetFragment speedMiddleBottomSheetFragment = new SpeedMiddleBottomSheetFragment();
-                speedMiddleBottomSheetFragment.show(getActivity().getSupportFragmentManager(), "");
+                if (tag.equals("cnc")) {
+                    SpeedMiddleForCNCBottomSheetFragment speedMiddleForCNCBottomSheetFragment = new SpeedMiddleForCNCBottomSheetFragment();
+                    speedMiddleForCNCBottomSheetFragment.show(getActivity().getSupportFragmentManager(), "");
+                } else {
+                    SpeedMiddleBottomSheetFragment speedMiddleBottomSheetFragment = new SpeedMiddleBottomSheetFragment();
+                    speedMiddleBottomSheetFragment.show(getActivity().getSupportFragmentManager(), "");
+                }
             }
         });
 
@@ -315,8 +407,14 @@ public class StepSetUpBottomSheetFragment extends BottomSheetDialogFragment {
         rlSpeedFast.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SpeedFastBottomSheetFragment speedFastBottomSheetFragment = new SpeedFastBottomSheetFragment();
-                speedFastBottomSheetFragment.show(getActivity().getSupportFragmentManager(), "");
+                if (tag.equals("cnc")) {
+                    SpeedFastForCNCBottomSheetFragment speedFastForCNCBottomSheetFragment = new SpeedFastForCNCBottomSheetFragment();
+                    speedFastForCNCBottomSheetFragment.show(getActivity().getSupportFragmentManager(), "");
+                } else {
+                    SpeedFastBottomSheetFragment speedFastBottomSheetFragment = new SpeedFastBottomSheetFragment();
+                    speedFastBottomSheetFragment.show(getActivity().getSupportFragmentManager(), "");
+                }
+
             }
         });
 
@@ -324,8 +422,13 @@ public class StepSetUpBottomSheetFragment extends BottomSheetDialogFragment {
         rlSpeedPrestissimo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SpeedPrestissimoBottomSheetFragment speedPrestissimoBottomSheetFragment = new SpeedPrestissimoBottomSheetFragment();
-                speedPrestissimoBottomSheetFragment.show(getActivity().getSupportFragmentManager(), "");
+                if (tag.equals("cnc")) {
+                    SpeedPrestissimoForCNCBottomSheetFragment speedPrestissimoForCNCBottomSheetFragment = new SpeedPrestissimoForCNCBottomSheetFragment();
+                    speedPrestissimoForCNCBottomSheetFragment.show(getActivity().getSupportFragmentManager(), "");
+                } else {
+                    SpeedPrestissimoBottomSheetFragment speedPrestissimoBottomSheetFragment = new SpeedPrestissimoBottomSheetFragment();
+                    speedPrestissimoBottomSheetFragment.show(getActivity().getSupportFragmentManager(), "");
+                }
             }
         });
     }

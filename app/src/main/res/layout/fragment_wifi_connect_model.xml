@@ -22,7 +22,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:text="此设备AP模式下请选择名称为 &quot;MKS_xxx&quot; 的Wi-Fi进行连接"
+            android:text="此设备AP模式下请选择名称为 &quot;Laser_xxx&quot; 的Wi-Fi进行连接"
             android:textColor="@color/colorBlack"
             android:textSize="12sp" />
 

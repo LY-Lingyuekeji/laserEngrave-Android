@@ -2,6 +2,7 @@
 package in.co.gorest.grblcontroller.activity;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -39,10 +40,14 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
+import in.co.gorest.grblcontroller.events.ServiceMessageEvent;
 import in.co.gorest.grblcontroller.events.UiToastEvent;
 import in.co.gorest.grblcontroller.events.WifiNameEvent;
 import in.co.gorest.grblcontroller.fragment.WifiChooseBottomSheetFragment;
+import in.co.gorest.grblcontroller.model.Constants;
 import in.co.gorest.grblcontroller.util.NettyClient;
 
 public class STAModelActivity extends AppCompatActivity {
@@ -235,60 +240,63 @@ public class STAModelActivity extends AppCompatActivity {
                     tvPasswordTips.setTextColor(Color.parseColor("#000000"));
                     // 连接WIFI
                     if (!etSsid.getText().toString().isEmpty() && !etPassword.getText().toString().isEmpty()) {
+
                         // TODO 第一步 获取当前模式
-                        NettyClient.getInstance(new Handler(new Handler.Callback() {
-                            @Override
-                            public boolean handleMessage(@NonNull Message msg) {
-                                Log.d(TAG, "msg = " + msg.obj.toString());
-                                if (msg.obj.toString().contains("MAC=")) {
-                                    Log.d(TAG, "-------------------------------------");
-                                    // 正则表达式匹配MAC地址
-                                    Pattern pattern = Pattern.compile("MAC=((?:[0-9A-Fa-f]{2}-){5}[0-9A-Fa-f]{2})");
-                                    Matcher matcher = pattern.matcher(msg.obj.toString());
-                                    if (matcher.find()) {
-                                        macAddress = matcher.group(0).substring(4); // 移除"MAC="前缀
-                                        // 去掉连接符
-                                        macAddress = macAddress.replace("-", "");
-                                        Log.d(TAG, "macAddress=" + macAddress);
+                        sendJogCommand("$I");
 
 
-                                        // TODO 第二步 配置STA模式
-                                        // 发送命令切换成STA模式
-                                        NettyClient.getInstance(null).sendMsgToServer("$50=2\r\n".getBytes(StandardCharsets.UTF_8), null);
-                                        // 发送命令配置账号密码
-                                        NettyClient.getInstance(null).sendMsgToServer(("$53=" + etSsid.getText().toString() + "\r\n").getBytes(StandardCharsets.UTF_8), null);
-                                        NettyClient.getInstance(null).sendMsgToServer(("$54=" + etPassword.getText().toString() + "\r\n").getBytes(StandardCharsets.UTF_8), null);
-
-                                        // TODO 第三步 重启设备
-                                        // 发送命令重启设备
-                                        NettyClient.getInstance(null).sendMsgToServer("$System/Control=RESTART\r\n".getBytes(StandardCharsets.UTF_8), null);
-
-                                        // TODO 第三步 页面跳转，传递SSID和PASSWORD进行匹配和连接
-                                        new Thread(new Runnable() {
-                                            @Override
-                                            public void run() {
-                                                try {
-                                                    Thread.sleep(4000);
-                                                    Intent intent = new Intent(STAModelActivity.this, STAConnectStepActivity.class);
-                                                    intent.putExtra("ssid", etSsid.getText().toString());
-                                                    intent.putExtra("password", etPassword.getText().toString());
-                                                    intent.putExtra("macAddress", macAddress);
-                                                    startActivity(intent);
-                                                    finish();
-                                                } catch (InterruptedException e) {
-                                                    throw new RuntimeException(e);
-                                                }
-                                            }
-                                        }).start();
-
-                                    } else {
-                                        Log.d(TAG, "No MAC address found.");
-                                        Toast.makeText(STAModelActivity.this, "No MAC address found.", Toast.LENGTH_SHORT).show();
-                                    }
-                                }
-                                return false;
-                            }
-                        })).sendMsgToServer("$I\r\n".getBytes(StandardCharsets.UTF_8), null);
+//                        NettyClient.getInstance(new Handler(new Handler.Callback() {
+//                            @Override
+//                            public boolean handleMessage(@NonNull Message msg) {
+//                                Log.d(TAG, "msg = " + msg.obj.toString());
+//                                if (msg.obj.toString().contains("MAC=")) {
+//                                    Log.d(TAG, "-------------------------------------");
+//                                    // 正则表达式匹配MAC地址
+//                                    Pattern pattern = Pattern.compile("MAC=((?:[0-9A-Fa-f]{2}-){5}[0-9A-Fa-f]{2})");
+//                                    Matcher matcher = pattern.matcher(msg.obj.toString());
+//                                    if (matcher.find()) {
+//                                        macAddress = matcher.group(0).substring(4); // 移除"MAC="前缀
+//                                        // 去掉连接符
+//                                        macAddress = macAddress.replace("-", "");
+//                                        Log.d(TAG, "macAddress=" + macAddress);
+//
+//                                        // TODO 第二步 配置STA模式
+//                                        // 发送命令切换成STA模式
+//                                        NettyClient.getInstance(null).sendMsgToServer("$50=2\r\n".getBytes(StandardCharsets.UTF_8), null);
+//                                        // 发送命令配置账号密码
+//                                        NettyClient.getInstance(null).sendMsgToServer(("$53=" + etSsid.getText().toString() + "\r\n").getBytes(StandardCharsets.UTF_8), null);
+//                                        NettyClient.getInstance(null).sendMsgToServer(("$54=" + etPassword.getText().toString() + "\r\n").getBytes(StandardCharsets.UTF_8), null);
+//
+//                                        // TODO 第三步 重启设备
+//                                        // 发送命令重启设备
+//                                        NettyClient.getInstance(null).sendMsgToServer("$System/Control=RESTART\r\n".getBytes(StandardCharsets.UTF_8), null);
+//
+//                                        // TODO 第三步 页面跳转，传递SSID和PASSWORD进行匹配和连接
+//                                        new Thread(new Runnable() {
+//                                            @Override
+//                                            public void run() {
+//                                                try {
+//                                                    Thread.sleep(4000);
+//                                                    Intent intent = new Intent(STAModelActivity.this, STAConnectStepActivity.class);
+//                                                    intent.putExtra("ssid", etSsid.getText().toString());
+//                                                    intent.putExtra("password", etPassword.getText().toString());
+//                                                    intent.putExtra("macAddress", macAddress);
+//                                                    startActivity(intent);
+//                                                    finish();
+//                                                } catch (InterruptedException e) {
+//                                                    throw new RuntimeException(e);
+//                                                }
+//                                            }
+//                                        }).start();
+//
+//                                    } else {
+//                                        Log.d(TAG, "No MAC address found.");
+//                                        Toast.makeText(STAModelActivity.this, "No MAC address found.", Toast.LENGTH_SHORT).show();
+//                                    }
+//                                }
+//                                return false;
+//                            }
+//                        })).sendMsgToServer("$I\r\n".getBytes(StandardCharsets.UTF_8), null);
 
 
                     }
@@ -418,5 +426,72 @@ public class STAModelActivity extends AppCompatActivity {
             etSsid.setText(event.getMessage().toString());
         }
     }
+
+    /**
+     * 发送命令
+     *
+     * @param command
+     */
+    private void sendJogCommand(String command) {
+        Log.d(TAG, "command=" + command);
+        NettyClient.getInstance(new Handler(new Handler.Callback() {
+            @Override
+            public boolean handleMessage(@NonNull Message msg) {
+                return false;
+            }
+        })).sendMsgToServer((command + "\r\n").getBytes(StandardCharsets.UTF_8), null);
+    }
+
+
+
+    /**
+     * ServiceMessageEvent
+     *
+     * @param event
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onServiceMessageEvent(ServiceMessageEvent event) {
+        if (!event.getMessage().isEmpty()) {
+            String message = event.getMessage();
+            Log.d(TAG, "Message=" + message);
+
+            // 只处理包含特定 MSG 的那一行
+            if (message.contains("[MSG:Mode=AP:")) {
+                // 正则表达式匹配MAC地址
+                Pattern pattern = Pattern.compile("MAC=((?:[0-9A-Fa-f]{2}-){5}[0-9A-Fa-f]{2})");
+                Matcher matcher = pattern.matcher(message);
+                if (matcher.find()) {
+                    macAddress = matcher.group(0).substring(4); // 移除"MAC="前缀
+                    // 去掉连接符
+                    macAddress = macAddress.replace("-", "");
+                    Log.d(TAG, "macAddress=" + macAddress);
+
+                    // TODO 第二步 配置STA模式
+                    // 发送命令切换成STA模式
+                    sendJogCommand("$50=2");
+                    // 发送命令配置账号密码
+                    sendJogCommand("$53=" + etSsid.getText().toString()); // SSID
+                    sendJogCommand("$54=" + etPassword.getText().toString()); // 密码
+
+
+                    // TODO 第三步 重启设备
+                    sendJogCommand("$System/Control=RESTART");
+
+                    Intent intent = new Intent(STAModelActivity.this, STAConnectStepActivity.class);
+                    intent.putExtra("ssid", etSsid.getText().toString());
+                    intent.putExtra("password", etPassword.getText().toString());
+                    intent.putExtra("macAddress", macAddress);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Log.d(TAG, "MAC 地址未找到");
+                }
+            }
+
+        }
+    }
+
+
+
 
 }

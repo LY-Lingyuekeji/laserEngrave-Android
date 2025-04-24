@@ -43,6 +43,12 @@ public class MySeekBar extends View {
     private int thumb_radius; // 滑动滑块半径
     private onProgressChanged onProgressChanged;
 
+    private boolean isDraggable = true; // 是否允许拖动
+
+    public void setDraggable(boolean draggable) {
+        this.isDraggable = draggable;
+    }
+
     /********************** 构造函数 **********************/
 
     public MySeekBar(Context context) {
@@ -262,11 +268,16 @@ public class MySeekBar extends View {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+
+        if (!isDraggable) {
+            return false; // 禁止拖动
+        }
+
         switch (event.getActionMasked()){
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_MOVE:
                 performClick(); // 若 SeekBar设置了 OnClickListener，可以在此处唤醒监听器
-                getParent().requestDisallowInterceptTouchEvent(true); // 不允许父组件拦截触摸事件
+//                getParent().requestDisallowInterceptTouchEvent(true); // 不允许父组件拦截触摸事件
                 thumb_radius = thumb_radius_on_dragging;
                 progress_default = calculateDraggingX(event.getX());
                 if(onProgressChanged!=null)

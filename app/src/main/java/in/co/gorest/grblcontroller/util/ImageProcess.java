@@ -22,6 +22,125 @@ import java.util.Arrays;
 public class ImageProcess {
 
     private static String TAG = "ImageProcess";
+//    /**
+//     * 将彩色图转换为黑白图
+//     */
+//    protected static Bitmap convert2GreyImgNew(Bitmap img, int threshold,float gamma) {
+//        int width = img.getWidth();         //获取位图的宽
+//        int height = img.getHeight();       //获取位图的高
+//
+//        int []pixels = new int[width * height]; //通过位图的大小创建像素点数组
+//
+//        img.getPixels(pixels, 0, width, 0, 0, width, height);
+//        int alpha = 0xFF << 24;
+//
+//        // 计算伽马校正查找表（加速计算）
+//        int[] gammaTable = new int[256];
+//        for (int i = 0; i < 256; i++) {
+//            gammaTable[i] = (int) (255 * Math.pow(i / 255.0, gamma));
+//        }
+//
+//        for(int i = 0; i < height; i++)  {
+//            for(int j = 0; j < width; j++) {
+//                int grey = pixels[width * i + j];
+//
+//                int red = ((grey  & 0x00FF0000 ) >> 16);
+//                int green = ((grey & 0x0000FF00) >> 8);
+//                int blue = (grey & 0x000000FF);
+//
+//                // 计算灰度值
+//                grey = (int)((float) red * 0.3 + (float)green * 0.59 + (float)blue * 0.11);
+//
+//                // 应用伽马校正
+//                grey = gammaTable[grey];
+//
+//                // 黑白二值化
+//                if (threshold >= 0 && threshold <= 255) {
+//                    grey = (grey < threshold) ? 0 : 255;
+//                }
+//
+//                // 生成新的像素值
+//                grey = alpha | (grey << 16) | (grey << 8) | grey;
+//                pixels[width * i + j] = grey;
+//            }
+//        }
+//        Bitmap result = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+//        result.setPixels(pixels, 0, width, 0, 0, width, height);
+//        return result;
+//    }
+
+
+    protected static Bitmap convert2GreyImgNew(Bitmap img, int threshold, float gamma, float contrast, float sharpenStrength) {
+        int width = img.getWidth();         // 获取位图的宽
+        int height = img.getHeight();       // 获取位图的高
+        int[] pixels = new int[width * height]; // 通过位图的大小创建像素点数组
+        img.getPixels(pixels, 0, width, 0, 0, width, height);
+        int alpha = 0xFF << 24;
+
+        // 计算伽马校正查找表（加速计算）
+        int[] gammaTable = new int[256];
+        for (int i = 0; i < 256; i++) {
+            gammaTable[i] = (int) (255 * Math.pow(i / 255.0, gamma));
+        }
+
+        int[] greyPixels = new int[width * height];
+
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                int color = pixels[width * i + j];
+                int red = (color >> 16) & 0xFF;
+                int green = (color >> 8) & 0xFF;
+                int blue = color & 0xFF;
+
+                // 计算灰度值
+                int grey = (int) (red * 0.3 + green * 0.59 + blue * 0.11);
+
+                // 伽马校正
+                grey = gammaTable[grey];
+
+                // 应用对比度调整
+                grey = (int) ((((grey / 255.0 - 0.5) * contrast) + 0.5) * 255);
+                grey = Math.max(0, Math.min(255, grey)); // 限制在 0-255 之间
+
+                greyPixels[width * i + j] = grey;
+            }
+        }
+
+        // 拉普拉斯锐化核
+        int[][] laplacianKernel = {
+                { 0, -1,  0 },
+                { -1,  4, -1 },
+                { 0, -1,  0 }
+        };
+
+        int[] sharpenedPixels = new int[width * height];
+
+        for (int i = 1; i < height - 1; i++) {
+            for (int j = 1; j < width - 1; j++) {
+                int sum = 0;
+                for (int ki = -1; ki <= 1; ki++) {
+                    for (int kj = -1; kj <= 1; kj++) {
+                        sum += greyPixels[(i + ki) * width + (j + kj)] * laplacianKernel[ki + 1][kj + 1];
+                    }
+                }
+                int sharpened = (int) (greyPixels[i * width + j] + sharpenStrength * sum);
+                sharpened = Math.max(0, Math.min(255, sharpened)); // 限制在 0-255
+                sharpenedPixels[i * width + j] = sharpened;
+            }
+        }
+
+        // 应用二值化
+        for (int i = 0; i < width * height; i++) {
+            int grey = sharpenedPixels[i];
+            grey = (threshold >= 0 && threshold <= 255) ? (grey < threshold ? 0 : 255) : grey;
+            pixels[i] = alpha | (grey << 16) | (grey << 8) | grey;
+        }
+
+        Bitmap result = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+        result.setPixels(pixels, 0, width, 0, 0, width, height);
+        return result;
+    }
+
     /**
      * 将彩色图转换为黑白图
      */
@@ -33,6 +152,7 @@ public class ImageProcess {
 
         img.getPixels(pixels, 0, width, 0, 0, width, height);
         int alpha = 0xFF << 24;
+
         for(int i = 0; i < height; i++)  {
             for(int j = 0; j < width; j++) {
                 int grey = pixels[width * i + j];
@@ -41,6 +161,7 @@ public class ImageProcess {
                 int green = ((grey & 0x0000FF00) >> 8);
                 int blue = (grey & 0x000000FF);
 
+                // 计算灰度值
                 grey = (int)((float) red * 0.3 + (float)green * 0.59 + (float)blue * 0.11);
 
                 if ((threshold != -1) && (threshold >=0) && (threshold <= 255))
@@ -77,9 +198,16 @@ public class ImageProcess {
     }
 
     /**
+     * 将彩色图转换为灰度图
+     */
+    public static Bitmap convert2GreyImgNew(Bitmap img, float gamma,float contrast, float sharpenStrength) {
+        return convert2GreyImgNew(img, -1, gamma, contrast,sharpenStrength);
+    }
+
+    /**
      * 将彩色图转换为灰度图，这个函数需要捕获OOM的异常
      */
-    public static Bitmap convertToGreyImage(Bitmap image, float printWidth, float printHeight, float resol) {
+    public static Bitmap convertToGreyImage(Bitmap image, float printWidth, float printHeight, float resol, float gamma, float contrast, float sharpenStrength) {
         if (image == null) {
             return null;
         }
@@ -90,7 +218,7 @@ public class ImageProcess {
             return null;
         }
         // 转换成灰度图或者黑白图
-        adjustBitmap = convert2GreyImg(adjustBitmap);
+        adjustBitmap = convert2GreyImgNew(adjustBitmap, gamma, contrast, sharpenStrength);
         if (adjustBitmap == null) {
             return null;
         }
@@ -110,7 +238,7 @@ public class ImageProcess {
      * 将图片进行缩放
      */
     public static Bitmap imageResize(Bitmap bm, int printWidth, int printHeight, float resol) {
-        Log.e(TAG, "printWidth=" + printWidth + "==" + printHeight+"=="+resol);
+        Log.e(TAG, "printWidth=" + printWidth + "==" + printHeight + "==" + resol);
         Bitmap newbm = null;
         int newWidth = (int) (printWidth / resol);
         int newHeight = (int) (printHeight / resol);

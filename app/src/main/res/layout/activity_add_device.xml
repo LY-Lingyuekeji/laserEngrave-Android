@@ -64,8 +64,7 @@
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
                         android:orientation="vertical">
 
                         <TextView
@@ -78,8 +77,9 @@
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/laser_recycler_view"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:layout_marginTop="10dp"/>
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            />
 
 
                     </LinearLayout>
@@ -87,8 +87,7 @@
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
                         android:layout_marginTop="15dp"
                         android:orientation="vertical">
 
@@ -102,7 +101,7 @@
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/cnc_recycler_view"
                             android:layout_width="match_parent"
-                            android:layout_height="match_parent"
+                            android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"/>
 
 

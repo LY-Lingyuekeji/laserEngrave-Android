@@ -3,15 +3,20 @@ package in.co.gorest.grblcontroller.activity;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowInsetsController;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -19,12 +24,17 @@ import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 import com.nbsp.materialfilepicker.ui.FilePickerActivity;
+import com.zhy.http.okhttp.OkHttpUtils;
+import com.zhy.http.okhttp.callback.StringCallback;
+
+import java.io.File;
 import java.util.ArrayList;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.adapters.ViewPagerAdapter;
 import in.co.gorest.grblcontroller.fragment.LocalFileFragment;
 import in.co.gorest.grblcontroller.fragment.RemoteFileFragment;
 import in.co.gorest.grblcontroller.model.Constants;
+import okhttp3.Call;
 
 public class FileActivity extends AppCompatActivity {
 
@@ -42,6 +52,10 @@ public class FileActivity extends AppCompatActivity {
     private ViewPagerAdapter adapter;
     // fragment数组
     private ArrayList<Fragment> fragments = new ArrayList<>();
+    // 最大重试次数
+    private int MAX_RETRY_NUM = 5;
+    // 上传弹窗
+    private AlertDialog dialogUpload;
 
     // 启用矢量图支持，确保在应用中可以正确显示矢量图形
     static {
@@ -150,10 +164,92 @@ public class FileActivity extends AppCompatActivity {
                 String filePath = data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH);
                 if (filePath != null) {
                     Log.d(TAG, "filePath=" + filePath);
-
+                    File file = new File(filePath);
+                    // 文件上传
+                    uploadFile(file, MAX_RETRY_NUM);
                 }
             }
         }
+    }
+
+
+    /**
+     * 上传文件
+     *
+     * @param file 文件
+     * @param num  重试次数
+     */
+    private void uploadFile(File file, final int num) {
+        Log.d(TAG, "upload num=" + num);
+        if (num > 0) {
+            // 使用自定义布局创建 AlertDialog
+            LayoutInflater inflater = LayoutInflater.from(FileActivity.this);
+            View dialogView = inflater.inflate(R.layout.dialog_upload, null);
+            // 获取 ProgressBar 和 TextView
+            ProgressBar progressBar = dialogView.findViewById(R.id.progressBar);
+            TextView progressText = dialogView.findViewById(R.id.progressText);
+            // 创建弹窗
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(FileActivity.this);
+            alertDialogBuilder.setTitle("温馨提示");
+            alertDialogBuilder.setView(dialogView);
+            alertDialogBuilder.setCancelable(false);
+            // UI线程
+            runOnUiThread(() -> {
+                dialogUpload = alertDialogBuilder.create();
+                // 显示弹窗
+                dialogUpload.show();
+            });
+
+            // 初始化
+            OkHttpUtils.getInstance();
+            // 文件上传
+            OkHttpUtils.post().addFile("myfile[]", file.getName(), file).url("http://192.168.4.1/upload").addParams("path", "/").addParams("/" + file.getName() + "S", String.valueOf(file.length())).tag(this).build().execute(new StringCallback() {
+
+                @Override
+                public void inProgress(float f, long j, int i) {
+                    super.inProgress(f, j, i);
+                    Log.e(TAG, "onResponse  inProgress=" + f + "---" + j + "---" + i);
+                    runOnUiThread(() -> {
+                        progressBar.setProgress((int) (f * 100.0f));
+                        progressText.setText(((int) (f * 100.0f)) + "%");
+                    });
+
+                }
+
+                @Override
+                public void onError(Call call, Exception exc, int i) {
+                    // 隐藏上传弹窗
+                    runOnUiThread(() -> {
+                        dialogUpload.dismiss();
+                    });
+                    Log.d(TAG, "e=" + exc.getMessage().toString());
+                    exc.printStackTrace();
+                    Toast.makeText(FileActivity.this, "上传失败，请检查并重试", Toast.LENGTH_SHORT).show();
+                    uploadFile(file, MAX_RETRY_NUM--);
+                }
+
+                @Override
+                public void onResponse(String str3, int i) {
+                    Log.e(TAG, "onResponse=" + str3);
+                    Toast.makeText(FileActivity.this, "上传完成", Toast.LENGTH_SHORT).show();
+                    // 隐藏上传弹窗
+                    runOnUiThread(() -> {
+                        dialogUpload.dismiss();
+                    });
+
+
+                    // 跳转雕刻页面
+                    Intent intent = new Intent(FileActivity.this, EngraveActivity.class);
+                    intent.putExtra("imagePath", "");
+                    intent.putExtra("filePath", file.getPath());
+                    startActivity(intent);
+                    finish();
+                }
+            });
+        } else {
+            Toast.makeText(FileActivity.this, "上传失败，请检查并重试", Toast.LENGTH_SHORT).show();
+        }
 
     }
+
 }

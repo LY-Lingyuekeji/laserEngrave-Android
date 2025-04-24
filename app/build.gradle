@@ -18,8 +18,8 @@ android {
     defaultConfig {
         applicationId "com.lingyue.laserengraving"
         minSdkVersion 26
-        versionCode 1117
-        versionName "1.1.17"
+        versionCode 1138
+        versionName "1.1.38"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
@@ -142,6 +142,7 @@ dependencies {
     // zxing
     implementation 'com.google.zxing:core:3.4.1'
     implementation 'com.journeyapps:zxing-android-embedded:4.2.0'
+
     // openCV
     implementation 'org.opencv:opencv:4.10.0-kleidicv'
     // 颜色选择器
@@ -156,13 +157,14 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.8'
     // 新手引导图
     implementation 'com.github.xuexiangjys:XUI:1.2.1'
-//    implementation 'com.github.faruktoptas:FancyShowCaseView:1.4.0'
     // APP内置更新
     implementation 'com.github.ZuoHailong:AppUpdate:0.2.6'
     // 画板
     implementation 'com.github.jenly1314:drawboard:1.1.0'
     // 图片裁剪
     implementation 'com.github.yalantis:ucrop:2.2.10'
+
+
 
 }
 

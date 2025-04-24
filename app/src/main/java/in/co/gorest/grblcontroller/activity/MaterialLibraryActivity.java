@@ -95,13 +95,29 @@ public class MaterialLibraryActivity extends AppCompatActivity {
 
         // 创建数据源
         List<Material> materialList = new ArrayList<>();
-        materialList.add(new Material("木板", R.mipmap.ic_sc_muban));
-        materialList.add(new Material("纸板", R.mipmap.ic_sc_zhiban));
+        materialList.add(new Material("胶合板(2mm)", R.mipmap.ic_sc_muban));
+        materialList.add(new Material("胶合板(5mm)", R.mipmap.ic_sc_muban));
+        materialList.add(new Material("胶合板(8mm)", R.mipmap.ic_sc_muban));
+        materialList.add(new Material("纸板(2mm)", R.mipmap.ic_sc_zhiban));
+        materialList.add(new Material("牛皮纸(250g)", R.mipmap.ic_sc_niupizhi));
         materialList.add(new Material("平安树叶", R.mipmap.ic_sc_pinganye));
         materialList.add(new Material("不锈钢", R.mipmap.ic_sc_buxiugang));
-        materialList.add(new Material("皮革", R.mipmap.ic_sc_pige));
-        materialList.add(new Material("亚克力", R.mipmap.ic_sc_yakeli));
-
+        materialList.add(new Material("金属漆面", R.mipmap.ic_sc_jinshuqimian));
+        materialList.add(new Material("皮革（1mm）", R.mipmap.ic_sc_pige));
+        materialList.add(new Material("PVC/塑料", R.mipmap.ic_sc_suliao));
+        materialList.add(new Material("黑色亚克力", R.mipmap.ic_sc_yakeli));
+        materialList.add(new Material("橡胶印章", R.mipmap.ic_sc_xiangjiaoyinzhang));
+        materialList.add(new Material("MDF板", R.mipmap.ic_sc_miduban));
+        materialList.add(new Material("竹子", R.mipmap.ic_sc_zhuzi));
+        materialList.add(new Material("软磁贴片", R.mipmap.ic_sc_ruancitiepian));
+        materialList.add(new Material("食物", R.mipmap.ic_sc_shiwu));
+        materialList.add(new Material("玻璃", R.mipmap.ic_sc_boli));
+        materialList.add(new Material("布料", R.mipmap.ic_sc_buliao));
+        materialList.add(new Material("陶瓷", R.mipmap.ic_sc_taoci));
+        materialList.add(new Material("黄铜", R.mipmap.ic_sc_huangtong));
+        materialList.add(new Material("纯铝", R.mipmap.ic_sc_chunlv));
+        materialList.add(new Material("电路铜板", R.mipmap.ic_sc_dianlutongban));
+        materialList.add(new Material("板岩", R.mipmap.ic_sc_banyan));
         // 设置适配器
         MaterialLibraryAdapter adapter = new MaterialLibraryAdapter(this, materialList);
         materialLibraryRecyclerVie.setAdapter(adapter);

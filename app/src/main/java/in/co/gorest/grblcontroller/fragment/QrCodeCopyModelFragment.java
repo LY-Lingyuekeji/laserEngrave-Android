@@ -28,6 +28,7 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.oned.Code128Writer;
 import com.google.zxing.qrcode.QRCodeWriter;
+import com.journeyapps.barcodescanner.CaptureActivity;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -40,6 +41,7 @@ import java.util.Map;
 import in.co.gorest.grblcontroller.BuildConfig;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.activity.EditActivity;
+import in.co.gorest.grblcontroller.activity.MyCaptureActivity;
 import in.co.gorest.grblcontroller.events.ModelChangeEvent;
 import in.co.gorest.grblcontroller.events.ScanResultMessageEvent;
 import in.co.gorest.grblcontroller.util.ImgUtil;
@@ -57,12 +59,18 @@ public class QrCodeCopyModelFragment extends Fragment {
     private TextView tvQrCodeLimit;
     // 下一步
     private TextView tvNext;
+    // 机器名称
+    private String machineName;
 
     public QrCodeCopyModelFragment() {
     }
 
-    public static QrCodeCopyModelFragment newInstance() {
-        return new QrCodeCopyModelFragment();
+    public static QrCodeCopyModelFragment newInstance(String machineName) {
+        QrCodeCopyModelFragment fragment = new QrCodeCopyModelFragment();
+        Bundle args = new Bundle();
+        args.putString("machineName", machineName);
+        fragment.setArguments(args);
+        return fragment;
     }
 
     @Override
@@ -88,6 +96,10 @@ public class QrCodeCopyModelFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        if (getArguments() != null) {
+            machineName = getArguments().getString("machineName");
+        }
+
         // 初始化界面
         initView(view);
         // 初始化数据
@@ -130,13 +142,10 @@ public class QrCodeCopyModelFragment extends Fragment {
         tvScanQrcode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                IntentIntegrator integrator = new IntentIntegrator(requireActivity());
-                integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE);
-                integrator.setPrompt("扫描二维码");
-                integrator.setCameraId(0);
-                integrator.setBeepEnabled(false);
-                integrator.setOrientationLocked(true);
-                integrator.initiateScan();
+                new IntentIntegrator(getActivity())
+                        .setCaptureActivity(MyCaptureActivity.class) // 使用自定义的 Activity
+                        .setOrientationLocked(true) // 锁定方向
+                        .initiateScan();
             }
         });
 
@@ -168,7 +177,7 @@ public class QrCodeCopyModelFragment extends Fragment {
                     public void run() {
                         // 更新UI的操作
                         if (!s.toString().equals("") || !s.toString().isEmpty()) {
-                            setBarcodeToImageView(ivQrCode,s.toString());
+                            setBarcodeToImageView(ivQrCode, s.toString());
                         } else {
                             setBarcodeToImageView(ivQrCode, "QRCODE");
                         }
@@ -189,6 +198,7 @@ public class QrCodeCopyModelFragment extends Fragment {
                 File barcodeBitmap = ImgUtil.saveBitmap("qrcode" + System.currentTimeMillis() + ".png", bitmap);
                 Uri imageUris = Uri.fromFile(barcodeBitmap);
                 Intent intent = new Intent(getActivity(), EditActivity.class);
+                intent.putExtra("machineName", machineName);
                 intent.putExtra("type", "5");
                 intent.putExtra(BuildConfig.APPLICATION_ID + ".InputUri", imageUris);
                 intent.putExtra("businessType", 1);
@@ -248,7 +258,7 @@ public class QrCodeCopyModelFragment extends Fragment {
     public void OnScanResultMessageEvent(ScanResultMessageEvent event) {
         if (!event.getMessage().isEmpty()) {
             Log.d(TAG, "ScanResult=" + event.getMessage());
-           etQrCodeText.setText(event.getMessage());
+            etQrCodeText.setText(event.getMessage());
         }
     }
 }

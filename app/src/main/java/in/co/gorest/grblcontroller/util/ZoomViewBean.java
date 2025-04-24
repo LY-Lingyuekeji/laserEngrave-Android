@@ -13,6 +13,15 @@ public class ZoomViewBean {
     private float resols;
     private int depthProgress = 20,//雕刻深度
             speedProgress = 40;//雕刻速度
+
+    private int speedLevel = 100;
+    private int laserLevel = 20;
+
+    private boolean isSpeedSet = false;
+    private boolean isLaserSet = false;
+
+    private int operationMode = -1;
+
     private float scaleX = 1.0f, scaleY = 1.0f;
     private View view;
     private Uri uri;
@@ -227,5 +236,39 @@ public class ZoomViewBean {
 
     public void setTypes(String types) {
         Types = types;
+    }
+
+    public int getSpeedLevel() {
+        return speedLevel;
+    }
+
+    public void setSpeedLevel(int speedLevel) {
+        this.speedLevel = speedLevel;
+        this.isSpeedSet = true;
+    }
+
+    public int getLaserLevel() {
+        return laserLevel;
+    }
+
+    public void setLaserLevel(int laserLevel) {
+        this.laserLevel = laserLevel;
+        this.isLaserSet = true;
+    }
+
+    public boolean isSpeedSet() {
+        return isSpeedSet;
+    }
+
+    public boolean isLaserSet() {
+        return isLaserSet;
+    }
+
+    public int getOperationMode() {
+        return operationMode;
+    }
+
+    public void setOperationMode(int operationMode) {
+        this.operationMode = operationMode;
     }
 }

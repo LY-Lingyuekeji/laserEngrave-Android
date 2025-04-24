@@ -16,11 +16,54 @@
         android:textSize="18sp"
         android:textStyle="bold" />
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="20dp">
+
+        <EditText
+            android:id="@+id/et_customize_speed_level"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="7"
+            android:background="@drawable/bg_gray_e6e6e6_r10"
+            android:hint="自定义雕刻速度"
+            android:inputType="number"
+            android:padding="10dp"
+            android:gravity="center"
+            android:textSize="16sp"
+            android:textColor="@color/colorBlack"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:gravity="start"
+            android:text=" mm/min"
+            android:textColor="@color/colorBlack"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:id="@+id/tv_confirm_customize_speed_level"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:layout_marginStart="10dp"
+            android:gravity="center"
+            android:padding="5dp"
+            android:text="确定"
+            android:textColor="@color/colorWhite"
+            android:textSize="16sp"
+            android:background="@drawable/bg_green_1e853a_r100"/>
+
+    </LinearLayout>
+
     <ListView
         android:id="@+id/lv_speed_level_options"
         android:layout_width="match_parent"
         android:layout_height="300dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="10dp"
         android:background="@drawable/step_setup_bg_color_selector" />
 
 </LinearLayout>

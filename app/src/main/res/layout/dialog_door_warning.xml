@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_white_ffffff_r10"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- 警告图标 -->
+    <ImageView
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="center"
+        android:src="@mipmap/ic_warning" />
+
+    <!-- 标题 -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:gravity="center"
+        android:text="危险"
+        android:textColor="#f6250a"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <!-- 提示 -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="16dp"
+        android:gravity="center"
+        android:text="检测到盖子已打开，机器停止雕刻！"
+        android:textColor="@color/warningColor"
+        android:textSize="16sp" />
+
+
+    <TextView
+        android:id="@+id/tv_dialog_door_warning_confirm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_weight="1"
+        android:background="@drawable/bg_green_1e853a_r100"
+        android:gravity="center"
+        android:padding="10dp"
+        android:text="确定"
+        android:textColor="@color/colorWhite"
+        android:textSize="16sp" />
+
+
+</LinearLayout>

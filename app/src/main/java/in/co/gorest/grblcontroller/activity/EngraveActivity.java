@@ -3,20 +3,23 @@ package in.co.gorest.grblcontroller.activity;
 
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.Context;
 import android.content.pm.ActivityInfo;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.os.Process;
 import android.os.SystemClock;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowInsetsController;
-import android.view.animation.TranslateAnimation;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -32,20 +35,17 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
-import in.co.gorest.grblcontroller.base.BaseActivity;
 import in.co.gorest.grblcontroller.base.BaseDialog;
 import in.co.gorest.grblcontroller.databinding.ActivityEngraveBinding;
 import in.co.gorest.grblcontroller.events.ServiceMessageEvent;
-import in.co.gorest.grblcontroller.events.UiToastEvent;
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
-import in.co.gorest.grblcontroller.listeners.FileSenderListener;
 import in.co.gorest.grblcontroller.model.Constants;
-import in.co.gorest.grblcontroller.model.GcodeCommand;
 import in.co.gorest.grblcontroller.util.NettyClient;
 
 public class EngraveActivity extends AppCompatActivity {
@@ -55,7 +55,7 @@ public class EngraveActivity extends AppCompatActivity {
     // 用于监听和管理机器状态的监听器
 
     // 用于监听和管理文件进程的监听器
-    private FileSenderListener fileSender;
+//    private FileSenderListener fileSender;
     // 用于管理和访问增强的共享偏好设置实例
     private EnhancedSharedPreferences sharedPref;
     // 返回
@@ -101,7 +101,14 @@ public class EngraveActivity extends AppCompatActivity {
     // 数据同步弹窗
     private AlertDialog dialogSycn;
 
+    // 是否震动提醒
+    private boolean isOpenVibrateAlert;
+    // 震动提醒持续时长
+    private int vibrateAlertTime;
 
+    // 添加这个变量用于记录上一次状态
+    private String lastMachineStatus = "";
+    private int currentProgress = 0;       // 当前进度记录
 
     // 启用矢量图支持，确保在应用中可以正确显示矢量图形
     static {
@@ -115,7 +122,7 @@ public class EngraveActivity extends AppCompatActivity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         // 绑定视图
         ActivityEngraveBinding binding = DataBindingUtil.setContentView(this, R.layout.activity_engrave);
-        binding.setFileSender(fileSender);
+//        binding.setFileSender(fileSender);
 
         // 初始化共享偏好设置实例
         sharedPref = EnhancedSharedPreferences.getInstance(GrblController.getInstance(), getString(R.string.shared_preference_key));
@@ -179,7 +186,6 @@ public class EngraveActivity extends AppCompatActivity {
         tvStop = findViewById(R.id.tv_stop);
 
 
-
     }
 
     /**
@@ -189,11 +195,11 @@ public class EngraveActivity extends AppCompatActivity {
         // 同步数据
         syncData();
         // 初始化文件进程
-        fileSender = FileSenderListener.getInstance();
+//        fileSender = FileSenderListener.getInstance();
         // 图像预览地址
         String imagePath = getIntent().getStringExtra("imagePath");
         if (imagePath.isEmpty() || imagePath.equals("")) {
-            Glide.with(getApplicationContext()).load(R.mipmap.ic_empty).into(ivPreview);
+            Glide.with(getApplicationContext()).load(R.mipmap.ic_unknow_404).into(ivPreview);
         } else {
             Log.d(TAG, "imagePath=" + imagePath);
             Glide.with(getApplicationContext()).load(imagePath).into(ivPreview);
@@ -201,7 +207,7 @@ public class EngraveActivity extends AppCompatActivity {
         // 文件地址
         String filePath = getIntent().getStringExtra("filePath");
         Log.d(TAG, "filePath=" + filePath);
-        fileSender.setGcodeFile(new File(filePath));
+//        fileSender.setGcodeFile(new File(filePath));
         File file = new File(filePath);
         // 设置文件名
         tvFilename.setText(file.getName());
@@ -221,10 +227,12 @@ public class EngraveActivity extends AppCompatActivity {
         try {
             totalLines = countTotalLines(filePath);
             Log.d(TAG, "文件总行号=" + totalLines);
+        } catch (FileNotFoundException e) {
+            Log.e(TAG, "文件不存在: " + filePath);
+            totalLines = -1; // -1 表示无法获取
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
 
         // 确保遮罩层完全覆盖图片
         maskView.post(new Runnable() {
@@ -238,6 +246,12 @@ public class EngraveActivity extends AppCompatActivity {
                 maskView.setLayoutParams(params);
             }
         });
+
+
+        // 获取保存的危险警报震动提醒实例值
+        isOpenVibrateAlert = sharedPref.getBoolean(getString(R.string.preference_vibrate_alert), true);
+        // 获取保存的危险警报震动提醒时长实例值
+        vibrateAlertTime = sharedPref.getInt(getString(R.string.preference_vibrate_alert_time), 1);
     }
 
     /**
@@ -329,72 +343,16 @@ public class EngraveActivity extends AppCompatActivity {
     }
 
     /**
-     * 读取文件
-     */
-    static class ReadFileAsyncTask extends AsyncTask<File, Integer, Integer> {
-
-        protected void onPreExecute() {
-            FileSenderListener.getInstance().setStatus(FileSenderListener.STATUS_READING);
-            this.initFileSenderListener();
-        }
-
-        protected Integer doInBackground(File... file) {
-            Process.setThreadPriority(Process.THREAD_PRIORITY_FOREGROUND);
-
-            Integer lines = 0;
-            try {
-                BufferedReader reader = new BufferedReader(new FileReader(file[0]));
-                String sCurrentLine;
-                GcodeCommand gcodeCommand = new GcodeCommand();
-                while ((sCurrentLine = reader.readLine()) != null) {
-                    gcodeCommand.setCommand(sCurrentLine);
-                    if (gcodeCommand.getCommandString().length() > 0) {
-                        lines++;
-                        if (gcodeCommand.getCommandString().length() >= 79) {
-                            EventBus.getDefault().post(new UiToastEvent(GrblController.getInstance().getString(R.string.text_gcode_length_warning) + sCurrentLine, true, true));
-                            initFileSenderListener();
-                            FileSenderListener.getInstance().setStatus(FileSenderListener.STATUS_IDLE);
-                            cancel(true);
-                        }
-                    }
-                    if (lines % 2500 == 0) publishProgress(lines);
-                }
-                reader.close();
-            } catch (IOException e) {
-                this.initFileSenderListener();
-                FileSenderListener.getInstance().setStatus(FileSenderListener.STATUS_IDLE);
-                Log.e(TAG, e.getMessage(), e);
-            }
-
-            return lines;
-        }
-
-        public void onProgressUpdate(Integer... progress) {
-            FileSenderListener.getInstance().setRowsInFile(progress[0]);
-        }
-
-        public void onPostExecute(Integer lines) {
-            FileSenderListener.getInstance().setRowsInFile(lines);
-            FileSenderListener.getInstance().setStatus(FileSenderListener.STATUS_IDLE);
-        }
-
-        private void initFileSenderListener() {
-            FileSenderListener.getInstance().setRowsInFile(0);
-            FileSenderListener.getInstance().setRowsSent(0);
-        }
-    }
-
-    /**
      * 进度更新线程
      */
     private Runnable progressRunnable = new Runnable() {
         @Override
         public void run() {
             if (isStreaming) {
-                int currentLine = fileSender.getRowsSent();
-                int totalLines = fileSender.getRowsInFile();
-                int progress = (int) (((float) currentLine / totalLines) * 100);
-                updateProgressBar(progress);
+//                int currentLine = fileSender.getRowsSent();
+//                int totalLines = fileSender.getRowsInFile();
+//                int progress = (int) (((float) currentLine / totalLines) * 100);
+                updateProgressBar(currentProgress);
 
                 // 如果还在雕刻，继续更新
                 progressHandler.postDelayed(this, 500); // 每0.5秒更新一次
@@ -409,7 +367,7 @@ public class EngraveActivity extends AppCompatActivity {
      */
     private void updateProgressBar(int progress) {
         // 调用方法更新遮罩层
-        updateMaskViewHeightWithAnimation(progress/100f);
+        updateMaskViewHeightWithAnimation(progress / 100f);
 
         // 更新UI上的进度条
         progressBar.setProgress(progress);
@@ -457,7 +415,7 @@ public class EngraveActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Log.d(TAG,  "耗时：" + elapsedTime + "毫秒");
+                    Log.d(TAG, "耗时：" + elapsedTime + "毫秒");
                     tvExpenditureTime.setText(formattedElapsedTime);
                 }
             });
@@ -546,36 +504,190 @@ public class EngraveActivity extends AppCompatActivity {
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onServiceMessageEvent(ServiceMessageEvent event) {
-        if (!event.getMessage().isEmpty() && event.getMessage().startsWith("<")) {
-
-            if (dialogSycn.isShowing()) {
-                // 隐藏弹窗
-                dialogSycn.dismiss();
-            }
-
-            Log.d(TAG, "message=" + event.getMessage().toString());
-            String[] parts = event.getMessage().substring(1, event.getMessage().toString().length() - 1).split("\\|");
-            Log.d(TAG, "status=" + parts[0] + " Mpos=" + parts[1] + " Wpos=" + parts[2] + " Fs=" + parts[3]);
-            machineStatus = parts[0];
-            for (String part : parts) {
-                if (part.startsWith("FS")) {
-                    String[] speedAndLaserLevel = part.substring(3, part.length() - 1).split(",");
-                    tvSpeed.setText(speedAndLaserLevel[0]);
-                    tvLaserlevel.setText(String.valueOf(Integer.valueOf(speedAndLaserLevel[1]) / 10));
+        if (!event.getMessage().isEmpty()) {
+            Activity topActivity = GrblController.getInstance().getTopActivity();
+            if (event.getMessage().startsWith("<")) {
+                if (dialogSycn.isShowing()) {
+                    // 隐藏弹窗
+                    dialogSycn.dismiss();
                 }
 
-                if (part.startsWith("SD")) {
-                    String[] progressStrings = part.substring(3, part.length() - 1).split(",");
-                    Float progress = Float.valueOf(progressStrings[0]);
-                    updateProgressBar(Integer.valueOf(Math.round(progress)));
+                Log.d(TAG, "message=" + event.getMessage().toString());
+                String[] parts = event.getMessage().substring(1, event.getMessage().toString().length() - 1).split("\\|");
+                Log.d(TAG, "status=" + parts[0] + " Mpos=" + parts[1] + " Wpos=" + parts[2] + " Fs=" + parts[3]);
 
-                    if (Integer.valueOf(Math.round(progress)) == 100) {
-                        Toast.makeText(EngraveActivity.this, "雕刻完成", Toast.LENGTH_SHORT).show();
-                        // 销毁时移除所有回调和消息
-                        elapsedTimeHandler.removeCallbacks(runnableElapsedTime);
+                lastMachineStatus = machineStatus; // 在更新前记录旧状态
+                machineStatus = parts[0];          // 更新当前状态
+
+                // 检查是否从 Run -> Idle，并且进度没到100
+                if (lastMachineStatus.equals(Constants.MACHINE_STATUS_RUN) && machineStatus.equals(Constants.MACHINE_STATUS_IDLE) && currentProgress < 100) {
+                    Log.d(TAG, "检测到状态由Run变为Idle，即从工作状态到空闲状态，但进度未满，强制设为100");
+                    updateProgressBar(100);
+                    Toast.makeText(EngraveActivity.this, "雕刻完成", Toast.LENGTH_SHORT).show();
+                    elapsedTimeHandler.removeCallbacks(runnableElapsedTime);
+                    currentProgress = 100; // 更新当前进度
+                }
+
+                for (String part : parts) {
+                    if (part.startsWith("FS")) {
+                        String[] speedAndLaserLevel = part.substring(3, part.length() - 1).split(",");
+                        tvSpeed.setText(speedAndLaserLevel[0]);
+                        tvLaserlevel.setText(String.valueOf(Integer.valueOf(speedAndLaserLevel[1]) / 10));
+                    }
+
+                    if (part.startsWith("SD")) {
+                        String[] progressStrings = part.substring(3, part.length() - 1).split(",");
+                        Float progress = Float.valueOf(progressStrings[0]);
+
+                        int roundedProgress = Math.round(progress);
+
+                        currentProgress = roundedProgress; // 更新当前进度记录
+                        updateProgressBar(roundedProgress);
+
+
+                        if (roundedProgress == 100) {
+                            Toast.makeText(EngraveActivity.this, "雕刻完成", Toast.LENGTH_SHORT).show();
+                            // 销毁时移除所有回调和消息
+                            elapsedTimeHandler.removeCallbacks(runnableElapsedTime);
+                        }
+                    }
+
+                }
+            } else {
+                if (topActivity != this) {
+                    Log.d(TAG, "当前 Activity 不是顶层，不弹窗");
+                    return; // 不是当前页面，直接 return
+                }
+
+                if (event.getMessage().contains("MSG:Safe door err!") && machineStatus.equals(Constants.MACHINE_STATUS_RUN)) {
+                    // TODO 开门弹窗
+                    showDialogDoorWarning();
+                    if (isOpenVibrateAlert) {
+                        vibratePhone(this, vibrateAlertTime * 1000);
+                    }
+                } else if (event.getMessage().contains("MSG:Flame err!") && machineStatus.equals(Constants.MACHINE_STATUS_RUN)) {
+                    // TODO 火焰弹窗
+                    showDialogFireWarning();
+                    if (isOpenVibrateAlert) {
+                        vibratePhone(this, vibrateAlertTime * 1000);
+                    }
+                } else if (event.getMessage().contains("MSG:Probe err!") && machineStatus.equals(Constants.MACHINE_STATUS_RUN)) {
+                    // TODO 倾斜弹窗
+                    showDialogProbeWarning();
+                    if (isOpenVibrateAlert) {
+                        vibratePhone(this, vibrateAlertTime * 1000);
                     }
                 }
+            }
+        }
+    }
 
+    /**
+     * 开门风险提示弹窗
+     */
+    private void showDialogDoorWarning() {
+        Dialog dialog = new Dialog(this, R.style.CustomDialog);
+        dialog.setContentView(R.layout.dialog_door_warning);
+        // 设置窗口背景为透明，以显示圆角效果
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+        // 确认
+        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
+        // 确定
+        tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 隐藏弹窗
+                if (dialog.isShowing()) {
+                    dialog.dismiss();
+                }
+            }
+        });
+        // 设置Dialog的宽高
+        if (dialog.getWindow() != null) {
+            // 设置弹窗宽度为屏幕的80%，高度自适应
+            dialog.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+        // 显示 Dialog
+        dialog.show();
+    }
+
+    /**
+     * 火焰风险提示弹窗
+     */
+    private void showDialogFireWarning() {
+        Dialog dialog = new Dialog(this, R.style.CustomDialog);
+        dialog.setContentView(R.layout.dialog_fire_warning);
+        // 设置窗口背景为透明，以显示圆角效果
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+        // 确认
+        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
+        // 确定
+        tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 隐藏弹窗
+                if (dialog.isShowing()) {
+                    dialog.dismiss();
+                }
+            }
+        });
+        // 设置Dialog的宽高
+        if (dialog.getWindow() != null) {
+            // 设置弹窗宽度为屏幕的80%，高度自适应
+            dialog.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+        // 显示 Dialog
+        dialog.show();
+    }
+
+    /**
+     * 倾斜风险提示弹窗
+     */
+    private void showDialogProbeWarning() {
+        Dialog dialog = new Dialog(this, R.style.CustomDialog);
+        dialog.setContentView(R.layout.dialog_probe_warning);
+        // 设置窗口背景为透明，以显示圆角效果
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+        // 确认
+        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
+        // 确定
+        tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 隐藏弹窗
+                if (dialog.isShowing()) {
+                    dialog.dismiss();
+                }
+            }
+        });
+        // 设置Dialog的宽高
+        if (dialog.getWindow() != null) {
+            // 设置弹窗宽度为屏幕的80%，高度自适应
+            dialog.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+        // 显示 Dialog
+        dialog.show();
+    }
+
+    /**
+     * 震动提醒
+     *
+     * @param context      上下文
+     * @param milliseconds 震动时长
+     */
+    public void vibratePhone(Context context, long milliseconds) {
+        Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+        if (vibrator != null && vibrator.hasVibrator()) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                vibrator.vibrate(VibrationEffect.createOneShot(milliseconds, VibrationEffect.DEFAULT_AMPLITUDE));
+            } else {
+                vibrator.vibrate(milliseconds);
             }
         }
     }
@@ -583,6 +695,7 @@ public class EngraveActivity extends AppCompatActivity {
 
     /**
      * 根据雕刻进度消除遮罩层
+     *
      * @param progress 雕刻进度
      */
     private void updateMaskViewHeightWithAnimation(float progress) {

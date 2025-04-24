@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rg_speed_fast"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_white_ffffff_topradius30"
+    android:orientation="vertical"
+    android:paddingHorizontal="10dp"
+    android:paddingVertical="20dp"
+    tools:context=".fragment.WifiChooseBottomSheetFragment">
+
+    <RadioButton
+        android:id="@+id/rb_700"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/step_setup_bg_color_selector"
+        android:button="@null"
+        android:gravity="center"
+        android:paddingVertical="10dp"
+        android:text="700mm/min"
+        android:textColor="@drawable/step_setup_text_color_selector"
+        android:textSize="14sp" />
+
+    <RadioButton
+        android:id="@+id/rb_800"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/step_setup_bg_color_selector"
+        android:button="@null"
+        android:gravity="center"
+        android:layout_marginTop="10dp"
+        android:paddingVertical="10dp"
+        android:text="800mm/min"
+        android:textColor="@drawable/step_setup_text_color_selector"
+        android:textSize="14sp" />
+
+    <RadioButton
+        android:id="@+id/rb_900"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/step_setup_bg_color_selector"
+        android:button="@null"
+        android:gravity="center"
+        android:layout_marginTop="10dp"
+        android:paddingVertical="10dp"
+        android:text="900mm/min"
+        android:textColor="@drawable/step_setup_text_color_selector"
+        android:textSize="14sp" />
+
+    <RadioButton
+        android:id="@+id/rb_1000"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/step_setup_bg_color_selector"
+        android:button="@null"
+        android:gravity="center"
+        android:layout_marginTop="10dp"
+        android:paddingVertical="10dp"
+        android:text="1000mm/min"
+        android:textColor="@drawable/step_setup_text_color_selector"
+        android:textSize="14sp" />
+
+    <RadioButton
+        android:id="@+id/rb_1100"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/step_setup_bg_color_selector"
+        android:button="@null"
+        android:gravity="center"
+        android:layout_marginTop="10dp"
+        android:paddingVertical="10dp"
+        android:text="1100mm/min"
+        android:textColor="@drawable/step_setup_text_color_selector"
+        android:textSize="14sp" />
+
+
+
+
+</RadioGroup>

@@ -43,9 +43,7 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 import com.hailong.appupdate.AppUpdateManager;
 import com.yalantis.ucrop.UCrop;
-
 import org.greenrobot.eventbus.EventBus;
-
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -53,8 +51,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
-import in.co.gorest.grblcontroller.activity.BeginEngraveActivity;
 import in.co.gorest.grblcontroller.activity.EditActivity;
 import in.co.gorest.grblcontroller.adapters.ViewPagerAdapter;
 import in.co.gorest.grblcontroller.base.BaseActivity;
@@ -361,7 +357,7 @@ public class MainActivity extends BaseActivity {
      */
     private void onPermissionGranted(String permission) {
         // 处理权限被授予后的逻辑
-//        Toast.makeText(this, permission + " 权限已授予", Toast.LENGTH_SHORT).show();
+        Log.d(TAG, permission + " 权限已授予");
     }
 
     /**
@@ -433,7 +429,6 @@ public class MainActivity extends BaseActivity {
                         .start(this);
             } else if (requestCode == UCrop.REQUEST_CROP) {
                 final Uri resultUri = UCrop.getOutput(data);
-
                 Intent intent = new Intent(MainActivity.this, EditActivity.class);
                 intent.putExtra("type", "5");
                 intent.putExtra(BuildConfig.APPLICATION_ID + ".InputUri", resultUri);
@@ -443,7 +438,6 @@ public class MainActivity extends BaseActivity {
 
         }
     }
-
 
     /**
      * 读取 versionInfo 模拟接口
@@ -560,7 +554,6 @@ public class MainActivity extends BaseActivity {
         } else {
             Toast.makeText(MainActivity.this, "已经是最新版本", Toast.LENGTH_SHORT).show();
         }
-
     }
 
     /**
@@ -570,124 +563,6 @@ public class MainActivity extends BaseActivity {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
         Date date = new Date();  // 获取当前日期
         return sdf.format(date);  // 返回格式化后的日期
-    }
-
-
-
-    /**
-     * 通过SSID和密码连接WIFI（适用于Android版本大于Android Q）
-     *
-     * @param context  上下文
-     * @param ssid     SSID
-     * @param password 密码
-     */
-    @RequiresApi(api = Build.VERSION_CODES.Q)
-    public void connectToWifiForAndroidQ(Context context, String ssid, String password) {
-        WifiNetworkSpecifier.Builder builder = new WifiNetworkSpecifier.Builder();
-        builder.setSsid(ssid);
-        builder.setWpa2Passphrase(password); // WPA2 passphrase
-
-        WifiNetworkSpecifier wifiNetworkSpecifier = builder.build();
-
-        NetworkRequest.Builder networkRequestBuilder = new NetworkRequest.Builder();
-        networkRequestBuilder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI);
-        networkRequestBuilder.setNetworkSpecifier(wifiNetworkSpecifier);
-
-        NetworkRequest networkRequest = networkRequestBuilder.build();
-
-        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        connectivityManager.requestNetwork(networkRequest, new ConnectivityManager.NetworkCallback() {
-            @Override
-            public void onAvailable(Network network) {
-                // Connected to the network
-                connectivityManager.bindProcessToNetwork(network); // This line sets the network for all outgoing data
-                WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-                int ipAddress = wifiInfo.getIpAddress();
-                String ip = Formatter.formatIpAddress(ipAddress);
-                Log.d(TAG, "Connected Wi-Fi IP Address: " + ip);
-                if (ssid.contains("MKS")) {
-                    // 连接Telnet
-                    EventBus.getDefault().post(new DeviceConnectEvent("AP", ssid, ip));
-                } else {
-                    String host = sharedPref.getString(getString(R.string.preference_sta_host), "");
-                    if (!TextUtils.isEmpty(host)) {
-                        // 连接Telnet
-                        EventBus.getDefault().post(new DeviceConnectEvent("AP", ssid, host));
-                    }
-                }
-            }
-
-            @Override
-            public void onUnavailable() {
-                // Connection failed
-                Toast.makeText(MainActivity.this, "连接失败，请重新连接！", Toast.LENGTH_SHORT).show();
-
-            }
-        });
-    }
-
-
-    /**
-     * 通过SSID和密码连接WIFI
-     *
-     * @param context  上下文
-     * @param ssid     SSID
-     * @param password 密码A
-     */
-    public void connectToWifi(Context context, String ssid, String password) {
-        WifiConfiguration wifiConfig = new WifiConfiguration();
-        wifiConfig.SSID = String.format("\"%s\"", ssid); // Quotes are required
-        wifiConfig.preSharedKey = String.format("\"%s\"", password); // Quotes are required for the password
-
-        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-
-        // Add the new configuration to the system
-        int netId = wifiManager.addNetwork(wifiConfig);
-
-        // Enable the network and attempt to connect
-        wifiManager.disconnect();
-        wifiManager.enableNetwork(netId, true);
-        wifiManager.reconnect();
-
-        // Register a network callback to listen for network connection status
-        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkRequest networkRequest = new NetworkRequest.Builder()
-                .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-                .build();
-
-        connectivityManager.registerNetworkCallback(networkRequest, new ConnectivityManager.NetworkCallback() {
-            @Override
-            public void onAvailable(Network network) {
-                // Network is available
-                super.onAvailable(network);
-                connectivityManager.unregisterNetworkCallback(this);
-                WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-                int ipAddress = wifiInfo.getIpAddress();
-                String ip = Formatter.formatIpAddress(ipAddress);
-                Log.d(TAG, "Connected Wi-Fi IP Address: " + ip);
-                if (ssid.contains("MKS")) {
-                    // 连接Telnet
-                    EventBus.getDefault().post(new DeviceConnectEvent("AP", ssid, ip));
-                } else {
-                    String host = sharedPref.getString(getString(R.string.preference_sta_host), "");
-                    if (!TextUtils.isEmpty(host)) {
-                        // 连接Telnet
-                        EventBus.getDefault().post(new DeviceConnectEvent("AP", ssid, host));
-                    }
-                }
-
-            }
-
-            @Override
-            public void onLost(Network network) {
-                // Network is lost
-                super.onLost(network);
-                connectivityManager.unregisterNetworkCallback(this);
-
-                // Connection failed
-                Toast.makeText(MainActivity.this, "连接失败，请重新连接！", Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 
 

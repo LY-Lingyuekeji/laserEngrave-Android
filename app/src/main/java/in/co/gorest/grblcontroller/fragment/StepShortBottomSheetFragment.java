@@ -41,6 +41,9 @@ public class StepShortBottomSheetFragment extends BottomSheetDialogFragment {
     // RadioButton 0.5mm
     private RadioButton rb05;
 
+
+
+
     public StepShortBottomSheetFragment() {
     }
 

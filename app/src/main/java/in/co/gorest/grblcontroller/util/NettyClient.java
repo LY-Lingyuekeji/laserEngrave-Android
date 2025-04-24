@@ -29,11 +29,14 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.DelimiterBasedFrameDecoder;
+import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
+import io.netty.handler.codec.LengthFieldPrepender;
 import io.netty.handler.codec.http.HttpContentCompressor;
 import io.netty.handler.codec.http.HttpRequestDecoder;
 import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
+import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.CharsetUtil;
 import io.netty.util.concurrent.Future;
@@ -93,20 +96,31 @@ public class NettyClient {
         if (!this.isConnect) {
             this.group = new NioEventLoopGroup();
             try {
-                new Bootstrap().group(this.group).option(ChannelOption.SO_KEEPALIVE, true).channel(NioSocketChannel.class).handler(new ChannelInitializer<SocketChannel>() { // from class: makerbase.com.mkslaser.netty.NettyClient.2
-                    /* JADX INFO: Access modifiers changed from: protected */
-                    @Override // io.netty.channel.ChannelInitializer
-                    public void initChannel(SocketChannel socketChannel) throws Exception {
-                        ChannelPipeline pipeline = socketChannel.pipeline();
-                        socketChannel.pipeline().addLast("basedFrameDecoder", new DelimiterBasedFrameDecoder(1024, Unpooled.copiedBuffer(ShellUtils.COMMAND_LINE_END.getBytes())));
-                        pipeline.addLast(new StringDecoder(CharsetUtil.UTF_8));
-                        pipeline.addLast(new StringEncoder(CharsetUtil.UTF_8));
-                        pipeline.addLast("ping", new IdleStateHandler(0L, 0L, 180L, TimeUnit.SECONDS));
-                        pipeline.addLast("requestDecoder", new HttpRequestDecoder());
-                        pipeline.addLast("responseEncoder", new HttpResponseEncoder());
-                        pipeline.addLast("deflater", new HttpContentCompressor());
-                    }
-                }).handler(new SimpleChannelInboundHandler<ByteBuf>() { // from class: makerbase.com.mkslaser.netty.NettyClient.1
+                new Bootstrap().group(this.group)
+                        .option(ChannelOption.SO_KEEPALIVE, true)
+                        .option(ChannelOption.TCP_NODELAY, true)
+                        .option(ChannelOption.SO_BACKLOG, 1024)
+                        .channel(NioSocketChannel.class).handler(new ChannelInitializer<SocketChannel>() { // from class: makerbase.com.mkslaser.netty.NettyClient.2
+                            /* JADX INFO: Access modifiers changed from: protected */
+                            @Override // io.netty.channel.ChannelInitializer
+                            public void initChannel(SocketChannel socketChannel) throws Exception {
+                                ChannelPipeline pipeline = socketChannel.pipeline();
+                                socketChannel.pipeline().addLast("basedFrameDecoder", new DelimiterBasedFrameDecoder(1024, Unpooled.copiedBuffer(ShellUtils.COMMAND_LINE_END.getBytes())));
+                                // TODO 新改动
+                                pipeline.addLast(new ChunkedWriteHandler());
+                                pipeline.addLast(new LengthFieldBasedFrameDecoder(50 * 1024 * 1024, 0, 4, 0, 4));
+                                pipeline.addLast(new LengthFieldPrepender(4));
+
+                                pipeline.addLast(new StringDecoder(CharsetUtil.UTF_8));
+                                pipeline.addLast(new StringEncoder(CharsetUtil.UTF_8));
+//                        pipeline.addLast("ping", new IdleStateHandler(0L, 0L, 180L, TimeUnit.SECONDS));
+                                // TODO 新改动
+                                pipeline.addLast("ping", new IdleStateHandler(0L, 0L, 600L, TimeUnit.SECONDS));
+                                pipeline.addLast("requestDecoder", new HttpRequestDecoder());
+                                pipeline.addLast("responseEncoder", new HttpResponseEncoder());
+                                pipeline.addLast("deflater", new HttpContentCompressor());
+                            }
+                        }).handler(new SimpleChannelInboundHandler<ByteBuf>() { // from class: makerbase.com.mkslaser.netty.NettyClient.1
                     @Override // io.netty.channel.ChannelInboundHandlerAdapter, io.netty.channel.ChannelInboundHandler
                     public void channelActive(ChannelHandlerContext channelHandlerContext) throws Exception {
                         NettyClient.getInstance(NettyClient.handler).setConnectStatus(true);

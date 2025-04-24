@@ -10,7 +10,7 @@ public class Image2Gcode {
     float coordX;//X
     float coordY;//Y
     int sz;//S (or Z)
-    float lastX;//Last x/y  coords for compare
+    float lastX; //Last x/y  coords for compare
     float lastY;
     int lastSz;//last 'S' value for compare
     char szChar;//Use 'S' or 'Z' for test laser power
@@ -26,6 +26,13 @@ public class Image2Gcode {
         return (min + ((grayValue * dif) / 255));
     }
 
+    // CNC
+    private float interpolateDepth(int grayValue, float minDepth, float maxDepth) {
+        float dif = maxDepth - minDepth;  // 计算深度范围
+        return minDepth + ((grayValue * dif) / 255.0f); // 线性插值计算
+    }
+
+
     private String generateLine() {
         String line = "";
 
@@ -38,17 +45,44 @@ public class Image2Gcode {
 
             if (lastSz == 0)    // 上一个点为0，就快速移动到上一个坐标
             {
-                line += "G0 X" + String.format("%.2f", lastX) + " Y" + String.format("%.2f", lastY) + " S0";
+                line += "G0 X" + String.format("%.2f", lastX) + " Y" + String.format("%.2f", lastY) + "S0";
                 g0Flag = true;
             } else {
                 if (g0Flag) {
                     line += "G1 ";
                     g0Flag = false;
                 }
-                line += "X" + String.format("%.2f", lastX) + " Y" + String.format("%.2f", lastY) + " S" + lastSz;
+                line += "X" + String.format("%.2f", lastX) + " Y" + String.format("%.2f", lastY) + "S" + lastSz ;
             }
         }
+        return line;
+    }
 
+    // CNC
+    private String generateLineForCNC(int zCutDepth) {
+        String line = "";
+
+        // G0是快速移动，G1操作工件时的移动速度
+        if ((sz != lastSz) && (lastSz != -1)) {
+            if ((sz == 0) && (lastSz != 0))    // 直接把激光关了
+            {
+                // line = "S0\r";
+            }
+
+            if (lastSz == 0)    // 上一个点为0，就快速移动到上一个坐标
+            {
+                line += "G0 Z" + zCutDepth + "\r\n";
+                line += "G0 X" + String.format("%.2f", lastX) + " Y" + String.format("%.2f", lastY) + " T0";
+                g0Flag = true;
+            } else {
+                if (g0Flag) {
+                    line += "G1 ";
+                    g0Flag = false;
+                }
+                line += "Z-" + zCutDepth + "\r\n";
+                line += "X" + String.format("%.2f", lastX) + " Y" + String.format("%.2f", lastY) + " T" + lastSz  ;
+            }
+        }
         return line;
     }
 
@@ -66,12 +100,33 @@ public class Image2Gcode {
     private String generateEndLine() {
         String line = "";
         if ((lastSz != 0) && (lastSz != -1)) {
-            line += "G1 X" + String.format("%.2f", lastX) + " Y" + String.format("%.2f", lastY) + " S" + lastSz;
+            line += "G1 X" + String.format("%.2f", lastX) + " Y" + String.format("%.2f", lastY) + " S" + lastSz ;
         }
 
         return line;
     }
 
+    // CNC
+    private String generateEndLineForCNC(int zCutDepth) {
+        String line = "";
+        if ((lastSz != 0) && (lastSz != -1)) {
+            line += "G1 Z-" + zCutDepth + "\r\n";
+            line += "G1 X" + String.format("%.2f", lastX) + " Y" + String.format("%.2f", lastY) + " T" + lastSz;
+        }
+
+        return line;
+    }
+
+    /**
+     * 激光
+     * @param image 图片
+     * @param resol 分辨率
+     * @param feedRate 速度
+     * @param laserIntensity 激光功率
+     * @param startX X轴起始位置
+     * @param startY Y轴起始位置
+     * @return Gcode内容
+     */
     protected ArrayList<String> imageConvert2Gcode(Bitmap image, float resol, int feedRate, int laserIntensity, float startX, float startY) {
         if (image == null) {
             return null;
@@ -82,7 +137,7 @@ public class Image2Gcode {
 
         Log.d("Image2Gcode", "X=" + String.format("%.1f", image.getHeight()* resol) + "Y=" +  String.format("%.1f", image.getHeight() * resol));
         // 插入边框信息
-        line = ";Bounds:X0 Y0 to X" + String.format("%.1f", image.getHeight()* resol) + " Y" + String.format("%.1f", image.getHeight() * resol) + "\r\n";
+        line = ";Bounds:X0 Y0 to X" + String.format("%.1f", image.getHeight() * resol) + " Y" + String.format("%.1f", image.getHeight() * resol) + "\r\n";
         gcode.add(line);
 
         // 使用绝对坐标
@@ -115,8 +170,8 @@ public class Image2Gcode {
         lastSz = -1;
 
         // 快速移动到左上角
-        line = "G0X" + String.format("%.1f", 1.0 * startX) + "Y" + String.format("%.1f", image.getHeight() * resol + startY) + "\r\n";
-        gcode.add(line);
+//        line = "G0X" + String.format("%.1f", 1.0 * startX) + "Y" + String.format("%.1f", image.getHeight() * resol + startY) + "\r\n";
+//        gcode.add(line);
 
         // 雕刻时使用G1模式
         line = "G1\r\n";
@@ -219,6 +274,168 @@ public class Image2Gcode {
     }
 
 
+    /**
+     * CNC
+     * @param image 图片
+     * @param resol 分辨率
+     * @param feedRate 速度
+     * @param zCutDepth Z轴下刀深度
+     * @param startX X轴起始位置
+     * @param startY Y轴起始位置
+     * @return Gcode 内容
+     */
+    protected ArrayList<String> imageConvert2GcodeForCNC(Bitmap image, float resol, int feedRate, int zCutDepth, float startX, float startY) {
+        if (image == null) {
+            return null;
+        }
+
+        ArrayList<String> gcode = new ArrayList();
+        String line;
+
+        Log.d("Image2Gcode", "X=" + String.format("%.1f", image.getHeight()* resol) + "Y=" +  String.format("%.1f", image.getHeight() * resol));
+        // 插入边框信息
+        line = ";Bounds:X0 Y0 to X" + String.format("%.1f", image.getHeight()* resol) + " Y" + String.format("%.1f", image.getHeight() * resol) + "\r\n";
+        gcode.add(line);
+
+        // 使用绝对坐标
+        line = "G90\r\n";
+        gcode.add(line);
+
+        // 确保关闭激光
+        line = "M5\r\n";
+        gcode.add(line);
+
+        // 确保关闭激光
+        line = "G0 Z" + zCutDepth  +"\r\n";
+        gcode.add(line);
+
+
+        // 使用M4激光模式进行雕刻
+        line = "M3 S300\r\n";
+        gcode.add(line);
+
+        // 设置边界速度（雕刻速度）
+        line = String.format("F%d\r\n", feedRate);
+        gcode.add(line);
+
+        // 使用mm作为单位
+        line = "G21\r\n";
+        gcode.add(line);
+
+        // ========== 生成图片对应的gcode ==========
+        int pixBurned = 0;
+        int lin = 0;    //顶部/底部 pixel
+        int col = 0;    //左边/右边 pixel
+
+        lastX = -1;//reset last positions
+        lastY = -1;
+        lastSz = -1;
+
+        // 快速移动到左上角
+//        line = "G0X" + String.format("%.1f", 1.0 * startX) + "Y" + String.format("%.1f", image.getHeight() * resol + startY) + "\r\n";
+//        gcode.add(line);
+
+        // 雕刻时使用G1模式
+        line = "G1\r\n";
+        gcode.add(line);
+
+        //Start image
+        lin = 0;//top tile
+        col = 0;//Left pixel
+
+        lastPointFlag = false;
+        lastSz = -1;
+        while (lin < image.getHeight() - 1) {
+            //Y coordinate
+            coordY = resol * (float) lin;
+            while (col < image.getWidth()) // From left to right
+            {
+                // X coordinate
+                coordX = resol * (float) col;
+                // Power value
+                sz = image.getPixel(col, (image.getHeight() - 1) - lin);
+                sz = sz & 0xFF;   // 获取灰度值
+                sz = 255 - sz;
+                sz = interpolate(sz, 0, zCutDepth);
+                line = generateLineForCNC(zCutDepth);
+                pixBurned++;
+
+                if ((line != null) && (!line.isEmpty())) {
+                    line += "\r\n";
+                    gcode.add(line);
+                }
+
+                // update postion
+                lastX = coordX + startX;
+                lastY = coordY + startY;
+                lastSz = sz;
+                col++;
+            }
+            line = generateEndLineForCNC(zCutDepth);
+            if ((line != null) && (!line.isEmpty())) {
+                line += "\r\n";
+                gcode.add(line);
+            }
+            gcode.add(line);
+
+            col--;
+            lin++;
+
+            //From right to left
+            coordY = resol * (float) lin;
+            while ((col >= 0) && (lin >= 0)) {
+                //X coordinate
+                coordX = resol * (float) col;
+
+                // Power value
+                sz = image.getPixel(col, (image.getHeight() - 1) - lin);
+                sz = sz & 0xFF;   // 获取灰度值
+                sz = 255 - sz;
+                sz = interpolate(sz, 0, zCutDepth);
+
+                line = generateLineForCNC(zCutDepth);
+                pixBurned++;
+
+                if ((line != null) && (!line.isEmpty())) {
+                    line += "\r\n";
+                    gcode.add(line);
+                }
+                // update postion
+                lastX = coordX + startX;
+                lastY = coordY + startY;
+                lastSz = sz;
+                col--;
+            }
+
+            line = generateEndLineForCNC(zCutDepth);
+            if ((line != null) && (!line.isEmpty())) {
+                line += "\r\n";
+                gcode.add(line);
+            }
+            gcode.add(line);
+
+            col++;
+            lin++;
+        }
+
+        lastPointFlag = true;
+        line = generateLineForCNC(zCutDepth);
+        if ((line != null) && (!line.isEmpty())) {
+            line += "\r\n";
+            gcode.add(line);
+        }
+
+        // 关闭激光
+        line = "M5\r\n";
+        gcode.add(line);
+
+        // 回到原点
+        gcode.add("G0 X" + String.format("%.2f", 1.0 * startX) + " Y" + String.format("%.2f", 1.0 * startY) + "Z " + zCutDepth + "\r\n");
+
+        return gcode;
+    }
+
+
 
 
     /**
@@ -249,9 +466,32 @@ public class Image2Gcode {
 
     /**
      * 生成灰度图Gcode，注意：传进来的bitmap为转换后的灰度image或者转换后的黑白图image
+     *
+     * @param image 图片
+     * @param resol 分辨率
+     * @param feedRate 速度
+     * @param laserIntensity 激光功率
+     * @param x X轴偏移
+     * @param y Y轴偏移
+     * @return Gcode内容
      */
     public ArrayList<String> image2Gcode(Bitmap image, float resol, int feedRate, int laserIntensity, float x, float y) {
         return imageConvert2Gcode(image, resol, feedRate, laserIntensity, x, y);
+    }
+
+    /**
+     * 生成灰度图Gcode，注意：传进来的bitmap为转换后的灰度image或者转换后的黑白图image
+     *
+     * @param image 图片
+     * @param resol 分辨率
+     * @param feedRate 速度
+     * @param zCutDepth Z轴下刀深度
+     * @param x X轴偏移
+     * @param y Y轴偏移
+     * @return Gcode内容
+     */
+    public ArrayList<String> image2GcodeForCNC(Bitmap image, float resol, int feedRate, int zCutDepth, float x, float y) {
+        return imageConvert2GcodeForCNC(image, resol, feedRate, zCutDepth, x, y);
     }
 }
 

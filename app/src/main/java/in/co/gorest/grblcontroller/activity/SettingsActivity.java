@@ -179,8 +179,8 @@ public class SettingsActivity extends AppCompatActivity {
         llStaModel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                startActivity(new Intent(SettingsActivity.this, STAModelActivity.class));
-                Toast.makeText(SettingsActivity.this, "功能调试中，敬请期待下一版本！", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(SettingsActivity.this, STAModelActivity.class));
+//                Toast.makeText(SettingsActivity.this, "功能调试中，敬请期待下一版本！", Toast.LENGTH_SHORT).show();
             }
         });
 

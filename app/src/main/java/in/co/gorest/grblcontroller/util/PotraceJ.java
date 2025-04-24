@@ -2,6 +2,8 @@ package in.co.gorest.grblcontroller.util;
 
 import android.graphics.Bitmap;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class PotraceJ
@@ -1766,6 +1768,15 @@ public class PotraceJ
 
         ConvertBitmap(bitmap);
         bmToPathlist();
+
+        // 按面积从小到大排序（从内到外）
+        Collections.sort(pathlist, new Comparator<Path>() {
+            @Override
+            public int compare(Path p1, Path p2) {
+                return Integer.compare(Math.abs(p1.area), Math.abs(p2.area));
+            }
+        });
+
         for (int i = 0; i < pathlist.size(); i++)
         {
             calcSums(pathlist.get(i));

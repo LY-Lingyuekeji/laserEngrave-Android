@@ -97,7 +97,7 @@ public class LaserSetupLineJudgeBottomSheetFragment extends BottomSheetDialogFra
      */
     private void initData() {
         // 获取共享偏好设置保存的运动参数实例
-        laserLevel = sharedPref.getInt(getString(R.string.preference_laser_level_line_judge_setting), 1);
+        laserLevel = sharedPref.getInt(getString(R.string.preference_laser_level_line_judge_setting), 2);
         // 设置选中项
         if (laserLevel == 1) {
             rb1.setChecked(true);

@@ -55,6 +55,7 @@ public class GrblController extends SugarApp {
 
     // 单例模式： GrblController实例
     private static GrblController grblController;
+    private Activity topActivity;
     public static List<Activity> Activitylist = new ArrayList();
     private static ExecutorService FULL_TASK_EXECUTOR;
 
@@ -110,12 +111,18 @@ public class GrblController extends SugarApp {
             public void onActivityResumed(Activity activity) {
                 Log.i("onActivityResumed------", "---------");
                 NettyClient.getInstance().setIsBackground(false);
+
+                topActivity = activity;
             }
 
             @Override // android.app.Application.ActivityLifecycleCallbacks
             public void onActivityPaused(Activity activity) {
                 Log.i("onActivityPaused------", "---------");
                 NettyClient.getInstance().setIsBackground(true);
+
+                if (topActivity == activity) {
+                    topActivity = null;
+                }
             }
 
             @Override // android.app.Application.ActivityLifecycleCallbacks
@@ -156,6 +163,10 @@ public class GrblController extends SugarApp {
             it.next().finish();
         }
         Activitylist.clear();
+    }
+
+    public Activity getTopActivity() {
+        return topActivity;
     }
 
 }

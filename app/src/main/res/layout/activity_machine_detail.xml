@@ -38,242 +38,572 @@
 
         </RelativeLayout>
 
-        <!-- 机器参数 -->
-        <LinearLayout
+        <!-- 机器详情  ScrollView -->
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:background="@drawable/bg_white_ffffff_r10"
-            android:orientation="vertical"
-            android:padding="10dp">
+            android:layout_height="wrap_content">
 
-            <!-- 名字 -->
-            <TextView
-                android:id="@+id/tv_machine_detail_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="Laser Master 3"
-                android:textColor="@color/colorBlack"
-                android:textSize="22sp"
-                android:textStyle="bold" />
-
-            <!-- 状态 -->
-            <TextView
-                android:id="@+id/tv_machine_detail_status"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:background="@drawable/bg_green_1e853a_r100"
-                android:gravity="center"
-                android:paddingHorizontal="10dp"
-                android:paddingVertical="5dp"
-                android:text="已连接"
-                android:textColor="@color/colorWhite"
-                android:textSize="12sp" />
-
-
-            <ImageView
-                android:layout_width="match_parent"
-                android:layout_height="100dp"
-                android:layout_gravity="center"
-                android:layout_marginTop="16dp"
-                android:src="@mipmap/ic_laser_t4" />
-
-            <!-- 设备信息 -->
+            <!-- 机器详情 LinearLayout -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:background="@drawable/bg_gray_e6e6e6_r10"
                 android:orientation="vertical"
-                android:paddingHorizontal="5dp"
-                android:paddingVertical="10dp">
+                android:padding="16dp">
 
+                <!-- 机器参数 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:orientation="horizontal">
+                    android:background="@drawable/bg_white_ffffff_r10"
+                    android:orientation="vertical"
+                    android:padding="10dp">
 
-                    <!-- 尺寸 -->
-                    <LinearLayout
-                        android:layout_width="0dp"
+                    <!-- 名字 -->
+                    <TextView
+                        android:id="@+id/tv_machine_detail_name"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:gravity="center"
+                        android:text="Laser Master 3"
+                        android:textColor="@color/colorBlack"
+                        android:textSize="22sp"
+                        android:textStyle="bold" />
 
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/icon_machine_size" />
-
-                        <TextView
-                            android:id="@+id/tv_machine_detail_size"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="5dp"
-                            android:text="300x300(mm²)"
-                            android:textColor="#8A8A8A"
-                            android:textSize="12sp" />
-
-                    </LinearLayout>
-
-                    <!-- 芯片 -->
-                    <LinearLayout
-                        android:layout_width="0dp"
+                    <!-- 状态 -->
+                    <TextView
+                        android:id="@+id/tv_machine_detail_status"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:layout_marginTop="10dp"
+                        android:background="@drawable/bg_red_c42b1c_r100"
+                        android:gravity="center"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="5dp"
+                        android:text="未连接"
+                        android:textColor="@color/colorWhite"
+                        android:textSize="12sp" />
 
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/icon_firmware" />
 
-                        <TextView
-                            android:id="@+id/tv_machine_detail_firmware"
-                            android:layout_width="wrap_content"
+                    <ImageView
+                        android:id="@+id/iv_machine_detail_image"
+                        android:layout_width="match_parent"
+                        android:layout_height="100dp"
+                        android:layout_gravity="center"
+                        android:layout_marginTop="16dp"
+                        android:src="@mipmap/ic_laser_t4" />
+
+                    <!-- 设备信息 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:background="@drawable/bg_gray_e6e6e6_r10"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="5dp"
+                        android:paddingVertical="10dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="5dp"
-                            android:text="ESP_S3"
-                            android:textColor="#A3A3A3"
-                            android:textSize="12sp" />
+                            android:gravity="center"
+                            android:orientation="horizontal">
+
+                            <!-- 尺寸 -->
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <ImageView
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"
+                                    android:src="@drawable/icon_machine_size" />
+
+                                <TextView
+                                    android:id="@+id/tv_machine_detail_size"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="5dp"
+                                    android:text="300x300(mm²)"
+                                    android:textColor="#8A8A8A"
+                                    android:textSize="12sp" />
+
+                            </LinearLayout>
+
+                            <!-- 芯片 -->
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <ImageView
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"
+                                    android:src="@drawable/icon_firmware" />
+
+                                <TextView
+                                    android:id="@+id/tv_machine_detail_firmware"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="5dp"
+                                    android:text="ESP_S3"
+                                    android:textColor="#A3A3A3"
+                                    android:textSize="12sp" />
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:gravity="center"
+                            android:orientation="horizontal">
+
+                            <!-- 激光模组 -->
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <ImageView
+                                    android:id="@+id/iv_machine_detail_module_icon"
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"
+                                    android:src="@drawable/icon_laser" />
+
+                                <TextView
+                                    android:id="@+id/tv_machine_detail_laser_module"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="5dp"
+                                    android:text="LD_20A_1.6W"
+                                    android:textColor="#8A8A8A"
+                                    android:textSize="12sp" />
+
+                            </LinearLayout>
+
+                            <!-- SD卡 -->
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <ImageView
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"
+                                    android:src="@drawable/icon_sdcard" />
+
+                                <TextView
+                                    android:id="@+id/tv_machine_detail_sd"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="5dp"
+                                    android:text="/"
+                                    android:textColor="#A3A3A3"
+                                    android:textSize="12sp" />
+
+                            </LinearLayout>
+
+                        </LinearLayout>
 
                     </LinearLayout>
 
                 </LinearLayout>
 
+                <!-- 加工类型-->
                 <LinearLayout
+                    android:id="@+id/ll_machine_detail_work_type"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:gravity="center"
-                    android:orientation="horizontal">
+                    android:background="@drawable/bg_white_ffffff_r10"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="15dp">
 
-                    <!-- 激光模组 -->
+                    <!-- 标题 -->
                     <LinearLayout
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center_vertical"
                         android:orientation="horizontal">
 
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
-                            android:src="@drawable/icon_laser" />
+                            android:src="@mipmap/icon_type" />
 
                         <TextView
-                            android:id="@+id/tv_machine_detail_laser_module"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="5dp"
-                            android:text="LD_20A_1.6W"
-                            android:textColor="#8A8A8A"
-                            android:textSize="12sp" />
-
+                            android:layout_marginStart="10dp"
+                            android:text="加工类型"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
                     </LinearLayout>
 
-                    <!-- SD卡 -->
-                    <LinearLayout
-                        android:layout_width="0dp"
+                    <!-- 分割线 -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="15dp"
+                        android:background="#e8e8e8" />
+
+                    <RadioGroup
+                        android:id="@+id/rg_machine_detail_work_type"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:gravity="center_vertical"
+                        android:gravity="center"
                         android:orientation="horizontal">
 
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/icon_sdcard" />
+                        <RadioButton
+                            android:id="@+id/rb_machine_detail_xyz"
+                            android:layout_width="0dp"
+                            android:layout_height="100dp"
+                            android:padding="10dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/radio_button_selector"
+                            android:button="@null"
+                            android:drawableTop="@drawable/ic_c"
+                            android:drawablePadding="20dp"
+                            android:gravity="center"
+                            android:text="XYZ常规雕刻"
+                            android:textColor="@drawable/radio_button_text_selector"
+                            android:textSize="14sp"
+                            android:textStyle="bold"/>
 
-                        <TextView
-                            android:id="@+id/tv_machine_detail_sd"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="5dp"
-                            android:text="/"
-                            android:textColor="#A3A3A3"
-                            android:textSize="12sp" />
+                        <RadioButton
+                            android:id="@+id/rb_machine_detail_yyr_threelevel"
+                            android:layout_width="0dp"
+                            android:layout_height="100dp"
+                            android:padding="10dp"
+                            android:layout_weight="1"
+                            android:layout_marginStart="15dp"
+                            android:background="@drawable/radio_button_selector"
+                            android:button="@null"
+                            android:drawableTop="@drawable/ic_c"
+                            android:drawablePadding="20dp"
+                            android:gravity="center"
+                            android:text="YRR转轴雕刻(三档旋转轴)"
+                            android:textColor="@drawable/radio_button_text_selector"
+                            android:textSize="14sp"
+                            android:textStyle="bold"/>
 
-                    </LinearLayout>
+                        <RadioButton
+                            android:id="@+id/rb_machine_detail_yyr_non_polar"
+                            android:layout_width="0dp"
+                            android:layout_height="100dp"
+                            android:padding="10dp"
+                            android:layout_weight="1"
+                            android:layout_marginStart="15dp"
+                            android:background="@drawable/radio_button_selector"
+                            android:button="@null"
+                            android:drawableTop="@drawable/ic_c"
+                            android:drawablePadding="20dp"
+                            android:gravity="center"
+                            android:text="YRR转轴雕刻(无极旋转轴)"
+                            android:textColor="@drawable/radio_button_text_selector"
+                            android:textSize="14sp"
+                            android:textStyle="bold"/>
+
+                        <RadioButton
+                            android:id="@+id/rb_machine_detail_yrc"
+                            android:layout_width="0dp"
+                            android:layout_height="100dp"
+                            android:padding="10dp"
+                            android:layout_weight="1"
+                            android:layout_marginStart="15dp"
+                            android:background="@drawable/radio_button_selector"
+                            android:button="@null"
+                            android:drawableTop="@drawable/ic_c"
+                            android:drawablePadding="20dp"
+                            android:gravity="center"
+                            android:text="Y轴卡盘雕刻"
+                            android:textColor="@drawable/radio_button_text_selector"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:visibility="gone"/>
+
+
+                    </RadioGroup>
 
                 </LinearLayout>
 
-            </LinearLayout>
-
-        </LinearLayout>
-
-        <!-- 激光模组 -->
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            android:background="@drawable/bg_white_ffffff_r10"
-            android:paddingHorizontal="10dp"
-            android:paddingVertical="15dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_centerVertical="true"
-                android:text="激光模组切换"
-                android:textColor="@color/colorBlack"
-                android:textSize="16sp"
-                android:textStyle="bold" />
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:background="@drawable/bg_gray_e6e6e6_r10"
-                android:paddingHorizontal="10dp"
-                android:paddingVertical="5dp">
-
-                <Spinner
-                    android:id="@+id/spinner_machine_detail_laser_module"
-                    android:layout_width="wrap_content"
+                <!-- 激光模组 -->
+                <RelativeLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:spinnerMode="dropdown" />
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/bg_white_ffffff_r10"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="15dp">
+
+                    <TextView
+                        android:id="@+id/tv_machine_detail_module_toggle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:text="激光模组切换"
+                        android:textColor="@color/colorBlack"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:background="@drawable/bg_gray_e6e6e6_r10"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="5dp">
+
+                        <Spinner
+                            android:id="@+id/spinner_machine_detail_laser_module"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:spinnerMode="dropdown" />
+
+                    </LinearLayout>
+
+
+                </RelativeLayout>
+
+                <!-- 火焰传感器 -->
+                <RelativeLayout
+                    android:id="@+id/rl_machine_detail_fire_module"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_white_ffffff_r10"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="15dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:text="火焰传感器"
+                        android:textColor="@color/colorBlack"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+
+                    <Switch
+                        android:id="@+id/switch_machine_detail_fire_module"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="5dp" />
+
+                </RelativeLayout>
+
+                <!-- 门动传感器 -->
+                <RelativeLayout
+                    android:id="@+id/rl_machine_detail_door_module"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_white_ffffff_r10"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="15dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:text="门动传感器"
+                        android:textColor="@color/colorBlack"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+
+                    <Switch
+                        android:id="@+id/switch_machine_detail_door_module"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="5dp" />
+
+                </RelativeLayout>
+
+                <!-- 倾斜检测传感器 -->
+                <RelativeLayout
+                    android:id="@+id/rl_machine_detail_slant_module"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_white_ffffff_r10"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="15dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:text="倾斜检测传感器"
+                        android:textColor="@color/colorBlack"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+
+                    <Switch
+                        android:id="@+id/switch_machine_detail_slant_module"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="5dp" />
+
+                </RelativeLayout>
+
+                <!-- 红十字激光预览 -->
+                <RelativeLayout
+                    android:id="@+id/rl_machine_detail_rtlaser_module"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_white_ffffff_r10"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="15dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:text="红十字激光"
+                        android:textColor="@color/colorBlack"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+
+                    <Switch
+                        android:id="@+id/switch_machine_detail_rtlaser_module"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="5dp" />
+
+                </RelativeLayout>
+
+                <!-- 气泵功能 -->
+                <RelativeLayout
+                    android:id="@+id/rl_machine_detail_air_module"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_white_ffffff_r10"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="15dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:text="气泵功能"
+                        android:textColor="@color/colorBlack"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+
+                    <Switch
+                        android:id="@+id/switch_machine_detail_air_module"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="5dp" />
+
+                </RelativeLayout>
+
+                <!-- 外接屏幕功能 -->
+                <RelativeLayout
+                    android:id="@+id/rl_machine_detail_external_screen"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="16dp"
+                    android:background="@drawable/bg_white_ffffff_r10"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="15dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:text="外接屏幕功能"
+                        android:textColor="@color/colorBlack"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+
+                    <Switch
+                        android:id="@+id/switch_machine_detail_external_screen"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="5dp" />
+
+                </RelativeLayout>
+
+                <!-- 断开连接 -->
+                <TextView
+                    android:id="@+id/tv_machine_detail_disconnect"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="16dp"
+                    android:background="@drawable/bg_green_1e853a_r30"
+                    android:gravity="center"
+                    android:padding="10dp"
+                    android:text="断开连接"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <!-- 重置设备 -->
+                <TextView
+                    android:id="@+id/tv_machine_detail_reset"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="16dp"
+                    android:background="@drawable/bg_green_1e853a_r30"
+                    android:gravity="center"
+                    android:padding="10dp"
+                    android:text="重置设备"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
 
             </LinearLayout>
 
+        </ScrollView>
 
-        </RelativeLayout>
-
-        <!-- 断开连接 -->
-        <TextView
-            android:id="@+id/tv_machine_detail_disconnect"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_green_1e853a_r30"
-            android:padding="10dp"
-            android:text="断开连接"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="@color/colorWhite"
-            android:gravity="center"
-            android:layout_margin="16dp"/>
-
-
-        <!-- 重置设备 -->
-        <TextView
-            android:id="@+id/tv_machine_detail_reset"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_green_1e853a_r30"
-            android:padding="10dp"
-            android:text="重置设备"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="@color/colorWhite"
-            android:gravity="center"
-            android:layout_margin="16dp"/>
     </LinearLayout>
 
 </layout>

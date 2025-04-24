@@ -219,7 +219,7 @@ public class WiFiConnetModelFragment extends Fragment {
             // 文本变化后的操作
             @Override
             public void afterTextChanged(Editable s) {
-                if (s.toString().contains("MKS")) {
+                if (s.toString().startsWith("Laser") || s.toString().startsWith("CNC")) {
                     etPassword.setText("12345678");
                 }
             }
@@ -260,8 +260,8 @@ public class WiFiConnetModelFragment extends Fragment {
         tvNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                if (!etSsid.getText().toString().contains("MKS")) {
-//                    Toast.makeText(mActivity, "请选择名称为的 \"MKS_xxx\" Wi-Fi进行连接", Toast.LENGTH_SHORT).show();
+//                if (!etSsid.getText().toString().contains("Laser")) {
+//                    Toast.makeText(mActivity, "请选择名称为的 \"Laser_xxx\" Wi-Fi进行连接", Toast.LENGTH_SHORT).show();
 //                } else {
 //
 //                }
@@ -430,7 +430,7 @@ public class WiFiConnetModelFragment extends Fragment {
                 int ipAddress = wifiInfo.getIpAddress();
                 String ip = Formatter.formatIpAddress(ipAddress);
                 Log.d(TAG, "Connected Wi-Fi IP Address: " + ip);
-                if (ssid.contains("MKS")) {
+                if (ssid.startsWith("Laser") || ssid.startsWith("CNC")) {
                     // 连接Telnet
                     EventBus.getDefault().post(new DeviceConnectEvent("Telnet", ssid, ip));
                 } else {
@@ -501,7 +501,7 @@ public class WiFiConnetModelFragment extends Fragment {
                 int ipAddress = wifiInfo.getIpAddress();
                 String ip = Formatter.formatIpAddress(ipAddress);
                 Log.d(TAG, "Connected Wi-Fi IP Address: " + ip);
-                if (ssid.contains("MKS")) {
+                if (ssid.startsWith("Laser") || ssid.startsWith("CNC")) {
                     // 连接Telnet
                     EventBus.getDefault().post(new DeviceConnectEvent("Telnet", ssid, ip));
                 } else {

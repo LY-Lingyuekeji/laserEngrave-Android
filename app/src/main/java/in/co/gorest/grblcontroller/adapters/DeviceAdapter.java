@@ -14,6 +14,9 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiNetworkSpecifier;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Message;
+import android.text.TextUtils;
 import android.text.format.Formatter;
 import android.util.Log;
 import android.view.Gravity;
@@ -22,6 +25,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -29,17 +33,31 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
+import com.google.zxing.integration.android.IntentIntegrator;
+
 import org.greenrobot.eventbus.EventBus;
+
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.activity.ApModelAddActivity;
+import in.co.gorest.grblcontroller.activity.MyCaptureActivity;
 import in.co.gorest.grblcontroller.base.BaseAlertDialog;
 import in.co.gorest.grblcontroller.events.DeviceConnectEvent;
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 import in.co.gorest.grblcontroller.model.WifiNetwork;
+import in.co.gorest.grblcontroller.util.NettyClient;
 
 public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.DeviceViewHolder> {
 
@@ -71,6 +89,28 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.DeviceView
         sharedPref = EnhancedSharedPreferences.getInstance(GrblController.getInstance(), context.getString(R.string.shared_preference_key));
 
         WifiNetwork wifiNetwork = wifiNetworkList.get(position);
+
+        if (wifiNetwork.getSsid().contains("Laser")) {
+            if (wifiNetwork.getSsid().contains("T2020")) {
+                // 设置激光雕刻机 T2020图片
+                Glide.with(context).load(R.mipmap.ic_laser_t2020).into(holder.ivDevice);
+            } else {
+                // 设置激光雕刻机 T4图片
+                Glide.with(context).load(R.mipmap.ic_laser_t4).into(holder.ivDevice);
+            }
+        } else {
+            if (wifiNetwork.getSsid().contains("3018MAX")) {
+                // 设置CNC雕刻机 3018MAX图片
+                Glide.with(context).load(R.mipmap.ic_cnc_3018max).into(holder.ivDevice);
+            } else if (wifiNetwork.getSsid().contains("3018PRO")){
+                // 设置CNC雕刻机 3018PRO图片
+                Glide.with(context).load(R.mipmap.ic_cnc_3018pro).into(holder.ivDevice);
+            } else {
+                // 设置CNC雕刻机 3020PLUS图片
+                Glide.with(context).load(R.mipmap.ic_cnc_3020plus).into(holder.ivDevice);
+            }
+        }
+
         // 设置 SSID 和 IP 地址
         holder.tvSsid.setText(wifiNetwork.getSsid());
         holder.tvIpAddress.setText(wifiNetwork.getIpAddress());
@@ -90,14 +130,15 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.DeviceView
     public static class DeviceViewHolder extends RecyclerView.ViewHolder {
 
         LinearLayout llDeviceItem;
+        ImageView ivDevice;
         TextView tvSsid, tvIpAddress;
 
         public DeviceViewHolder(View itemView) {
             super(itemView);
             llDeviceItem = itemView.findViewById(R.id.ll_device_item);
+            ivDevice = itemView.findViewById(R.id.iv_device);
             tvSsid = itemView.findViewById(R.id.tv_ssid);
             tvIpAddress = itemView.findViewById(R.id.tv_ipaddress);
-
         }
     }
 
@@ -115,25 +156,116 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.DeviceView
         if (dialog.getWindow() != null) {
             dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
+
+        // 初始化激光模组数据
+        List<String> laserModuleDataList = new ArrayList<>();
+        laserModuleDataList.add("请选择");
+        laserModuleDataList.add("LdT-3W");
+        laserModuleDataList.add("LdT4-10W");
+        laserModuleDataList.add("LdT4-20W");
+
+
+        // 初始化主轴电机数据
+        List<String> cncModuleDataList = new ArrayList<>();
+        cncModuleDataList.add("请选择");
+        cncModuleDataList.add("Cd-100W");
+        cncModuleDataList.add("Cd-150W");
+        cncModuleDataList.add("Cd-500W");
+
+
         // 设置 Dialog 属性
         TextView tvMachineName = dialog.findViewById(R.id.tv_machine_name);
         TextView tvMachineStatus = dialog.findViewById(R.id.tv_machine_status);
         ImageView ivMachineImage = dialog.findViewById(R.id.iv_machine_image);
         TextView tvMachineSize = dialog.findViewById(R.id.tv_machine_size);
         TextView tvMachineFirmware = dialog.findViewById(R.id.tv_machine_firmware);
+        ImageView ivMachineModuleIcon = dialog.findViewById(R.id.iv_module_icon);
         TextView tvLaserModule = dialog.findViewById(R.id.tv_laser_module);
-        TextView tvMachineSdCard = dialog.findViewById(R.id.tv_machine_sd);
         TextView tvComponentSize = dialog.findViewById(R.id.tv_component_size);
+        TextView tvMachineModuleText = dialog.findViewById(R.id.tv_module_text);
         Spinner spinnerLaserModule  = dialog.findViewById(R.id.spinner_laser_module);
         TextView tvConfirm = dialog.findViewById(R.id.tv_confirm);
         TextView tvCancel = dialog.findViewById(R.id.tv_cancel);
 
         // 设置内容
         tvMachineName.setText(wifiNetwork.getSsid());
+        // 设置连接状态
         tvMachineStatus.setText("可连接");
-        tvMachineSize.setText("300x300(mm²)");
+        // 设置图片
+        if (wifiNetwork.getSsid().contains("Laser")) {
+            // 设置模组图标为激光
+            Glide.with(context).load(R.drawable.icon_laser).into(ivMachineModuleIcon);
+            // 设置机器图片
+            if (wifiNetwork.getSsid().contains("T2020")) {
+                // 设置激光雕刻机 T2020图片
+                Glide.with(context).load(R.mipmap.ic_laser_t2020).into(ivMachineImage);
+                // 设置激光雕刻机 T2020行程
+                tvMachineSize.setText("200x200(mm²)");
+                tvComponentSize.setText("200x200(mm²)");
+                // 保存激光雕刻机 T2020行程
+                sharedPref.edit().putInt(getActivity().getString(R.string.preference_machine_width), 200).apply();
+                sharedPref.edit().putInt(getActivity().getString(R.string.preference_machine_height), 200).apply();
+
+            } else {
+                // 设置激光雕刻机 T4图片
+                Glide.with(context).load(R.mipmap.ic_laser_t4).into(ivMachineImage);
+                // 设置激光雕刻机 T4行程
+                tvMachineSize.setText("300x300(mm²)");
+                tvComponentSize.setText("300x300(mm²)");
+                // 保存激光雕刻机 T4行程
+                sharedPref.edit().putInt(getActivity().getString(R.string.preference_machine_width), 300).apply();
+                sharedPref.edit().putInt(getActivity().getString(R.string.preference_machine_height), 300).apply();
+            }
+            // 设置模组名称为激光模组
+            tvMachineModuleText.setText("激光模组");
+
+            // 创建 ArrayAdapter
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, laserModuleDataList);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            // 设置适配器
+            spinnerLaserModule.setAdapter(adapter);
+        } else {
+            // 设置模组图标为CNC
+            Glide.with(context).load(R.drawable.icon_cnc).into(ivMachineModuleIcon);
+            // 设置机器图片
+            if (wifiNetwork.getSsid().contains("3018MAX")) {
+                // 设置CNC雕刻机 3018MAX图片
+                Glide.with(context).load(R.mipmap.ic_cnc_3018max).into(ivMachineImage);
+                // 设置CNC雕刻机 3018MAX行程
+                tvMachineSize.setText("300x180x45(mm²)");
+                tvComponentSize.setText("300x180x45(mm²)");
+                // 保存CNC雕刻机 3018MAX行程
+                sharedPref.edit().putInt(getActivity().getString(R.string.preference_machine_width_cnc), 300).apply();
+                sharedPref.edit().putInt(getActivity().getString(R.string.preference_machine_height_cnc), 180).apply();
+            } else if (wifiNetwork.getSsid().contains("3018PRO")){
+                // 设置CNC雕刻机 3018PRO图片
+                Glide.with(context).load(R.mipmap.ic_cnc_3018pro).into(ivMachineImage);
+                // 设置CNC雕刻机 3018PRO行程
+                tvMachineSize.setText("300x180x45(mm²)");
+                tvComponentSize.setText("300x180x45(mm²)");
+                // 保存CNC雕刻机 3018PRO行程
+                sharedPref.edit().putInt(getActivity().getString(R.string.preference_machine_width_cnc), 300).apply();
+                sharedPref.edit().putInt(getActivity().getString(R.string.preference_machine_height_cnc), 180).apply();
+            } else {
+                // 设置CNC雕刻机 3020PLUS图片
+                Glide.with(context).load(R.mipmap.ic_cnc_3020plus).into(ivMachineImage);
+                // 设置CNC雕刻机 3020PLUS行程
+                tvMachineSize.setText("300x200x73(mm²)");
+                tvComponentSize.setText("300x200x73(mm²)");
+                // 保存CNC雕刻机 3020PLUS行程
+                sharedPref.edit().putInt(getActivity().getString(R.string.preference_machine_width_cnc), 300).apply();
+                sharedPref.edit().putInt(getActivity().getString(R.string.preference_machine_height_cnc), 200).apply();
+            }
+            // 设置模组名称为主轴电机
+            tvMachineModuleText.setText("主轴电机");
+            // 创建 ArrayAdapter
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(context, android.R.layout.simple_spinner_item, cncModuleDataList);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            // 设置适配器
+            spinnerLaserModule.setAdapter(adapter);
+        }
+        // 设置机器芯片
         tvMachineFirmware.setText("ESP_S3");
-        tvComponentSize.setText("300x300(mm²)");
 
 
         // 设置 Spinner 的监听器
@@ -141,14 +273,14 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.DeviceView
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
                 // 当选中一个项时，更新 tvLaserModule 的文本
-                String selectedLaserModule = (String) parentView.getItemAtPosition(position);
+                String selectedModule = (String) parentView.getItemAtPosition(position);
                 if (spinnerLaserModule.getSelectedItemPosition() == 0) {
                     tvLaserModule.setText("未知");
                 } else {
-                    tvLaserModule.setText(selectedLaserModule);
+                    tvLaserModule.setText(selectedModule);
                 }
                 // 保存激光模组
-                sharedPref.edit().putString(context.getString(R.string.preference_laser_module), selectedLaserModule).apply();
+                sharedPref.edit().putString(context.getString(R.string.preference_laser_module), selectedModule).apply();
             }
 
             @Override
@@ -157,13 +289,14 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.DeviceView
             }
         });
 
+
         // 按钮点击事件
         tvConfirm.setOnClickListener(v -> {
             // TODO: 执行连接逻辑
             if (spinnerLaserModule.getSelectedItemPosition() == 0) {
                 // 如果选择了 "请选择"，执行晃动效果
                 shakeView(spinnerLaserModule);
-                Toast.makeText(context, "请选择激光型号", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "请选择设置模组型号", Toast.LENGTH_SHORT).show();
                 return;
             }
             WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
@@ -183,6 +316,7 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.DeviceView
 
                 // 获取当前 Wi-Fi 网络的 SSID 和密码
                 String ssid = wifiNetwork.getSsid();
+                Log.d(TAG, "ssid=" + ssid);
                 String password = "12345678"; //
                 // 连接到 Wi-Fi
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -205,7 +339,10 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.DeviceView
 
     }
 
-
+    /**
+     * 抖动动画
+     * @param view 抖动的视图
+     */
     private void shakeView(View view) {
         ObjectAnimator animator = ObjectAnimator.ofFloat(view, "translationX", 0f, 30f, -30f, 30f, -30f, 0f);
         animator.setDuration(500);
@@ -322,5 +459,4 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.DeviceView
         }
         return null;  // 如果context不是Activity，返回null
     }
-
 }

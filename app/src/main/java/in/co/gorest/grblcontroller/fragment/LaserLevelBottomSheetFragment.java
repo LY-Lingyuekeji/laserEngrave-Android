@@ -1,14 +1,20 @@
 package in.co.gorest.grblcontroller.fragment;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
@@ -25,6 +31,10 @@ public class LaserLevelBottomSheetFragment extends BottomSheetDialogFragment {
     protected EnhancedSharedPreferences sharedPref;
     // 记录选中项的索引
     private int selectedPosition = -1;  // 默认没有选中任何项
+    // 自定义激光功率
+    private EditText etCustomizeLaserPower;
+    // 确定
+    private TextView tvConfirmCustomizeLaserPower;
     // ListView
     private ListView listView;
     // 选项
@@ -89,6 +99,10 @@ public class LaserLevelBottomSheetFragment extends BottomSheetDialogFragment {
     private void initView(View view) {
         // ListView
         listView = view.findViewById(R.id.lv_laser_power_options);
+        // 自定义激光功率
+        etCustomizeLaserPower = view.findViewById(R.id.et_customize_laser_power);
+        // 确定
+        tvConfirmCustomizeLaserPower = view.findViewById(R.id.tv_confirm_customize_laser_power);
     }
 
     /**
@@ -119,6 +133,34 @@ public class LaserLevelBottomSheetFragment extends BottomSheetDialogFragment {
         if (selectedPosition != -1) {
             listView.setSelection(selectedPosition);  // 滚动到选中的位置
         }
+
+        // 确定
+        tvConfirmCustomizeLaserPower.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "CustomizeLaserPower=" + etCustomizeLaserPower.getText().toString());
+
+                if (TextUtils.isEmpty(etCustomizeLaserPower.getText().toString())) {
+                    Toast.makeText(requireContext(), "请先输入要自定义的激光功率", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (Integer.valueOf(etCustomizeLaserPower.getText().toString()) <= 0) {
+                    Toast.makeText(requireContext(), "请输入非0的激光功率", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (Integer.valueOf(etCustomizeLaserPower.getText().toString()) > 100) {
+                    Toast.makeText(requireContext(), "最大功率仅支持100%", Toast.LENGTH_SHORT).show();
+                    etCustomizeLaserPower.setText("100");
+                    return;
+                }
+
+                listener.onLaserPowerSelected(etCustomizeLaserPower.getText().toString() + "%");
+                sharedPref.edit().putInt(getString(R.string.preference_recommended_power), Integer.valueOf(etCustomizeLaserPower.getText().toString())).apply();
+                dismiss();
+            }
+        });
     }
 
     /**

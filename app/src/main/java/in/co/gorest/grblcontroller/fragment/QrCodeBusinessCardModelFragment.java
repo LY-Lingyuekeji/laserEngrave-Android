@@ -61,11 +61,18 @@ public class QrCodeBusinessCardModelFragment extends Fragment {
     // 下一步
     private TextView tvNext;
 
+    // 机器名称
+    private String machineName;
+
     public QrCodeBusinessCardModelFragment() {
     }
 
-    public static QrCodeBusinessCardModelFragment newInstance() {
-        return new QrCodeBusinessCardModelFragment();
+    public static QrCodeBusinessCardModelFragment newInstance(String machineName) {
+        QrCodeBusinessCardModelFragment fragment = new QrCodeBusinessCardModelFragment();
+        Bundle args = new Bundle();
+        args.putString("machineName", machineName);
+        fragment.setArguments(args);
+        return fragment;
     }
 
     @Override
@@ -77,6 +84,10 @@ public class QrCodeBusinessCardModelFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        if (getArguments() != null) {
+            machineName = getArguments().getString("machineName");
+        }
+
         // 初始化界面
         initView(view);
         // 初始化数据
@@ -448,6 +459,7 @@ public class QrCodeBusinessCardModelFragment extends Fragment {
                 File barcodeBitmap = ImgUtil.saveBitmap("qrcode" + System.currentTimeMillis() + ".png", bitmap);
                 Uri imageUris = Uri.fromFile(barcodeBitmap);
                 Intent intent = new Intent(getActivity(), EditActivity.class);
+                intent.putExtra("machineName", machineName);
                 intent.putExtra("type", "5");
                 intent.putExtra(BuildConfig.APPLICATION_ID + ".InputUri", imageUris);
                 intent.putExtra("businessType", 1);

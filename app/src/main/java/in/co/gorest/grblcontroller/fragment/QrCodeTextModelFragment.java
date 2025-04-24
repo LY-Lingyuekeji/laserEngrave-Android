@@ -1,31 +1,13 @@
 package in.co.gorest.grblcontroller.fragment;
 
-import android.Manifest;
-import android.annotation.SuppressLint;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkCapabilities;
-import android.net.NetworkRequest;
 import android.net.Uri;
-import android.net.wifi.WifiConfiguration;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
-import android.net.wifi.WifiNetworkSpecifier;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.text.method.HideReturnsTransformationMethod;
-import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,20 +19,13 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
-import com.google.zxing.oned.Code128Writer;
 import com.google.zxing.qrcode.QRCodeWriter;
-
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.util.EnumMap;
@@ -58,11 +33,7 @@ import java.util.Map;
 
 import in.co.gorest.grblcontroller.BuildConfig;
 import in.co.gorest.grblcontroller.R;
-import in.co.gorest.grblcontroller.activity.BarCodeActivity;
 import in.co.gorest.grblcontroller.activity.EditActivity;
-import in.co.gorest.grblcontroller.events.DeviceConnectEvent;
-import in.co.gorest.grblcontroller.events.UiToastEvent;
-import in.co.gorest.grblcontroller.events.WifiNameEvent;
 import in.co.gorest.grblcontroller.util.ImgUtil;
 
 public class QrCodeTextModelFragment extends Fragment {
@@ -76,12 +47,18 @@ public class QrCodeTextModelFragment extends Fragment {
     private TextView tvQrCodeLimit;
     // 下一步
     private TextView tvNext;
+    // 机器名称
+    private String machineName;
 
     public QrCodeTextModelFragment() {
     }
 
-    public static QrCodeTextModelFragment newInstance() {
-        return new QrCodeTextModelFragment();
+    public static QrCodeTextModelFragment newInstance(String machineName) {
+        QrCodeTextModelFragment fragment = new QrCodeTextModelFragment();
+        Bundle args = new Bundle();
+        args.putString("machineName", machineName);
+        fragment.setArguments(args);
+        return fragment;
     }
 
     @Override
@@ -93,6 +70,10 @@ public class QrCodeTextModelFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        if (getArguments() != null) {
+            machineName = getArguments().getString("machineName");
+        }
+
         // 初始化界面
         initView(view);
         // 初始化数据
@@ -178,6 +159,7 @@ public class QrCodeTextModelFragment extends Fragment {
                 File barcodeBitmap = ImgUtil.saveBitmap("qrcode" + System.currentTimeMillis() + ".png", bitmap);
                 Uri imageUris = Uri.fromFile(barcodeBitmap);
                 Intent intent = new Intent(getActivity(), EditActivity.class);
+                intent.putExtra("machineName", machineName);
                 intent.putExtra("type", "5");
                 intent.putExtra(BuildConfig.APPLICATION_ID + ".InputUri", imageUris);
                 intent.putExtra("businessType", 1);

@@ -1,14 +1,20 @@
 package in.co.gorest.grblcontroller.fragment;
 
+import android.annotation.SuppressLint;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +26,10 @@ import android.widget.TextView;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
@@ -37,6 +47,11 @@ import in.co.gorest.grblcontroller.events.ModelChangeEvent;
 import in.co.gorest.grblcontroller.events.NewVersionEvent;
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 import in.co.gorest.grblcontroller.util.DataCleanManager;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 public class SettingFragment extends Fragment {
     // 用于日志记录的标签
@@ -173,8 +188,7 @@ public class SettingFragment extends Fragment {
         llSettingGuide.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(getActivity(), GuideActivity.class));
-//                startActivity(new Intent(getActivity(), GCodeTestActivity.class));
+//                startActivity(new Intent(getActivity(), GuideActivity.class));
             }
         });
 

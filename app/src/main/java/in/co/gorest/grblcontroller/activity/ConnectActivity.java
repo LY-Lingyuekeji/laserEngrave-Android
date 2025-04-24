@@ -17,7 +17,6 @@ import androidx.viewpager2.widget.ViewPager2;
 import java.util.ArrayList;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.adapters.ViewPagerAdapter;
-import in.co.gorest.grblcontroller.fragment.BtConnetModelFragment;
 import in.co.gorest.grblcontroller.fragment.WiFiConnetModelFragment;
 
 public class ConnectActivity extends AppCompatActivity {

@@ -2,21 +2,27 @@ package in.co.gorest.grblcontroller.fragment;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.wifi.ScanResult;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
@@ -29,14 +35,21 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.bumptech.glide.Glide;
 import com.xuexiang.xui.widget.guidview.FocusShape;
 import com.xuexiang.xui.widget.guidview.GuideCaseView;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.activity.AddDeviceActivity;
@@ -102,8 +115,16 @@ public class HomeFragment extends Fragment {
     private TextView tvMachineStatusTips;
     // 机器状态
     private TextView tvMachineStatus;
+    // 机器图片
+    private ImageView ivMachineImage;
+    // 机器行程
+    private TextView tvMachineSize;
+    // 模组图标
+    private ImageView ivModuleIcon;
     // 激光模组
     private TextView tvLaserModule;
+    // 机器SD卡容量
+    private TextView tvMachineSD;
     // 简易模式
     private LinearLayout llHomeSimple;
     // 雕刻
@@ -135,10 +156,10 @@ public class HomeFragment extends Fragment {
     private boolean isShowScanDeviceGuide;
     // 是否显示连接设备引导
     private boolean isShowConnectDeviceGuide;
-
-
     // 连接方式
     private String connectType = null;
+    // 是否手动搜索
+    private boolean isManualScan = false; // 默认是 false（表示自动扫描）
 
 
     public HomeFragment() {
@@ -157,11 +178,10 @@ public class HomeFragment extends Fragment {
         EventBus.getDefault().register(this);
     }
 
+
     @Override
     public void onDestroy() {
         super.onDestroy();
-        // 注销EventBus
-        EventBus.getDefault().unregister(this);
         // 注销广播接收器，避免内存泄漏
         requireContext().unregisterReceiver(wifiScanReceiver);
     }
@@ -230,8 +250,16 @@ public class HomeFragment extends Fragment {
         tvMachineStatusTips = view.findViewById(R.id.tv_machine_status_tips);
         // 机器状态
         tvMachineStatus = view.findViewById(R.id.tv_machine_status);
+        // 机器图片
+        ivMachineImage = view.findViewById(R.id.iv_machine_image);
+        // 机器行程
+        tvMachineSize = view.findViewById(R.id.tv_machine_size);
+        // 模组图标
+        ivModuleIcon = view.findViewById(R.id.iv_module_icon);
         // 激光模组
         tvLaserModule = view.findViewById(R.id.tv_laser_module);
+        // 机器SD卡容量
+        tvMachineSD = view.findViewById(R.id.tv_machine_sd);
         // 简易模式
         llHomeSimple = view.findViewById(R.id.ll_home_simple);
         // 雕刻
@@ -300,7 +328,6 @@ public class HomeFragment extends Fragment {
         }
 
 
-
     }
 
     /**
@@ -319,20 +346,18 @@ public class HomeFragment extends Fragment {
             }
         });
 
-
-
         // 机器状态
         llMachineStatus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (tvMachineStatus.getText().equals("雕刻中")) {
+                if (tvMachineStatus.getText().equals("工作中")) {
                     Intent intent = new Intent(getActivity(), EngraveActivity.class);
                     String imagePath = sharedPref.getString(getString(R.string.preference_image_path), "");
                     String filePath = sharedPref.getString(getString(R.string.preference_file_path), "");
                     intent.putExtra("imagePath", imagePath);
                     intent.putExtra("filePath", filePath);
                     startActivity(intent);
-                } else if (tvMachineStatus.getText().equals("暂停")){
+                } else if (tvMachineStatus.getText().equals("暂停")) {
                     // 终止雕刻
                     NettyClient.getInstance(new Handler(new Handler.Callback() {
                         @Override
@@ -340,6 +365,14 @@ public class HomeFragment extends Fragment {
                             return false;
                         }
                     })).sendMsgToServer(("\u0018" + "\r\n").getBytes(StandardCharsets.UTF_8), null);
+                } else if (tvMachineStatus.getText().equals("警告")) {
+                    // 解除警告
+                    NettyClient.getInstance(new Handler(new Handler.Callback() {
+                        @Override
+                        public boolean handleMessage(@NonNull Message msg) {
+                            return false;
+                        }
+                    })).sendMsgToServer(("$X" + "\r\n").getBytes(StandardCharsets.UTF_8), null);
                 } else {
                     Log.d(TAG, "无效点击");
                 }
@@ -402,7 +435,10 @@ public class HomeFragment extends Fragment {
         rlEngraveSimple.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(getActivity(), BeginEngraveActivity.class));
+                Intent intent = new Intent(getActivity(), BeginEngraveActivity.class);
+                intent.putExtra("machineName", tvMachineName.getText().toString());
+                startActivity(intent);
+
             }
         });
 
@@ -413,7 +449,10 @@ public class HomeFragment extends Fragment {
                 if (connectType != null) {
                     Log.d(TAG, "connectType=" + connectType);
                     if (connectType.equals("AP")) {
-                        startActivity(new Intent(getActivity(), TelnetConnectionActivity.class));
+                        Log.d(TAG, "machineName=" + tvMachineName.getText().toString());
+                        Intent intent = new Intent(getActivity(), TelnetConnectionActivity.class);
+                        intent.putExtra("machineName", tvMachineName.getText().toString());
+                        startActivity(intent);
                     } else {
                         startActivity(new Intent(getActivity(), BluetoothConnectionActivity.class));
                     }
@@ -428,8 +467,6 @@ public class HomeFragment extends Fragment {
 
                             });
                 }
-
-//                startActivity(new Intent(getActivity(), TelnetConnectionActivity.class));
             }
         });
 
@@ -440,7 +477,10 @@ public class HomeFragment extends Fragment {
                 if (connectType != null) {
                     Log.d(TAG, "connectType=" + connectType);
                     if (connectType.equals("AP")) {
-                        startActivity(new Intent(getActivity(), TelnetConnectionActivity.class));
+                        Log.d(TAG, "machineName=" + tvMachineName.getText().toString());
+                        Intent intent = new Intent(getActivity(), TelnetConnectionActivity.class);
+                        intent.putExtra("machineName", tvMachineName.getText().toString());
+                        startActivity(intent);
                     } else {
                         startActivity(new Intent(getActivity(), BluetoothConnectionActivity.class));
                     }
@@ -462,7 +502,9 @@ public class HomeFragment extends Fragment {
         llMaterial.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(getActivity(), MaterialActivity.class));
+                Intent intent = new Intent(getActivity(), MaterialActivity.class);
+                intent.putExtra("machineName", tvMachineName.getText().toString());
+                startActivity(intent);
             }
         });
 
@@ -494,7 +536,9 @@ public class HomeFragment extends Fragment {
         llCreate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(getActivity(), DrawBoardActivity.class));
+                Intent intent = new Intent(getActivity(), DrawBoardActivity.class);
+                intent.putExtra("machineName", tvMachineName.getText().toString());
+                startActivity(intent);
             }
         });
 
@@ -502,7 +546,9 @@ public class HomeFragment extends Fragment {
         llText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(getActivity(), TextCreateActivity.class));
+                Intent intent = new Intent(getActivity(), TextCreateActivity.class);
+                intent.putExtra("machineName", tvMachineName.getText().toString());
+                startActivity(intent);
             }
         });
 
@@ -510,7 +556,9 @@ public class HomeFragment extends Fragment {
         llBarcode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(getActivity(), BarCodeActivity.class));
+                Intent intent = new Intent(getActivity(), BarCodeActivity.class);
+                intent.putExtra("machineName", tvMachineName.getText().toString());
+                startActivity(intent);
             }
         });
 
@@ -518,7 +566,9 @@ public class HomeFragment extends Fragment {
         llQrcode.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(getActivity(), QrCodeActivity.class));
+                Intent intent = new Intent(getActivity(), QrCodeActivity.class);
+                intent.putExtra("machineName", tvMachineName.getText().toString());
+                startActivity(intent);
             }
         });
     }
@@ -546,6 +596,8 @@ public class HomeFragment extends Fragment {
             radarView.start();
             // 开始搜索WIFI
             startWifiScan();
+            // 用户手动点击扫描
+            isManualScan = true;
         } else {
             // 权限未授权，向用户请求权限
             requestPermissions();
@@ -580,26 +632,43 @@ public class HomeFragment extends Fragment {
     private final BroadcastReceiver wifiScanReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+
             // 获取扫描结果，这里返回一个 List<ScanResult>，每个 ScanResult 代表一个 Wi-Fi 网络
             @SuppressLint("MissingPermission") List<ScanResult> scanResults = wifiManager.getScanResults();
-            // 标志位，判断是否找到包含 "MSK" 的 Wi-Fi 网络
-            boolean foundMSK = false;
 
+            // 检查当前 Wi-Fi 连接状态
+            WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+            if (wifiInfo != null && wifiInfo.getSSID() != null) {
+                String currentSSID = wifiInfo.getSSID().replace("\"", ""); // 移除引号
+                Log.d(TAG, "当前已连接的 Wi-Fi SSID: " + currentSSID);
+
+                // 如果当前已连接的 Wi-Fi 是激光雕刻机 (Laser 或 CNC)，则不处理扫描结果
+                if (!isManualScan && (currentSSID.startsWith("Laser") || currentSSID.startsWith("CNC"))) {
+                    Log.d(TAG, "设备已连接，不再更新 Wi-Fi 列表");
+                    return;
+                }
+            }
+
+            // 不管是自动还是手动扫描，都要重置手动搜索标识isManualScan
+            isManualScan = false;
+
+            // 标志位，判断是否找到包含 "MSK" 的 Wi-Fi 网络
+            boolean foundLaserOrCNC = false;
             // 清空旧的数据
             wifiNetworkList.clear();
 
             // 遍历扫描结果，检查每个网络的 SSID 是否包含 "MSK"
             for (ScanResult result : scanResults) {
-                if (result.SSID.contains("MKS")) {  // 如果 SSID 包含 "MSK"
+                if (result.SSID.startsWith("Laser") || result.SSID.startsWith("CNC")) {  // 如果 SSID 包含 "Laser" 或 "CNC"
                     // 构造 WifiNetwork 对象，并添加到列表
                     String ipAddress = "192.168.4.1";  // 这里假设 IP 地址为默认值
                     wifiNetworkList.add(new WifiNetwork(result.SSID, ipAddress));
-                    foundMSK = true;  // 找到包含 "MSK" 的 Wi-Fi
+                    foundLaserOrCNC = true;  // 找到包含 "MSK" 的 Wi-Fi
                 }
             }
 
             // 如果没有找到包含 "MSK" 的 Wi-Fi 网络，隐藏控件
-            if (!foundMSK) {
+            if (!foundLaserOrCNC) {
                 // 显示空白展示界面
                 llEmptyContent.setVisibility(View.VISIBLE);
                 // 隐藏设备搜索界面
@@ -644,7 +713,7 @@ public class HomeFragment extends Fragment {
         if (!event.getType().isEmpty() && !event.getName().isEmpty() && !event.getAddress().isEmpty()) {
             Log.d(TAG, "Type=" + event.getType() + "----Name=" + event.getName() + "----Address=" + event.getAddress());
             connectType = event.getType();
-            if (connectType.equals("AP")) {
+            if (connectType.equals("AP") || connectType.equals("STA")) {
                 // 连接Telnet
                 NettyClient.getInstance().connect(event.getAddress(), 8080);
 
@@ -659,33 +728,52 @@ public class HomeFragment extends Fragment {
 
                 // 设置信息
                 tvMachineName.setText(event.getName());
+                if (event.getName().contains("Laser")) {
+                    // 设置激光雕刻机器图片
+                    if (event.getName().contains("T2020")) {
+                        // 设置激光雕刻机 T2020图片
+                        Glide.with(requireContext()).load(R.mipmap.ic_laser_t2020).into(ivMachineImage);
+                        // 设置激光雕刻机 T2020行程
+                        tvMachineSize.setText("200x200(mm²)");
+                    } else {
+                        // 设置激光雕刻机 T4图片
+                        Glide.with(requireContext()).load(R.mipmap.ic_laser_t4).into(ivMachineImage);
+                        // 设置激光雕刻机 T4行程
+                        tvMachineSize.setText("300x300(mm²)");
+                    }
+
+                    // 设置模组图标
+                    Glide.with(requireContext()).load(R.drawable.icon_laser).into(ivModuleIcon);
+                } else {
+                    // 设置CNC雕刻机机器图片
+                    if (event.getName().contains("3018MAX")) {
+                        // 设置CNC雕刻机 3018MAX图片
+                        Glide.with(requireContext()).load(R.mipmap.ic_cnc_3018max).into(ivMachineImage);
+                        // 设置CNC雕刻机 3018PRO行程
+                        tvMachineSize.setText("300x180x45(mm²)");
+                    } else if (event.getName().contains("3018PRO")) {
+                        // 设置CNC雕刻机 3018PRO图片
+                        Glide.with(requireContext()).load(R.mipmap.ic_cnc_3018pro).into(ivMachineImage);
+                        // 设置CNC雕刻机 3018PRO行程
+                        tvMachineSize.setText("300x180x45(mm²)");
+                    } else {
+                        // 设置CNC雕刻机 3020PLUS图片
+                        Glide.with(requireContext()).load(R.mipmap.ic_cnc_3020plus).into(ivMachineImage);
+                        // 设置CNC雕刻机 3020PLUS行程
+                        tvMachineSize.setText("300x200x73(mm²)");
+                    }
+
+                    // 设置模组图标
+                    Glide.with(requireContext()).load(R.drawable.icon_cnc).into(ivModuleIcon);
+                }
+
                 String laserModule = sharedPref.getString(getString(R.string.preference_laser_module), "LdT-3W");
                 tvLaserModule.setText(laserModule);
 
                 // 保存连接方式
                 sharedPref.edit().putString(getString(R.string.preference_connect_type), event.getType()).apply();
 
-//                if (event.getName().contains("MKS")) {
-//                    // 获取自动连接状态
-//                    boolean isAutoConnect = sharedPref.getBoolean(getString(R.string.preference_auto_connect), false);
-//                    if (!isAutoConnect) {
-//                        BaseDialog.showCustomDialog(getActivity(),
-//                                "温馨提示", "是否开启自动连接设备？\r\n\r\n开启后下次打开App可默认连接此设备",
-//                                "开启", "取消",
-//                                v -> {
-//                                    // 自动连接
-//                                    sharedPref.edit().putBoolean(getString(R.string.preference_auto_connect), true).apply();
-//                                    // SSID
-//                                    Log.d(TAG, "SSID=" + event.getName());
-//                                    sharedPref.edit().putString(getString(R.string.preference_wifi_ssid), event.getName()).apply();
-//                                },
-//                                v -> {
-//                                    Log.d(TAG, "用户取消开启");
-//                                });
-//                    }
-//                }
-
-            } else if (connectType.equals("disconnect")) {
+            }  else if (connectType.equals("disconnect")) {
                 // 显示空白展示界面
                 llEmptyContent.setVisibility(View.VISIBLE);
                 // 隐藏设备搜索界面
@@ -786,8 +874,6 @@ public class HomeFragment extends Fragment {
         sharedPref.edit().putBoolean(getString(R.string.preference_connectdevice_guide_isshow), true).apply();
     }
 
-
-
     /**
      * 模式切换
      *
@@ -815,22 +901,136 @@ public class HomeFragment extends Fragment {
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onServiceMessageEvent(ServiceMessageEvent event) {
-        if (!event.getMessage().isEmpty() && event.getMessage().startsWith("<")) {
-//            Log.d(TAG, "message=" + event.getMessage().toString());
-            String[] parts = event.getMessage().substring(1, event.getMessage().toString().length() - 1).split("\\|");
-//            Log.d(TAG, "status=" + parts[0] + " Mpos=" + parts[1] + " Wpos=" + parts[2] + " Fs=" + parts[3]);
-            if (parts[0].equals(Constants.MACHINE_STATUS_IDLE)) {
-                tvMachineStatusTips.setBackgroundResource(R.drawable.bg_green_1e853a_r100);
-                tvMachineStatus.setText("已连接");
-            } else if (parts[0].equals(Constants.MACHINE_STATUS_RUN)) {
-                tvMachineStatusTips.setBackgroundResource(R.drawable.bg_green_1e853a_r100);
-                tvMachineStatus.setText("雕刻中");
-            } else if (parts[0].contains(Constants.MACHINE_STATUS_HOLD)) {
-                tvMachineStatusTips.setBackgroundResource(R.drawable.bg_red_c42b1c_r100);
-                tvMachineStatus.setText("暂停");
-            }
+        if (!event.getMessage().isEmpty()) {
+            Activity topActivity = GrblController.getInstance().getTopActivity();
+            if (event.getMessage().startsWith("<")) {
+                String[] parts = event.getMessage().substring(1, event.getMessage().toString().length() - 1).split("\\|");
+                if (parts[0].equals(Constants.MACHINE_STATUS_IDLE)) {
+                    tvMachineStatusTips.setBackgroundResource(R.drawable.bg_green_1e853a_r100);
+                    tvMachineStatus.setText("已连接");
+                } else if (parts[0].equals(Constants.MACHINE_STATUS_RUN)) {
+                    tvMachineStatusTips.setBackgroundResource(R.drawable.bg_green_1e853a_r100);
+                    tvMachineStatus.setText("工作中");
+                } else if (parts[0].contains(Constants.MACHINE_STATUS_HOLD)) {
+                    tvMachineStatusTips.setBackgroundResource(R.drawable.bg_red_c42b1c_r100);
+                    tvMachineStatus.setText("暂停");
+                } else if (parts[0].contains(Constants.MACHINE_STATUS_ALARM)) {
+                    tvMachineStatusTips.setBackgroundResource(R.drawable.bg_red_c42b1c_r100);
+                    tvMachineStatus.setText("警告");
+                }
+            } else {
+                // TODO 开门弹窗
+                if (topActivity != getActivity()) {
+                    Log.d(TAG, "当前 Activity 不是顶层，不弹窗");
+                    return; // 不是当前页面，直接 return
+                }
 
+                if (event.getMessage().contains("MSG:Safe door err!") && tvMachineStatus.getText().equals("工作中")) {
+
+                    showDialogDoorWarning();
+                } else if (event.getMessage().contains("MSG:Flame err!") && tvMachineStatus.getText().equals("工作中")) {
+                    // TODO 火焰弹窗
+                    showDialogFireWarning();
+                } else if (event.getMessage().contains("MSG:Probe err!") && tvMachineStatus.getText().equals("工作中")) {
+                    // TODO 倾斜弹窗
+                    showDialogProbeWarning();
+                }
+            }
         }
     }
+
+    /**
+     * 开门风险提示弹窗
+     */
+    private void showDialogDoorWarning() {
+        Dialog dialog = new Dialog(requireContext(), R.style.CustomDialog);
+        dialog.setContentView(R.layout.dialog_door_warning);
+        // 设置窗口背景为透明，以显示圆角效果
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+        // 确认
+        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
+        // 确定
+        tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 隐藏弹窗
+                if (dialog.isShowing()) {
+                    dialog.dismiss();
+                }
+            }
+        });
+        // 设置Dialog的宽高
+        if (dialog.getWindow() != null) {
+            // 设置弹窗宽度为屏幕的80%，高度自适应
+            dialog.getWindow().setLayout((int) (requireContext().getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+        // 显示 Dialog
+        dialog.show();
+    }
+
+    /**
+     * 火焰风险提示弹窗
+     */
+    private void showDialogFireWarning() {
+        Dialog dialog = new Dialog(requireContext(), R.style.CustomDialog);
+        dialog.setContentView(R.layout.dialog_fire_warning);
+        // 设置窗口背景为透明，以显示圆角效果
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+        // 确认
+        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
+        // 确定
+        tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 隐藏弹窗
+                if (dialog.isShowing()) {
+                    dialog.dismiss();
+                }
+            }
+        });
+        // 设置Dialog的宽高
+        if (dialog.getWindow() != null) {
+            // 设置弹窗宽度为屏幕的80%，高度自适应
+            dialog.getWindow().setLayout((int) (requireContext().getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+        // 显示 Dialog
+        dialog.show();
+    }
+
+    /**
+     * 倾斜风险提示弹窗
+     */
+    private void showDialogProbeWarning() {
+        Dialog dialog = new Dialog(requireContext(), R.style.CustomDialog);
+        dialog.setContentView(R.layout.dialog_probe_warning);
+        // 设置窗口背景为透明，以显示圆角效果
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+        // 确认
+        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
+        // 确定
+        tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 隐藏弹窗
+                if (dialog.isShowing()) {
+                    dialog.dismiss();
+                }
+            }
+        });
+        // 设置Dialog的宽高
+        if (dialog.getWindow() != null) {
+            // 设置弹窗宽度为屏幕的80%，高度自适应
+            dialog.getWindow().setLayout((int) (requireContext().getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+        // 显示 Dialog
+        dialog.show();
+    }
+
 
 }

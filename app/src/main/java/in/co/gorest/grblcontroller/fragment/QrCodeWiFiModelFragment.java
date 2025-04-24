@@ -77,6 +77,9 @@ public class QrCodeWiFiModelFragment extends Fragment {
     // 模式
     private String modelStr = "WPA/WPA2";
 
+    // 机器名称
+    private String machineName;
+
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -89,8 +92,12 @@ public class QrCodeWiFiModelFragment extends Fragment {
     public QrCodeWiFiModelFragment() {
     }
 
-    public static QrCodeWiFiModelFragment newInstance() {
-        return new QrCodeWiFiModelFragment();
+    public static QrCodeWiFiModelFragment newInstance(String machineName) {
+        QrCodeWiFiModelFragment fragment = new QrCodeWiFiModelFragment();
+        Bundle args = new Bundle();
+        args.putString("machineName", machineName);
+        fragment.setArguments(args);
+        return fragment;
     }
 
     @Override
@@ -102,6 +109,10 @@ public class QrCodeWiFiModelFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        if (getArguments() != null) {
+            machineName = getArguments().getString("machineName");
+        }
+
         // 初始化界面
         initView(view);
         // 初始化数据
@@ -275,6 +286,7 @@ public class QrCodeWiFiModelFragment extends Fragment {
                 File barcodeBitmap = ImgUtil.saveBitmap("qrcode" + System.currentTimeMillis() + ".png", bitmap);
                 Uri imageUris = Uri.fromFile(barcodeBitmap);
                 Intent intent = new Intent(getActivity(), EditActivity.class);
+                intent.putExtra("machineName", machineName);
                 intent.putExtra("type", "5");
                 intent.putExtra(BuildConfig.APPLICATION_ID + ".InputUri", imageUris);
                 intent.putExtra("businessType", 1);

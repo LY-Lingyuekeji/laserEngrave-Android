@@ -245,6 +245,7 @@
             </LinearLayout>
 
             <ImageView
+                android:id="@+id/iv_machine_image"
                 android:layout_width="210dp"
                 android:layout_height="85dp"
                 android:layout_marginTop="10dp"
@@ -281,6 +282,7 @@
                             android:src="@drawable/icon_machine_size" />
 
                         <TextView
+                            android:id="@+id/tv_machine_size"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="5dp"
@@ -331,6 +333,7 @@
                         android:orientation="horizontal">
 
                         <ImageView
+                            android:id="@+id/iv_module_icon"
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/icon_laser" />

@@ -49,6 +49,12 @@ public class AddDeviceAdapter extends RecyclerView.Adapter<AddDeviceAdapter.AddD
             Glide.with(context).load(R.mipmap.ic_laser_t4).into(holder.deviceImage);
         } else if (device.getName().equals("Laser-T2020")) {
             Glide.with(context).load(R.mipmap.ic_laser_t2020).into(holder.deviceImage);
+        } else if (device.getName().equals("CNC-3018PRO")) {
+            Glide.with(context).load(R.mipmap.ic_cnc_3018pro).into(holder.deviceImage);
+        } else if (device.getName().equals("CNC-3018MAX")) {
+            Glide.with(context).load(R.mipmap.ic_cnc_3018max).into(holder.deviceImage);
+        } else if (device.getName().equals("CNC-3020PLUS")) {
+            Glide.with(context).load(R.mipmap.ic_cnc_3020plus).into(holder.deviceImage);
         } else {
             Glide.with(context).load(R.mipmap.ic_unknow_404).into(holder.deviceImage);
         }
