@@ -1,10 +1,11 @@
 package in.co.gorest.grblcontroller.fragment;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,21 +20,25 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 
 import in.co.gorest.grblcontroller.GrblController;
+import in.co.gorest.grblcontroller.MainActivity;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.activity.PreViewActivity;
+import in.co.gorest.grblcontroller.activity.TelnetConnectionActivity;
+import in.co.gorest.grblcontroller.base.BaseDialog;
 import in.co.gorest.grblcontroller.events.ControltoPreViewMessageEvent;
 import in.co.gorest.grblcontroller.events.ServiceMessageEvent;
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
+import in.co.gorest.grblcontroller.model.Constants;
 import in.co.gorest.grblcontroller.util.NettyClient;
 
 public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
@@ -96,10 +101,18 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
     private LinearLayout llSetOrigin;
     // 回起点
     private LinearLayout llGoToOrigin;
-    // 激光
+    // 激光(LinearLayout)
     private LinearLayout llLaser;
+    // 激光(ImageView)
+    private ImageView ivLaser;
+    // 激光(TextView)
+    private TextView tvLaser;
     // 激光功率
     private int laserLevel;
+
+
+    // 当前的机器状态
+    private String status;
 
     // 队列最大值
     private static final int MAX_HISTORY_SIZE = 5;
@@ -206,8 +219,12 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
         llSetOrigin = view.findViewById(R.id.ll_set_origin);
         // 回起点
         llGoToOrigin = view.findViewById(R.id.ll_go_to_origin);
-        // 激光
+        // 激光(LinearLayout)
         llLaser = view.findViewById(R.id.ll_laser);
+        // 激光(ImageView)
+        ivLaser = view.findViewById(R.id.iv_laser);
+        // 激光(TextView)
+        tvLaser = view.findViewById(R.id.tv_laser);
 
     }
 
@@ -284,7 +301,60 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
         llHome.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendJogCommand("$H");
+                if (TextUtils.isEmpty(status)) {
+                    BaseDialog.showCustomDialog(requireContext(),
+                            "温馨提示", "检测到您还未连接设备，无法进行雕刻！\r\n\r\n是否连接设备？",
+                            "确定", "取消",
+                            vbd -> {
+                                Intent intent = new Intent(requireContext(), MainActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                startActivity(intent);
+                                requireActivity().finish();
+                            },
+                            vbd -> {
+                                Log.d(TAG, "用户点击取消");
+                            });
+                    return;
+                }
+
+                if (status.contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    sendJogCommand("$H");
+                }
             }
         });
 
@@ -292,8 +362,62 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
         jog_x_positive.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String jog = String.format(jog_x_positive.getTag().toString(), "G21", stepValue, speedValue);
-                sendJogCommand(jog);
+                if (TextUtils.isEmpty(status)) {
+                    BaseDialog.showCustomDialog(requireContext(),
+                            "温馨提示", "检测到您还未连接设备，无法进行雕刻！\r\n\r\n是否连接设备？",
+                            "确定", "取消",
+                            vbd -> {
+                                Intent intent = new Intent(requireContext(), MainActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                startActivity(intent);
+                                requireActivity().finish();
+                            },
+                            vbd -> {
+                                Log.d(TAG, "用户点击取消");
+                            });
+                    return;
+                }
+
+                if (status.contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    String jog = String.format(jog_x_positive.getTag().toString(), "G21", stepValue, speedValue);
+                    sendJogCommand(jog);
+                }
+
             }
         });
 
@@ -301,8 +425,62 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
         jog_x_negative.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String jog = String.format(jog_x_negative.getTag().toString(), "G21", stepValue, speedValue);
-                sendJogCommand(jog);
+                if (TextUtils.isEmpty(status)) {
+                    BaseDialog.showCustomDialog(requireContext(),
+                            "温馨提示", "检测到您还未连接设备，无法进行雕刻！\r\n\r\n是否连接设备？",
+                            "确定", "取消",
+                            vbd -> {
+                                Intent intent = new Intent(requireContext(), MainActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                startActivity(intent);
+                                requireActivity().finish();
+                            },
+                            vbd -> {
+                                Log.d(TAG, "用户点击取消");
+                            });
+                    return;
+                }
+
+                if (status.contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    String jog = String.format(jog_x_negative.getTag().toString(), "G21", stepValue, speedValue);
+                    sendJogCommand(jog);
+                }
+
             }
         });
 
@@ -310,8 +488,61 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
         jog_y_positive.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String jog = String.format(jog_y_positive.getTag().toString(), "G21", stepValue, speedValue);
-                sendJogCommand(jog);
+                if (TextUtils.isEmpty(status)) {
+                    BaseDialog.showCustomDialog(requireContext(),
+                            "温馨提示", "检测到您还未连接设备，无法进行雕刻！\r\n\r\n是否连接设备？",
+                            "确定", "取消",
+                            vbd -> {
+                                Intent intent = new Intent(requireContext(), MainActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                startActivity(intent);
+                                requireActivity().finish();
+                            },
+                            vbd -> {
+                                Log.d(TAG, "用户点击取消");
+                            });
+                    return;
+                }
+
+                if (status.contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    String jog = String.format(jog_y_positive.getTag().toString(), "G21", stepValue, speedValue);
+                    sendJogCommand(jog);
+                }
             }
         });
 
@@ -319,8 +550,61 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
         jog_y_negative.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String jog = String.format(jog_y_negative.getTag().toString(), "G21", stepValue, speedValue);
-                sendJogCommand(jog);
+                if (TextUtils.isEmpty(status)) {
+                    BaseDialog.showCustomDialog(requireContext(),
+                            "温馨提示", "检测到您还未连接设备，无法进行雕刻！\r\n\r\n是否连接设备？",
+                            "确定", "取消",
+                            vbd -> {
+                                Intent intent = new Intent(requireContext(), MainActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                startActivity(intent);
+                                requireActivity().finish();
+                            },
+                            vbd -> {
+                                Log.d(TAG, "用户点击取消");
+                            });
+                    return;
+                }
+
+                if (status.contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    String jog = String.format(jog_y_negative.getTag().toString(), "G21", stepValue, speedValue);
+                    sendJogCommand(jog);
+                }
             }
         });
 
@@ -328,8 +612,61 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
         jog_z_positive.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String jog = String.format(jog_z_positive.getTag().toString(), "G21", stepValue, speedValue);
-                sendJogCommand(jog);
+                if (TextUtils.isEmpty(status)) {
+                    BaseDialog.showCustomDialog(requireContext(),
+                            "温馨提示", "检测到您还未连接设备，无法进行雕刻！\r\n\r\n是否连接设备？",
+                            "确定", "取消",
+                            vbd -> {
+                                Intent intent = new Intent(requireContext(), MainActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                startActivity(intent);
+                                requireActivity().finish();
+                            },
+                            vbd -> {
+                                Log.d(TAG, "用户点击取消");
+                            });
+                    return;
+                }
+
+                if (status.contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    String jog = String.format(jog_z_positive.getTag().toString(), "G21", stepValue, speedValue);
+                    sendJogCommand(jog);
+                }
             }
         });
 
@@ -337,8 +674,61 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
         jog_z_negative.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String jog = String.format(jog_z_negative.getTag().toString(), "G21", stepValue, speedValue);
-                sendJogCommand(jog);
+                if (TextUtils.isEmpty(status)) {
+                    BaseDialog.showCustomDialog(requireContext(),
+                            "温馨提示", "检测到您还未连接设备，无法进行雕刻！\r\n\r\n是否连接设备？",
+                            "确定", "取消",
+                            vbd -> {
+                                Intent intent = new Intent(requireContext(), MainActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                startActivity(intent);
+                                requireActivity().finish();
+                            },
+                            vbd -> {
+                                Log.d(TAG, "用户点击取消");
+                            });
+                    return;
+                }
+
+                if (status.contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    String jog = String.format(jog_z_negative.getTag().toString(), "G21", stepValue, speedValue);
+                    sendJogCommand(jog);
+                }
             }
         });
 
@@ -422,7 +812,60 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
         llCleanAlarm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendJogCommand("$X");
+                if (TextUtils.isEmpty(status)) {
+                    BaseDialog.showCustomDialog(requireContext(),
+                            "温馨提示", "检测到您还未连接设备，无法进行雕刻！\r\n\r\n是否连接设备？",
+                            "确定", "取消",
+                            vbd -> {
+                                Intent intent = new Intent(requireContext(), MainActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                startActivity(intent);
+                                requireActivity().finish();
+                            },
+                            vbd -> {
+                                Log.d(TAG, "用户点击取消");
+                            });
+                    return;
+                }
+
+                if (status.contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    sendJogCommand("$X");
+                }
             }
         });
 
@@ -430,7 +873,60 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
         llCleanHold.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendJogCommand("\u0018");
+                if (TextUtils.isEmpty(status)) {
+                    BaseDialog.showCustomDialog(requireContext(),
+                            "温馨提示", "检测到您还未连接设备，无法进行雕刻！\r\n\r\n是否连接设备？",
+                            "确定", "取消",
+                            vbd -> {
+                                Intent intent = new Intent(requireContext(), MainActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                startActivity(intent);
+                                requireActivity().finish();
+                            },
+                            vbd -> {
+                                Log.d(TAG, "用户点击取消");
+                            });
+                    return;
+                }
+
+                if (status.contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    sendJogCommand("\u0018");
+                }
             }
         });
 
@@ -439,8 +935,61 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
         llXYZero.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendJogCommand("G92 X 0");
-                sendJogCommand("G92 Y 0");
+                if (TextUtils.isEmpty(status)) {
+                    BaseDialog.showCustomDialog(requireContext(),
+                            "温馨提示", "检测到您还未连接设备，无法进行雕刻！\r\n\r\n是否连接设备？",
+                            "确定", "取消",
+                            vbd -> {
+                                Intent intent = new Intent(requireContext(), MainActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                startActivity(intent);
+                                requireActivity().finish();
+                            },
+                            vbd -> {
+                                Log.d(TAG, "用户点击取消");
+                            });
+                    return;
+                }
+
+                if (status.contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    sendJogCommand("G92 X 0");
+                    sendJogCommand("G92 Y 0");
+                }
             }
         });
 
@@ -448,7 +997,60 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
         llZZero.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendJogCommand("G92 Z 0");
+                if (TextUtils.isEmpty(status)) {
+                    BaseDialog.showCustomDialog(requireContext(),
+                            "温馨提示", "检测到您还未连接设备，无法进行雕刻！\r\n\r\n是否连接设备？",
+                            "确定", "取消",
+                            vbd -> {
+                                Intent intent = new Intent(requireContext(), MainActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                startActivity(intent);
+                                requireActivity().finish();
+                            },
+                            vbd -> {
+                                Log.d(TAG, "用户点击取消");
+                            });
+                    return;
+                }
+
+                if (status.contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    sendJogCommand("G92 Z 0");
+                }
             }
         });
 
@@ -456,7 +1058,60 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
         llSetOrigin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendJogCommand("G92 X0 Y0 Z0");
+                if (TextUtils.isEmpty(status)) {
+                    BaseDialog.showCustomDialog(requireContext(),
+                            "温馨提示", "检测到您还未连接设备，无法进行雕刻！\r\n\r\n是否连接设备？",
+                            "确定", "取消",
+                            vbd -> {
+                                Intent intent = new Intent(requireContext(), MainActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                startActivity(intent);
+                                requireActivity().finish();
+                            },
+                            vbd -> {
+                                Log.d(TAG, "用户点击取消");
+                            });
+                    return;
+                }
+
+                if (status.contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    sendJogCommand("G92 X0 Y0 Z0");
+                }
             }
         });
 
@@ -464,7 +1119,61 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
         llGoToOrigin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendJogCommand("G0 X0 Y0 Z0");
+                if (TextUtils.isEmpty(status)) {
+                    BaseDialog.showCustomDialog(requireContext(),
+                            "温馨提示", "检测到您还未连接设备，无法进行雕刻！\r\n\r\n是否连接设备？",
+                            "确定", "取消",
+                            vbd -> {
+                                Intent intent = new Intent(requireContext(), MainActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                startActivity(intent);
+                                requireActivity().finish();
+                            },
+                            vbd -> {
+                                Log.d(TAG, "用户点击取消");
+                            });
+                    return;
+                }
+
+                if (status.contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    sendJogCommand("G0 X0 Y0 Z0");
+                }
+
             }
         });
 
@@ -472,15 +1181,80 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
         llLaser.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (v.getTag().equals("openLaser")) {
-                    laserLevel = sharedPref.getInt(getString(R.string.preference_laser_level), 10);
-                    Log.d(TAG, "laserLevel=" + laserLevel);
-                    sendJogCommand("M3 S" + laserLevel);
-                    sendJogCommand("G1 F1000");
-                    llLaser.setTag("closeLaser");
+                if (TextUtils.isEmpty(status)) {
+                    BaseDialog.showCustomDialog(requireContext(),
+                            "温馨提示", "检测到您还未连接设备，无法进行雕刻！\r\n\r\n是否连接设备？",
+                            "确定", "取消",
+                            vbd -> {
+                                Intent intent = new Intent(requireContext(), MainActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                startActivity(intent);
+                                requireActivity().finish();
+                            },
+                            vbd -> {
+                                Log.d(TAG, "用户点击取消");
+                            });
+                    return;
+                }
+
+                if (status.contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
                 } else {
-                    sendJogCommand("M5");
-                    llLaser.setTag("openLaser");
+                    if (v.getTag().equals("openLaser")) {
+                        laserLevel = sharedPref.getInt(getString(R.string.preference_laser_level), 10);
+                        Log.d(TAG, "laserLevel=" + laserLevel);
+                        sendJogCommand("M3 S" + laserLevel * 10);
+                        sendJogCommand("G1 F1000");
+                        llLaser.setTag("closeLaser");
+                        // 设置选中外框
+                        llLaser.setBackgroundResource(R.drawable.bg_gray_edebee_stroke_1e853a_r100);
+                        // 设置图标
+                        Glide.with(requireContext()).load(R.drawable.ic_laserlight_selected).into(ivLaser);
+                        // 设置选中文字颜色
+                        tvLaser.setTextColor(Color.parseColor("#1e853a"));
+                    } else {
+                        sendJogCommand("M5");
+                        llLaser.setTag("openLaser");
+                        // 设置未选中外框
+                        llLaser.setBackgroundResource(R.drawable.bg_gray_edebee_r100);
+                        // 设置未选中图标
+                        Glide.with(requireContext()).load(R.drawable.ic_laserlight_unselected).into(ivLaser);
+                        // 设置未选中文字颜色
+                        tvLaser.setTextColor(Color.parseColor("#000000"));
+                    }
                 }
             }
         });
@@ -499,8 +1273,62 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
         llAutoFocus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // 显示对刀弹窗
-                showDialogKinfe();
+                if (TextUtils.isEmpty(status)) {
+                    BaseDialog.showCustomDialog(requireContext(),
+                            "温馨提示", "检测到您还未连接设备，无法进行雕刻！\r\n\r\n是否连接设备？",
+                            "确定", "取消",
+                            vbd -> {
+                                Intent intent = new Intent(requireContext(), MainActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                startActivity(intent);
+                                requireActivity().finish();
+                            },
+                            vbd -> {
+                                Log.d(TAG, "用户点击取消");
+                            });
+                    return;
+                }
+
+
+                if (status.contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (status.equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(requireContext(), "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    // 显示对刀弹窗
+                    showDialogKinfe();
+                }
             }
         });
     }
@@ -610,7 +1438,7 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
             Log.d(TAG, "message=" + event.getMessage().toString());
             String[] parts = event.getMessage().substring(1, event.getMessage().toString().length() - 1).split("\\|");
             Log.d(TAG, "status=" + parts[0] + " Mpos=" + parts[1] + " Wpos=" + parts[2] + " Fs=" + parts[3]);
-
+            status = parts[0];
 
             String[] WposParts = parts[2].substring(5, parts[2].length()).split(",");
             Log.d(TAG, "Wpos X=" + WposParts[0] + " Y=" + WposParts[1] + " Z=" + WposParts[2]);
@@ -619,9 +1447,9 @@ public class ControlBottomSheetFragment extends BottomSheetDialogFragment {
     }
 
 
-
     /**
      * 发送命令
+     *
      * @param command
      */
     private void sendJogCommand(String command) {

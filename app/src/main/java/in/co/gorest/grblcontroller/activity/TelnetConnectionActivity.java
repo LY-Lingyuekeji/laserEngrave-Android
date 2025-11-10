@@ -32,6 +32,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
 
+import com.bumptech.glide.Glide;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -42,6 +44,7 @@ import java.util.LinkedList;
 import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.base.BaseActivity;
+import in.co.gorest.grblcontroller.base.BaseDialog;
 import in.co.gorest.grblcontroller.events.CommonCommandValueMessageEvent;
 import in.co.gorest.grblcontroller.events.ConnectStepSetupEvent;
 import in.co.gorest.grblcontroller.events.FragmentCommandEvent;
@@ -50,12 +53,12 @@ import in.co.gorest.grblcontroller.events.ServiceMessageEvent;
 import in.co.gorest.grblcontroller.fragment.CommandBottomSheetFragment;
 import in.co.gorest.grblcontroller.fragment.CommonCommandBottomSheetFragment;
 import in.co.gorest.grblcontroller.fragment.LaserSetupBottomSheetFragment;
-import in.co.gorest.grblcontroller.fragment.LaserSetupLineJudgeBottomSheetFragment;
 import in.co.gorest.grblcontroller.fragment.MainShaftSetupBottomSheetFragment;
 import in.co.gorest.grblcontroller.fragment.StepSetUpBottomSheetFragment;
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 import in.co.gorest.grblcontroller.model.Constants;
 import in.co.gorest.grblcontroller.util.NettyClient;
+import in.co.gorest.grblcontroller.util.WebSocketManager;
 import me.jessyan.autosize.internal.CustomAdapt;
 
 public class TelnetConnectionActivity extends BaseActivity implements CustomAdapt {
@@ -159,8 +162,12 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
     private LinearLayout llSetOrigin;
     // 回起点(Laser)
     private LinearLayout llGoToOrigin;
-    // 激光
+    // 激光(LinearLayout)
     private LinearLayout llLaser;
+    // 激光(ImageView)
+    private ImageView ivLaser;
+    // 激光(TextView)
+    private TextView tvLaser;
     // 激光功率
     private int laserLevel;
     // 自动对焦(Laser)
@@ -183,7 +190,12 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
 
     // 数据同步弹窗
     private Dialog dialogSycn;
-
+    // 门警告弹窗
+    private Dialog dialogDoorWarning;
+    // 火焰警告弹窗
+    private Dialog dialogFireWarning;
+    // 倾斜警告弹窗
+    private Dialog dialogProbeWarning;
     // 是否震动提醒
     private boolean isOpenVibrateAlert;
     // 震动提醒持续时长
@@ -327,8 +339,12 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
         llSetOrigin = findViewById(R.id.ll_set_origin);
         // 回起点(Laser)
         llGoToOrigin = findViewById(R.id.ll_go_to_origin);
-        // 激光
+        // 激光(LinearLayout)
         llLaser = findViewById(R.id.ll_laser);
+        // 激光(ImageView)
+        ivLaser = findViewById(R.id.iv_laser);
+        // 激光(TextView)
+        tvLaser = findViewById(R.id.tv_laser);
         // 自动对焦(Laser)
         llAutoFocus = findViewById(R.id.ll_auto_focus);
         // 回起点(CNC)
@@ -531,7 +547,44 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
         llHome.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendJogCommand("$H");
+                if (tvMachineStatus.getText().toString().contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    sendJogCommand("$H");
+                }
             }
         });
 
@@ -539,8 +592,45 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
         jog_x_positive.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String jog = String.format(jog_x_positive.getTag().toString(), "G21", stepValue, speedValue);
-                sendJogCommand(jog);
+                if (tvMachineStatus.getText().toString().contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    String jog = String.format(jog_x_positive.getTag().toString(), "G21", stepValue, speedValue);
+                    sendJogCommand(jog);
+                }
             }
         });
 
@@ -548,8 +638,46 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
         jog_x_negative.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String jog = String.format(jog_x_negative.getTag().toString(), "G21", stepValue, speedValue);
-                sendJogCommand(jog);
+                if (tvMachineStatus.getText().toString().contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    String jog = String.format(jog_x_negative.getTag().toString(), "G21", stepValue, speedValue);
+                    sendJogCommand(jog);
+                }
+
             }
         });
 
@@ -557,8 +685,46 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
         jog_y_positive.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String jog = String.format(jog_y_positive.getTag().toString(), "G21", stepValue, speedValue);
-                sendJogCommand(jog);
+                if (tvMachineStatus.getText().toString().contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    String jog = String.format(jog_y_positive.getTag().toString(), "G21", stepValue, speedValue);
+                    sendJogCommand(jog);
+                }
+
             }
         });
 
@@ -566,8 +732,45 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
         jog_y_negative.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String jog = String.format(jog_y_negative.getTag().toString(), "G21", stepValue, speedValue);
-                sendJogCommand(jog);
+                if (tvMachineStatus.getText().toString().contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    String jog = String.format(jog_y_negative.getTag().toString(), "G21", stepValue, speedValue);
+                    sendJogCommand(jog);
+                }
             }
         });
 
@@ -575,8 +778,46 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
         jog_z_positive.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String jog = String.format(jog_z_positive.getTag().toString(), "G21", stepValue, speedValue);
-                sendJogCommand(jog);
+                if (tvMachineStatus.getText().toString().contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    String jog = String.format(jog_z_positive.getTag().toString(), "G21", stepValue, speedValue);
+                    sendJogCommand(jog);
+                }
+
             }
         });
 
@@ -584,8 +825,45 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
         jog_z_negative.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String jog = String.format(jog_z_negative.getTag().toString(), "G21", stepValue, speedValue);
-                sendJogCommand(jog);
+                if (tvMachineStatus.getText().toString().contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    String jog = String.format(jog_z_negative.getTag().toString(), "G21", stepValue, speedValue);
+                    sendJogCommand(jog);
+                }
             }
         });
 
@@ -593,26 +871,63 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
         tvCNCFuncationsMainShaft.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (v.getTag().equals("openMainShaft")) {
-                    sendJogCommand("M3 S" + mainShaftLevel * 10);
-                    tvCNCFuncationsMainShaft.setTag("closeMainShaft");
-
-                    // 设置背景为绿色
-                    tvCNCFuncationsMainShaft.setBackgroundResource(R.drawable.bg_green_1e853a_r100);
-                    // 设置文字为关闭主轴
-                    tvCNCFuncationsMainShaft.setText("关闭主轴");
-                    // 设置文字颜色为白色
-                    tvCNCFuncationsMainShaft.setTextColor(Color.parseColor("#FFFFFF"));
+                if (tvMachineStatus.getText().toString().contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
                 } else {
-                    sendJogCommand("M5");
-                    tvCNCFuncationsMainShaft.setTag("openMainShaft");
+                    if (v.getTag().equals("openMainShaft")) {
+                        sendJogCommand("M3 S" + mainShaftLevel * 10);
+                        tvCNCFuncationsMainShaft.setTag("closeMainShaft");
 
-                    // 设置背景为绿色
-                    tvCNCFuncationsMainShaft.setBackgroundResource(R.drawable.bg_gray_edebee_r100);
-                    // 设置文字为关闭主轴
-                    tvCNCFuncationsMainShaft.setText("启动主轴");
-                    // 设置文字颜色为白色
-                    tvCNCFuncationsMainShaft.setTextColor(Color.parseColor("#000000"));
+                        // 设置背景为绿色
+                        tvCNCFuncationsMainShaft.setBackgroundResource(R.drawable.bg_green_1e853a_r100);
+                        // 设置文字为关闭主轴
+                        tvCNCFuncationsMainShaft.setText("关闭主轴");
+                        // 设置文字颜色为白色
+                        tvCNCFuncationsMainShaft.setTextColor(Color.parseColor("#FFFFFF"));
+                    } else {
+                        sendJogCommand("M5");
+                        tvCNCFuncationsMainShaft.setTag("openMainShaft");
+
+                        // 设置背景为绿色
+                        tvCNCFuncationsMainShaft.setBackgroundResource(R.drawable.bg_gray_edebee_r100);
+                        // 设置文字为关闭主轴
+                        tvCNCFuncationsMainShaft.setText("启动主轴");
+                        // 设置文字颜色为白色
+                        tvCNCFuncationsMainShaft.setTextColor(Color.parseColor("#000000"));
+                    }
                 }
             }
         });
@@ -630,18 +945,55 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
         tvCNCFuncationsMainShaftLevelSub.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mainShaftLevel > 10) {
-                    mainShaftLevel -= 10;
-                    // 设置共享偏好设置保存的主轴功率实例
-                    sharedPref.edit().putInt(getString(R.string.preference_main_shaft_level), mainShaftLevel).apply();
-                    // 获取共享偏好设置保存的主轴功率实例
-                    mainShaftLevel = sharedPref.getInt(getString(R.string.preference_main_shaft_level), 50);
-                    // 更新文字
-                    tvCNCFuncationsMainShaftLevel.setText(mainShaftLevel + "%");
-                    // 更新速度
-                    sendJogCommand("S" + mainShaftLevel * 10);
+                if (tvMachineStatus.getText().toString().contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
                 } else {
-                    Toast.makeText(TelnetConnectionActivity.this, "无法再减少", Toast.LENGTH_SHORT).show();
+                    if (mainShaftLevel > 10) {
+                        mainShaftLevel -= 10;
+                        // 设置共享偏好设置保存的主轴功率实例
+                        sharedPref.edit().putInt(getString(R.string.preference_main_shaft_level), mainShaftLevel).apply();
+                        // 获取共享偏好设置保存的主轴功率实例
+                        mainShaftLevel = sharedPref.getInt(getString(R.string.preference_main_shaft_level), 50);
+                        // 更新文字
+                        tvCNCFuncationsMainShaftLevel.setText(mainShaftLevel + "%");
+                        // 更新速度
+                        sendJogCommand("S" + mainShaftLevel * 10);
+                    } else {
+                        Toast.makeText(TelnetConnectionActivity.this, "无法再减少", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
         });
@@ -650,18 +1002,55 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
         tvCNCFuncationsMainShaftLevelAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mainShaftLevel < 50) {
-                    mainShaftLevel += 10;
-                    // 设置共享偏好设置保存的主轴功率实例
-                    sharedPref.edit().putInt(getString(R.string.preference_main_shaft_level), mainShaftLevel).apply();
-                    // 获取共享偏好设置保存的主轴功率实例
-                    mainShaftLevel = sharedPref.getInt(getString(R.string.preference_main_shaft_level), 50);
-                    // 更新文字
-                    tvCNCFuncationsMainShaftLevel.setText(mainShaftLevel + "%");
-                    // 更新速度
-                    sendJogCommand("S" + mainShaftLevel * 10);
+                if (tvMachineStatus.getText().toString().contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
                 } else {
-                    Toast.makeText(TelnetConnectionActivity.this, "无法继续增加", Toast.LENGTH_SHORT).show();
+                    if (mainShaftLevel < 50) {
+                        mainShaftLevel += 10;
+                        // 设置共享偏好设置保存的主轴功率实例
+                        sharedPref.edit().putInt(getString(R.string.preference_main_shaft_level), mainShaftLevel).apply();
+                        // 获取共享偏好设置保存的主轴功率实例
+                        mainShaftLevel = sharedPref.getInt(getString(R.string.preference_main_shaft_level), 50);
+                        // 更新文字
+                        tvCNCFuncationsMainShaftLevel.setText(mainShaftLevel + "%");
+                        // 更新速度
+                        sendJogCommand("S" + mainShaftLevel * 10);
+                    } else {
+                        Toast.makeText(TelnetConnectionActivity.this, "无法继续增加", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
         });
@@ -803,14 +1192,88 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
         llCleanAlarm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendJogCommand("$X");
+                if (tvMachineStatus.getText().toString().contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    sendJogCommand("$X");
+                }
             }
         });
         //  解除警告（CNC）
         llCNCCleanAlarm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendJogCommand("$X");
+                if (tvMachineStatus.getText().toString().contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    sendJogCommand("$X");
+                }
             }
         });
 
@@ -818,7 +1281,44 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
         llCleanHold.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendJogCommand("\u0018");
+                if (tvMachineStatus.getText().toString().contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    sendJogCommand("\u0018");
+                }
             }
         });
 
@@ -826,7 +1326,45 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
         llCNCCleanHold.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendJogCommand("\u0018");
+                if (tvMachineStatus.getText().toString().contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    sendJogCommand("\u0018");
+                }
+
             }
         });
 
@@ -835,7 +1373,45 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
         llXYZero.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendJogCommand("G92 X 0 Y 0");
+                if (tvMachineStatus.getText().toString().contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    sendJogCommand("G92 X 0 Y 0");
+                }
+
             }
         });
 
@@ -843,7 +1419,45 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
         llCNCXYZero.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendJogCommand("G92 X 0 Y 0");
+                if (tvMachineStatus.getText().toString().contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    sendJogCommand("G92 X 0 Y 0");
+                }
+
             }
         });
 
@@ -851,7 +1465,45 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
         llZZero.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendJogCommand("G92 Z 0");
+                if (tvMachineStatus.getText().toString().contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    sendJogCommand("G92 Z 0");
+                }
+
             }
         });
 
@@ -859,7 +1511,44 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
         llCNCZZero.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendJogCommand("G92 Z 0");
+                if (tvMachineStatus.getText().toString().contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    sendJogCommand("G92 Z 0");
+                }
             }
         });
 
@@ -867,7 +1556,45 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
         llSetOrigin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendJogCommand("G92 X0 Y0 Z0");
+                if (tvMachineStatus.getText().toString().contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    sendJogCommand("G92 X0 Y0 Z0");
+                }
+
             }
         });
 
@@ -875,7 +1602,44 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
         llGoToOrigin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendJogCommand("G0 X0 Y0 Z0");
+                if (tvMachineStatus.getText().toString().contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    sendJogCommand("G0 X0 Y0 Z0");
+                }
             }
         });
 
@@ -883,15 +1647,64 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
         llLaser.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (v.getTag().equals("openLaser")) {
-                    laserLevel = sharedPref.getInt(getString(R.string.preference_laser_level), 10);
-                    Log.d(TAG, "laserLevel=" + laserLevel);
-                    sendJogCommand("M3 S" + laserLevel);
-                    sendJogCommand("G1 F1000");
-                    llLaser.setTag("closeLaser");
+                if (tvMachineStatus.getText().toString().contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
                 } else {
-                    sendJogCommand("M5");
-                    llLaser.setTag("openLaser");
+                    if (v.getTag().equals("openLaser")) {
+                        laserLevel = sharedPref.getInt(getString(R.string.preference_laser_level), 10);
+                        Log.d(TAG, "laserLevel=" + laserLevel);
+                        sendJogCommand("M3 S" + laserLevel * 10);
+                        sendJogCommand("G1 F1000");
+                        llLaser.setTag("closeLaser");
+                        // 设置选中外框
+                        llLaser.setBackgroundResource(R.drawable.bg_gray_edebee_stroke_1e853a_r100);
+                        // 设置图标
+                        Glide.with(TelnetConnectionActivity.this).load(R.drawable.ic_laserlight_selected).into(ivLaser);
+                        // 设置选中文字颜色
+                        tvLaser.setTextColor(Color.parseColor("#1e853a"));
+                    } else {
+                        sendJogCommand("M5");
+                        llLaser.setTag("openLaser");
+                        // 设置未选中外框
+                        llLaser.setBackgroundResource(R.drawable.bg_gray_edebee_r100);
+                        // 设置未选中图标
+                        Glide.with(TelnetConnectionActivity.this).load(R.drawable.ic_laserlight_unselected).into(ivLaser);
+                        // 设置未选中文字颜色
+                        tvLaser.setTextColor(Color.parseColor("#000000"));
+                    }
                 }
             }
         });
@@ -910,8 +1723,46 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
         llAutoFocus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // 显示对刀弹窗
-                showDialogKinfe();
+                if (tvMachineStatus.getText().toString().contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    // 显示对刀弹窗
+                    showDialogKinfe();
+                }
+
             }
         });
 
@@ -919,7 +1770,44 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
         llCNCGoToOrigin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendJogCommand("G0 X0 Y0 Z0");
+                if (tvMachineStatus.getText().toString().contains(Constants.MACHINE_STATUS_HOLD)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除暂停
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_ALARM)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 解除警告
+                                sendJogCommand("$X");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else if (tvMachineStatus.getText().toString().equals(Constants.MACHINE_STATUS_RUN)) {
+                    BaseDialog.showCustomDialog(TelnetConnectionActivity.this, "温馨提示",
+                            "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                            "确定", "取消",
+                            v1 -> {
+                                // 暂停雕刻
+                                sendJogCommand("!");
+                                // 终止雕刻
+                                sendJogCommand("\u0018");
+                            },
+                            v1 -> {
+                                Log.d(TAG, "用户选择取消");
+                            });
+                } else {
+                    sendJogCommand("G0 X0 Y0 Z0");
+                }
             }
         });
 
@@ -1035,6 +1923,7 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
         return false; // 如果队列没有满5个值，返回false
     }
 
+
     /**
      * 发送命令
      *
@@ -1042,12 +1931,8 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
      */
     private void sendJogCommand(String command) {
         Log.d(TAG, "command=" + command);
-        NettyClient.getInstance(new Handler(new Handler.Callback() {
-            @Override
-            public boolean handleMessage(@NonNull Message msg) {
-                return false;
-            }
-        })).sendMsgToServer((command + "\r\n").getBytes(StandardCharsets.UTF_8), null);
+        WebSocketManager webSocketManager = WebSocketManager.getInstance();
+        webSocketManager.send(command);
     }
 
     /**
@@ -1111,7 +1996,7 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
 
 
     /**
-     * 步长数据更新
+     * 步长数据更新z
      *
      * @param event
      */
@@ -1131,6 +2016,35 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
     public void onFragmentCommandEvent(FragmentCommandEvent event) {
         if (!event.getMessage().isEmpty()) {
             onGcodeCommandReceived(event.getMessage());
+        }
+    }
+
+    /**
+     * MainShaftLevelVauleUpdateMessageEvent
+     *
+     * @param event
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onMainShaftLevelVauleUpdateMessageEvent(MainShaftLevelVauleUpdateMessageEvent event) {
+        if (event.getMessage() != null) {
+            // 获取共享偏好设置保存的主轴功率实例
+            mainShaftLevel = sharedPref.getInt(getString(R.string.preference_main_shaft_level), 50);
+            Log.d(TAG, "mainShaftLevel=" + mainShaftLevel);
+            tvCNCFuncationsMainShaftLevel.setText(mainShaftLevel + "%");
+
+            sendJogCommand("S" + mainShaftLevel * 10);
+        }
+    }
+
+    /**
+     * MainShaftLevelVauleUpdateMessageEvent
+     *
+     * @param event
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onCommonCommandValueMessageEvent(CommonCommandValueMessageEvent event) {
+        if (event.getMessage() != null) {
+            sendJogCommand(event.getMessage().toString());
         }
     }
 
@@ -1188,58 +2102,153 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
                     return; // 不是当前页面，直接 return
                 }
 
-                if (event.getMessage().contains("MSG:Safe door err!")  && tvMachineStatusTips.getText().equals("工作中")) {
-                    // TODO 开门弹窗
+                if (event.getMessage().contains("MSG:Safe door err") && tvMachineStatusTips.getText().equals("工作中")) { // 开门警告弹窗打开
+                    // TODO 开门警告弹窗
                     showDialogDoorWarning();
                     if (isOpenVibrateAlert) {
                         vibratePhone(this, vibrateAlertTime * 1000);
                     }
-                } else if (event.getMessage().contains("MSG:Flame err!")  && tvMachineStatusTips.getText().equals("工作中")) {
-                    // TODO 火焰弹窗
+                } else if (event.getMessage().contains("MSG:Safe door reset") && tvMachineStatusTips.getText().equals("暂停")) { // 开门警告弹窗关闭
+                    // 隐藏开门警告弹窗
+                    dialogDoorWarning.dismiss();
+                    // TODO 记录日志
+
+                } else if (event.getMessage().contains("MSG:Flame err") && tvMachineStatusTips.getText().equals("工作中")) { // 火焰警告弹窗打开
+                    // TODO 火焰警告弹窗
                     showDialogFireWarning();
                     if (isOpenVibrateAlert) {
                         vibratePhone(this, vibrateAlertTime * 1000);
                     }
-                } else if (event.getMessage().contains("MSG:Probe err!")  && tvMachineStatusTips.getText().equals("工作中")) {
-                    // TODO 倾斜弹窗
+                } else if (event.getMessage().contains("MSG:Safe Flame reset") && tvMachineStatusTips.getText().equals("暂停")) { // 火焰警告弹窗关闭
+                    // 隐藏火焰警告弹窗
+                    dialogFireWarning.dismiss();
+                    // TODO 记录日志
+
+                } else if (event.getMessage().contains("MSG:Tilt sensor") && tvMachineStatusTips.getText().equals("工作中")) { // 倾斜警告弹窗打开
+                    // TODO 倾斜警告弹窗
                     showDialogProbeWarning();
                     if (isOpenVibrateAlert) {
                         vibratePhone(this, vibrateAlertTime * 1000);
                     }
+                } else if (event.getMessage().contains("MSG:Safe Probe reset") && tvMachineStatusTips.getText().equals("暂停")) { // 倾斜警告弹窗关闭
+                    // 隐藏倾斜警告弹窗
+                    dialogProbeWarning.dismiss();
+                    // TODO 记录日志
+
                 }
             }
         }
     }
 
     /**
-     * MainShaftLevelVauleUpdateMessageEvent
-     *
-     * @param event
+     * 开门风险提示弹窗
      */
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onMainShaftLevelVauleUpdateMessageEvent(MainShaftLevelVauleUpdateMessageEvent event) {
-        if (event.getMessage() != null) {
-            // 获取共享偏好设置保存的主轴功率实例
-            mainShaftLevel = sharedPref.getInt(getString(R.string.preference_main_shaft_level), 50);
-            Log.d(TAG, "mainShaftLevel=" + mainShaftLevel);
-            tvCNCFuncationsMainShaftLevel.setText(mainShaftLevel + "%");
-
-            sendJogCommand("S" + mainShaftLevel * 10);
+    private void showDialogDoorWarning() {
+        dialogDoorWarning = new Dialog(this, R.style.CustomDialog);
+        dialogDoorWarning.setContentView(R.layout.dialog_door_warning);
+        // 设置窗口背景为透明，以显示圆角效果
+        if (dialogDoorWarning.getWindow() != null) {
+            dialogDoorWarning.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
+        // 确认
+        TextView tvDialogRiskWarningConfirm = dialogDoorWarning.findViewById(R.id.tv_dialog_door_warning_confirm);
+        // 确定
+        tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 隐藏弹窗
+                if (dialogDoorWarning.isShowing()) {
+                    dialogDoorWarning.dismiss();
+                }
+            }
+        });
+        // 设置Dialog的宽高
+        if (dialogDoorWarning.getWindow() != null) {
+            // 设置弹窗宽度为屏幕的80%，高度自适应
+            dialogDoorWarning.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+        // 显示 Dialog
+        dialogDoorWarning.show();
     }
 
     /**
-     * MainShaftLevelVauleUpdateMessageEvent
-     *
-     * @param event
+     * 火焰风险提示弹窗
      */
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onCommonCommandValueMessageEvent(CommonCommandValueMessageEvent event) {
-        if (event.getMessage() != null) {
-            sendJogCommand(event.getMessage().toString());
+    private void showDialogFireWarning() {
+        dialogFireWarning = new Dialog(this, R.style.CustomDialog);
+        dialogFireWarning.setContentView(R.layout.dialog_fire_warning);
+        // 设置窗口背景为透明，以显示圆角效果
+        if (dialogFireWarning.getWindow() != null) {
+            dialogFireWarning.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
+        // 确认
+        TextView tvDialogRiskWarningConfirm = dialogFireWarning.findViewById(R.id.tv_dialog_door_warning_confirm);
+        // 确定
+        tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 隐藏弹窗
+                if (dialogFireWarning.isShowing()) {
+                    dialogFireWarning.dismiss();
+                }
+            }
+        });
+        // 设置Dialog的宽高
+        if (dialogFireWarning.getWindow() != null) {
+            // 设置弹窗宽度为屏幕的80%，高度自适应
+            dialogFireWarning.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+        // 显示 Dialog
+        dialogFireWarning.show();
     }
 
+    /**
+     * 倾斜风险提示弹窗
+     */
+    private void showDialogProbeWarning() {
+        dialogProbeWarning = new Dialog(this, R.style.CustomDialog);
+        dialogProbeWarning.setContentView(R.layout.dialog_probe_warning);
+        // 设置窗口背景为透明，以显示圆角效果
+        if (dialogProbeWarning.getWindow() != null) {
+            dialogProbeWarning.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        }
+        // 确认
+        TextView tvDialogRiskWarningConfirm = dialogProbeWarning.findViewById(R.id.tv_dialog_door_warning_confirm);
+        // 确定
+        tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 隐藏弹窗
+                if (dialogProbeWarning.isShowing()) {
+                    dialogProbeWarning.dismiss();
+                }
+            }
+        });
+        // 设置Dialog的宽高
+        if (dialogProbeWarning.getWindow() != null) {
+            // 设置弹窗宽度为屏幕的80%，高度自适应
+            dialogProbeWarning.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
+        // 显示 Dialog
+        dialogProbeWarning.show();
+    }
+
+    /**
+     * 震动提醒
+     *
+     * @param context      上下文
+     * @param milliseconds 震动时长
+     */
+    public void vibratePhone(Context context, long milliseconds) {
+        Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+        if (vibrator != null && vibrator.hasVibrator()) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                vibrator.vibrate(VibrationEffect.createOneShot(milliseconds, VibrationEffect.DEFAULT_AMPLITUDE));
+            } else {
+                vibrator.vibrate(milliseconds);
+            }
+        }
+    }
 
     @Override
     public boolean isBaseOnWidth() {
@@ -1260,116 +2269,6 @@ public class TelnetConnectionActivity extends BaseActivity implements CustomAdap
                 return 1100;
             } else {
                 return 950;
-            }
-        }
-    }
-
-
-    /**
-     * 开门风险提示弹窗
-     */
-    private void showDialogDoorWarning() {
-        Dialog dialog = new Dialog(this, R.style.CustomDialog);
-        dialog.setContentView(R.layout.dialog_door_warning);
-        // 设置窗口背景为透明，以显示圆角效果
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-        }
-        // 确认
-        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
-        // 确定
-        tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // 隐藏弹窗
-                if (dialog.isShowing()) {
-                    dialog.dismiss();
-                }
-            }
-        });
-        // 设置Dialog的宽高
-        if (dialog.getWindow() != null) {
-            // 设置弹窗宽度为屏幕的80%，高度自适应
-            dialog.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
-        }
-        // 显示 Dialog
-        dialog.show();
-    }
-
-    /**
-     * 火焰风险提示弹窗
-     */
-    private void showDialogFireWarning() {
-        Dialog dialog = new Dialog(this, R.style.CustomDialog);
-        dialog.setContentView(R.layout.dialog_fire_warning);
-        // 设置窗口背景为透明，以显示圆角效果
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-        }
-        // 确认
-        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
-        // 确定
-        tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // 隐藏弹窗
-                if (dialog.isShowing()) {
-                    dialog.dismiss();
-                }
-            }
-        });
-        // 设置Dialog的宽高
-        if (dialog.getWindow() != null) {
-            // 设置弹窗宽度为屏幕的80%，高度自适应
-            dialog.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
-        }
-        // 显示 Dialog
-        dialog.show();
-    }
-
-    /**
-     * 倾斜风险提示弹窗
-     */
-    private void showDialogProbeWarning() {
-        Dialog dialog = new Dialog(this, R.style.CustomDialog);
-        dialog.setContentView(R.layout.dialog_probe_warning);
-        // 设置窗口背景为透明，以显示圆角效果
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
-        }
-        // 确认
-        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
-        // 确定
-        tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // 隐藏弹窗
-                if (dialog.isShowing()) {
-                    dialog.dismiss();
-                }
-            }
-        });
-        // 设置Dialog的宽高
-        if (dialog.getWindow() != null) {
-            // 设置弹窗宽度为屏幕的80%，高度自适应
-            dialog.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
-        }
-        // 显示 Dialog
-        dialog.show();
-    }
-
-    /**
-     * 震动提醒
-     * @param context 上下文
-     * @param milliseconds 震动时长
-     */
-    public void vibratePhone(Context context, long milliseconds) {
-        Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
-        if (vibrator != null && vibrator.hasVibrator()) {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-                vibrator.vibrate(VibrationEffect.createOneShot(milliseconds, VibrationEffect.DEFAULT_AMPLITUDE));
-            } else {
-                vibrator.vibrate(milliseconds);
             }
         }
     }

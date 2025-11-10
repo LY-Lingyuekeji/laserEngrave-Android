@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,17 +30,25 @@ import com.zhy.http.okhttp.callback.StringCallback;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
+
+import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.adapters.ViewPagerAdapter;
 import in.co.gorest.grblcontroller.fragment.LocalFileFragment;
 import in.co.gorest.grblcontroller.fragment.RemoteFileFragment;
+import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 import in.co.gorest.grblcontroller.model.Constants;
+import in.co.gorest.grblcontroller.util.WebSocketManager;
 import okhttp3.Call;
+import okhttp3.OkHttpClient;
 
 public class FileActivity extends AppCompatActivity {
 
     // 用于日志记录的标签
     private final static String TAG = FileActivity.class.getSimpleName();
+    // 用于管理和访问增强的共享偏好设置实例。
+    protected EnhancedSharedPreferences sharedPref;
     // 返回
     private ImageView ivBack;
     // 本地文件
@@ -56,6 +65,9 @@ public class FileActivity extends AppCompatActivity {
     private int MAX_RETRY_NUM = 5;
     // 上传弹窗
     private AlertDialog dialogUpload;
+
+    // 当前模式
+    private String connectType;
 
     // 启用矢量图支持，确保在应用中可以正确显示矢量图形
     static {
@@ -78,6 +90,9 @@ public class FileActivity extends AppCompatActivity {
         } else {
             getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
         }
+
+        // 初始化共享偏好设置实例
+        sharedPref = EnhancedSharedPreferences.getInstance(GrblController.getInstance(), getString(R.string.shared_preference_key));
 
 
         // 初始化界面
@@ -118,6 +133,10 @@ public class FileActivity extends AppCompatActivity {
         viewPager.setCurrentItem(0);
 
         tvLocalFile.setSelected(true);
+
+        // 获取当前模式
+        connectType = sharedPref.getString(getString(R.string.preference_connect_type), "AP");
+        Log.d(TAG, "connectType=" + connectType);
     }
 
     /**
@@ -200,52 +219,79 @@ public class FileActivity extends AppCompatActivity {
                 dialogUpload.show();
             });
 
+            WebSocketManager webSocketManager = WebSocketManager.getInstance();
+            webSocketManager.disconnect();
+
             // 初始化
             OkHttpUtils.getInstance();
-            // 文件上传
-            OkHttpUtils.post().addFile("myfile[]", file.getName(), file).url("http://192.168.4.1/upload").addParams("path", "/").addParams("/" + file.getName() + "S", String.valueOf(file.length())).tag(this).build().execute(new StringCallback() {
+            OkHttpClient client = new OkHttpClient.Builder()
+                    .connectTimeout(120, TimeUnit.SECONDS)  // 连接超时
+                    .readTimeout(120, TimeUnit.SECONDS)     // 读取超时
+                    .writeTimeout(120, TimeUnit.SECONDS)    // 写入超时
+                    .build();
 
-                @Override
-                public void inProgress(float f, long j, int i) {
-                    super.inProgress(f, j, i);
-                    Log.e(TAG, "onResponse  inProgress=" + f + "---" + j + "---" + i);
-                    runOnUiThread(() -> {
-                        progressBar.setProgress((int) (f * 100.0f));
-                        progressText.setText(((int) (f * 100.0f)) + "%");
-                    });
+            OkHttpUtils.initClient(client);
 
+            if (connectType.equals("AP") || connectType.equals("STA")) {
+                String ipAddress = sharedPref.getString(getString(R.string.preference_sta_type_ipaddress), "");
+                if (!TextUtils.isEmpty(ipAddress)) {
+                    Log.d(TAG, "ipAddress = " + ipAddress);
+                    // 文件上传
+                    OkHttpUtils.post().addFile("myfile[]", file.getName(), file)
+                            .url("http://" + ipAddress + "/upload")
+                            .addParams("path", "/")
+                            .addParams("/" + file.getName(), String.valueOf(file.length()))
+                            .tag(this).build().execute(new StringCallback() {
+
+                                @Override
+                                public void inProgress(float f, long j, int i) {
+                                    super.inProgress(f, j, i);
+                                    Log.e(TAG, "onResponse  inProgress=" + f + "---" + j + "---" + i);
+                                    runOnUiThread(() -> {
+                                        progressBar.setProgress((int) (f * 100.0f));
+                                        progressText.setText(((int) (f * 100.0f)) + "%");
+                                    });
+
+                                }
+
+                                @Override
+                                public void onError(Call call, Exception exc, int i) {
+                                    // 隐藏上传弹窗
+                                    runOnUiThread(() -> {
+                                        dialogUpload.dismiss();
+                                    });
+                                    Log.d(TAG, "e=" + exc.getMessage().toString());
+                                    exc.printStackTrace();
+                                    Toast.makeText(FileActivity.this, "上传失败，请检查并重试", Toast.LENGTH_SHORT).show();
+                                    uploadFile(file, MAX_RETRY_NUM--);
+                                }
+
+                                @Override
+                                public void onResponse(String str3, int i) {
+                                    Log.e(TAG, "onResponse=" + str3);
+                                    Toast.makeText(FileActivity.this, "上传完成", Toast.LENGTH_SHORT).show();
+                                    // 隐藏上传弹窗
+                                    runOnUiThread(() -> {
+                                        dialogUpload.dismiss();
+                                    });
+                                    // 重新连接
+                                    webSocketManager.connect(ipAddress);
+
+                                    // 跳转雕刻页面
+                                    Intent intent = new Intent(FileActivity.this, EngraveActivity.class);
+                                    intent.putExtra("imagePath", "");
+                                    intent.putExtra("filePath", file.getPath());
+                                    startActivity(intent);
+                                    finish();
+
+                                }
+                            });
+                } else {
+                    Toast.makeText(FileActivity.this, "上传地址为空，请联系客服！", Toast.LENGTH_SHORT).show();
                 }
-
-                @Override
-                public void onError(Call call, Exception exc, int i) {
-                    // 隐藏上传弹窗
-                    runOnUiThread(() -> {
-                        dialogUpload.dismiss();
-                    });
-                    Log.d(TAG, "e=" + exc.getMessage().toString());
-                    exc.printStackTrace();
-                    Toast.makeText(FileActivity.this, "上传失败，请检查并重试", Toast.LENGTH_SHORT).show();
-                    uploadFile(file, MAX_RETRY_NUM--);
-                }
-
-                @Override
-                public void onResponse(String str3, int i) {
-                    Log.e(TAG, "onResponse=" + str3);
-                    Toast.makeText(FileActivity.this, "上传完成", Toast.LENGTH_SHORT).show();
-                    // 隐藏上传弹窗
-                    runOnUiThread(() -> {
-                        dialogUpload.dismiss();
-                    });
-
-
-                    // 跳转雕刻页面
-                    Intent intent = new Intent(FileActivity.this, EngraveActivity.class);
-                    intent.putExtra("imagePath", "");
-                    intent.putExtra("filePath", file.getPath());
-                    startActivity(intent);
-                    finish();
-                }
-            });
+            } else {
+                Toast.makeText(FileActivity.this, "蓝牙模式暂不支持TF上传，敬请期待下一版本", Toast.LENGTH_SHORT).show();
+            }
         } else {
             Toast.makeText(FileActivity.this, "上传失败，请检查并重试", Toast.LENGTH_SHORT).show();
         }

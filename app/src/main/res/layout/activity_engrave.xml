@@ -3,7 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-
         <variable
             name="fileSender"
             type="in.co.gorest.grblcontroller.listeners.FileSenderListener" />
@@ -49,11 +48,125 @@
             android:orientation="vertical"
             android:padding="16dp">
 
+            <!-- 坐标信息 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="10dp"
+                android:background="@drawable/bg_white_ffffff_r10"
+                android:orientation="vertical">
 
+                <!-- 状态 & 速度 & 激光功率 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <!-- 状态标题 -->
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="STATUS"
+                        android:textSize="16sp"
+                        android:textColor="@color/colorBlack"
+                        android:gravity="center"/>
+
+                    <!-- 状态 -->
+                    <TextView
+                        android:id="@+id/tv_machine_status"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Idle"
+                        android:textSize="14sp"
+                        android:textColor="@color/colorBlack"
+                        android:gravity="center"/>
+
+                    <!-- 速度 -->
+                    <TextView
+                        android:id="@+id/tv_speed"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="F："
+                        android:textSize="14sp"
+                        android:textColor="@color/colorBlack"
+                        android:gravity="center"/>
+
+                    <!-- 激光功率 -->
+                    <TextView
+                        android:id="@+id/tv_laserlevel"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="S："
+                        android:textSize="14sp"
+                        android:textColor="@color/colorBlack"
+                        android:gravity="center"/>
+
+                </LinearLayout>
+
+                <!-- 工件坐标数据 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="10dp">
+
+                    <!-- 工件坐标 -->
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="WPOS"
+                        android:textSize="16sp"
+                        android:textColor="@color/colorBlack"
+                        android:gravity="center"/>
+
+                    <!-- X轴坐标 -->
+                    <TextView
+                        android:id="@+id/tv_wpos_x"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="X："
+                        android:textSize="14sp"
+                        android:textColor="@color/colorBlack"
+                        android:gravity="center"/>
+
+                    <!-- Y轴坐标 -->
+                    <TextView
+                        android:id="@+id/tv_wpos_y"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Y："
+                        android:textSize="14sp"
+                        android:textColor="@color/colorBlack"
+                        android:gravity="center"/>
+
+                    <!-- Z轴坐标 -->
+                    <TextView
+                        android:id="@+id/tv_wpos_z"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Z："
+                        android:textSize="14sp"
+                        android:textColor="@color/colorBlack"
+                        android:gravity="center"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- 雕刻预览 -->
             <FrameLayout
                 android:layout_width="250dp"
                 android:layout_height="200dp"
-                android:layout_gravity="center">
+                android:layout_gravity="center"
+                android:layout_marginTop="35dp">
 
                 <ImageView
                     android:id="@+id/iv_preview"
@@ -70,19 +183,36 @@
 
             </FrameLayout>
 
-
+            <!-- 雕刻信息 -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_white_ffffff_r10"
                 android:orientation="vertical"
-                android:padding="10dp"
-                android:layout_marginTop="35dp">
+                android:paddingHorizontal="10dp"
+                android:paddingBottom="10dp"
+                android:layout_marginTop="40dp">
 
+                <!-- 雕刻次数 -->
+                <TextView
+                    android:id="@+id/tv_engrave_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:text="第0次/0次"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="14sp"
+                    android:background="@drawable/bg_green_1e853a_r10_notop"
+                    android:paddingVertical="10dp"
+                    android:paddingHorizontal="35dp"
+                    android:layout_gravity="center"/>
+
+                <!-- 文件名 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal">
+                    android:orientation="horizontal"
+                    android:layout_marginTop="30dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -101,104 +231,7 @@
                         android:textSize="18sp" />
                 </LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="15dp"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="雕刻速度："
-                        android:textColor="@color/colorBlack"
-                        android:textSize="18sp" />
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="15dp"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:id="@+id/tv_speed"
-                            android:layout_width="60dp"
-                            android:layout_height="wrap_content"
-                            android:maxLength="6"
-                            android:text=""
-                            android:textColor="@color/colorBlack"
-                            android:textSize="18sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="10dp"
-                            android:text="mm/min"
-                            android:textColor="@color/colorBlack"
-                            android:textSize="18sp" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="15dp"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="激光功率："
-                        android:textColor="@color/colorBlack"
-                        android:textSize="18sp" />
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="15dp"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:id="@+id/tv_laserlevel"
-                            android:layout_width="60dp"
-                            android:layout_height="wrap_content"
-                            android:text=""
-                            android:textColor="@color/colorBlack"
-                            android:textSize="18sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="10dp"
-                            android:text="%"
-                            android:textColor="@color/colorBlack"
-                            android:textSize="18sp" />
-                    </LinearLayout>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="15dp"
-                    android:orientation="horizontal"
-                    android:visibility="gone">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="雕刻时间："
-                        android:textColor="@color/colorBlack"
-                        android:textSize="18sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="15dp"
-                        android:tag="binding_2"
-                        android:textColor="@color/colorBlack"
-                        android:textSize="18sp" />
-                </LinearLayout>
-
+                <!-- 雕刻进度 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -241,6 +274,7 @@
                     </LinearLayout>
                 </LinearLayout>
 
+                <!-- 雕刻时间 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -264,6 +298,7 @@
                         android:textSize="18sp" />
                 </LinearLayout>
 
+                <!-- 预计时间 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -287,6 +322,7 @@
                         android:textSize="18sp" />
                 </LinearLayout>
 
+                <!-- 功能按钮 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -294,6 +330,7 @@
                     android:gravity="center"
                     android:orientation="horizontal">
 
+                    <!-- 开始/暂停 -->
                     <TextView
                         android:id="@+id/tv_start_or_pause"
                         android:layout_width="0dp"
@@ -303,32 +340,32 @@
                         android:background="@drawable/bg_green_1e853a_r10"
                         android:gravity="center"
                         android:padding="10dp"
-                        android:text="开始/暂停"
+                        android:text="开始雕刻"
                         android:textColor="@color/colorWhite"
                         android:textSize="14sp"
                         android:textStyle="bold"/>
 
+                    <!-- 终止 -->
                     <TextView
                         android:id="@+id/tv_stop"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:layout_weight="1"
-                        android:background="@drawable/bg_green_1e853a_r10"
+                        android:background="@drawable/bg_red_c42b1c_r10"
                         android:gravity="center"
                         android:padding="10dp"
-                        android:text="终止"
+                        android:text="终止雕刻"
                         android:textColor="@color/colorWhite"
                         android:textSize="14sp"
                         android:textStyle="bold"/>
-                </LinearLayout>
 
+                </LinearLayout>
 
             </LinearLayout>
 
-
-
         </LinearLayout>
+
     </LinearLayout>
 
 </layout>

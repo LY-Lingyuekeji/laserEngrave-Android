@@ -432,7 +432,7 @@ public class WiFiConnetModelFragment extends Fragment {
                 Log.d(TAG, "Connected Wi-Fi IP Address: " + ip);
                 if (ssid.startsWith("Laser") || ssid.startsWith("CNC")) {
                     // 连接Telnet
-                    EventBus.getDefault().post(new DeviceConnectEvent("Telnet", ssid, ip));
+                    EventBus.getDefault().post(new DeviceConnectEvent("Telnet",ssid, ssid, ip));
                 } else {
 //                    String host = sharedPref.getString(getString(R.string.preference_sta_host), "");
 //                    Log.d(TAG, "Connected Wi-Fi IP Address: " + host);
@@ -440,7 +440,7 @@ public class WiFiConnetModelFragment extends Fragment {
 //                        // 连接Telnet
 //                        EventBus.getDefault().post(new DeviceConnectEvent("Telnet", ssid, host));
 //                    }
-                    EventBus.getDefault().post(new DeviceConnectEvent("Telnet", ssid, ip.substring(0, ip.lastIndexOf('.') + 1) + "1"));
+                    EventBus.getDefault().post(new DeviceConnectEvent("Telnet",ssid, ssid, ip.substring(0, ip.lastIndexOf('.') + 1) + "1"));
                 }
 
 
@@ -503,12 +503,12 @@ public class WiFiConnetModelFragment extends Fragment {
                 Log.d(TAG, "Connected Wi-Fi IP Address: " + ip);
                 if (ssid.startsWith("Laser") || ssid.startsWith("CNC")) {
                     // 连接Telnet
-                    EventBus.getDefault().post(new DeviceConnectEvent("Telnet", ssid, ip));
+                    EventBus.getDefault().post(new DeviceConnectEvent("Telnet", ssid, ssid, ip));
                 } else {
                     String host = sharedPref.getString(getString(R.string.preference_sta_host), "");
                     if (!TextUtils.isEmpty(host)) {
                         // 连接Telnet
-                        EventBus.getDefault().post(new DeviceConnectEvent("Telnet", ssid, host));
+                        EventBus.getDefault().post(new DeviceConnectEvent("Telnet", ssid, ssid, host));
                     }
                 }
 

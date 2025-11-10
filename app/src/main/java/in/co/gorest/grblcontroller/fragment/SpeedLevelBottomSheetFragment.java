@@ -16,6 +16,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+
+import java.util.ArrayList;
+
 import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
@@ -36,7 +39,10 @@ public class SpeedLevelBottomSheetFragment extends BottomSheetDialogFragment {
     // ListView
     private ListView listView;
     // 选项
-    private String[] options = new String[]{"1000mm/min", "2000mm/min", "3000mm/min", "4000mm/min", "5000mm/min", "6000mm/min", "7000mm/min", "8000mm/min", "9000mm/min", "10000mm/min", "15000mm/min", "20000mm/min"};
+    private String[] options;
+
+    // TAG 标签 用于区分切割还是雕刻
+    private String tag;
 
     private OnSpeedLevelSelectedListener listener;
 
@@ -106,6 +112,36 @@ public class SpeedLevelBottomSheetFragment extends BottomSheetDialogFragment {
      * 初始化数据
      */
     private void initData() {
+        // 获取传递的 tag
+        tag = getTag();
+        if ("cutting".equals(tag)) {
+            // 处理切割模式
+            // 动态生成速度选项
+            ArrayList<String> speedList = new ArrayList<>();
+            for (int i = 10; i <= 100; i += 10) {
+                speedList.add(i + "mm/min");
+            }
+            for (int i = 200; i <= 1000; i += 100) {
+                speedList.add(i + "mm/min");
+            }
+            options = speedList.toArray(new String[0]);
+        } else if ("engraving".equals(tag)) {
+            // 处理雕刻模式
+            // 动态生成速度选项
+            ArrayList<String> speedList = new ArrayList<>();
+            for (int i = 100; i <= 1000; i += 100) {
+                speedList.add(i + "mm/min");
+            }
+            for (int i = 2000; i <= 30000; i += 1000) {
+                speedList.add(i + "mm/min");
+            }
+            options = speedList.toArray(new String[0]);
+        }
+
+
+
+
+
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1, options) {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
@@ -143,16 +179,26 @@ public class SpeedLevelBottomSheetFragment extends BottomSheetDialogFragment {
                     return;
                 }
 
-                if (Integer.valueOf(etCustomizeSpeedLevel.getText().toString()) <= 0) {
-                    Toast.makeText(requireContext(), "请输入非0的速度", Toast.LENGTH_SHORT).show();
+                if (Integer.valueOf(etCustomizeSpeedLevel.getText().toString()) < 10) {
+                    Toast.makeText(requireContext(), "最小速度仅支持10mm/min", Toast.LENGTH_SHORT).show();
+                    etCustomizeSpeedLevel.setText("10");
                     return;
                 }
 
-                if (Integer.valueOf(etCustomizeSpeedLevel.getText().toString()) > 30000) {
-                    Toast.makeText(requireContext(), "最大速度仅支持30000mm/min", Toast.LENGTH_SHORT).show();
-                    etCustomizeSpeedLevel.setText("30000");
-                    return;
+                if ("cutting".equals(tag)) {
+                    if (Integer.valueOf(etCustomizeSpeedLevel.getText().toString()) > 1000) {
+                        Toast.makeText(requireContext(), "最大速度仅支持1000mm/min", Toast.LENGTH_SHORT).show();
+                        etCustomizeSpeedLevel.setText("1000");
+                        return;
+                    }
+                } else if ("engraving".equals(tag)) {
+                    if (Integer.valueOf(etCustomizeSpeedLevel.getText().toString()) > 30000) {
+                        Toast.makeText(requireContext(), "最大速度仅支持30000mm/min", Toast.LENGTH_SHORT).show();
+                        etCustomizeSpeedLevel.setText("30000");
+                        return;
+                    }
                 }
+
 
                 listener.OnSpeedLevelSelectedListener(etCustomizeSpeedLevel.getText().toString() + "mm/min");
                 sharedPref.edit().putInt(getString(R.string.preference_recommended_speed), Integer.valueOf(etCustomizeSpeedLevel.getText().toString())).apply();
@@ -174,7 +220,7 @@ public class SpeedLevelBottomSheetFragment extends BottomSheetDialogFragment {
             if (listener != null) {
                 Log.d(TAG, "Calling listener onSpeedLevelSelected");
                 listener.OnSpeedLevelSelectedListener(options[position]);
-                sharedPref.edit().putInt(getString(R.string.preference_recommended_speed), Integer.valueOf(options[position].toString().replace("mm/min", ""))).apply();
+                sharedPref.edit().putInt(getString(R.string.preference_recommended_speed), Integer.parseInt(options[position].toString().replace("mm/min", ""))).apply();
             }
             dismiss();  // 选择后关闭底部弹窗
         });
@@ -187,34 +233,24 @@ public class SpeedLevelBottomSheetFragment extends BottomSheetDialogFragment {
      * @return 索引位置
      */
     private int getIndexFromSpeed(int speedLevel) {
-
-        switch (speedLevel) {
-            case 1000:
-                return 0;  // 对应 "1000mm/min"
-            case 2000:
-                return 1;  // 对应 "2000mm/min"
-            case 3000:
-                return 2;  // 对应 "3000mm/min"
-            case 4000:
-                return 3;  // 对应 "4000mm/min"
-            case 5000:
-                return 4;  // 对应 "5000mm/min"
-            case 6000:
-                return 5;  // 对应 "6000mm/min"
-            case 7000:
-                return 6;  // 对应 "7000mm/min"
-            case 8000:
-                return 7;  // 对应 "8000mm/min"
-            case 9000:
-                return 8;  // 对应 "9000mm/min"
-            case 10000:
-                return 9;  // 对应 "10000mm/min"
-            case 15000:
-                return 10;  // 对应 "10000mm/min"
-            case 20000:
-                return 11;  // 对应 "20000mm/min"
-            default:
-                return 0;  // 默认选中 "1000mm/min"，如果值不在指定范围内
+        if ("cutting".equals(tag)) {
+            if (speedLevel >= 10 && speedLevel <= 100 && speedLevel % 10 == 0) {
+                return (speedLevel / 10) - 1;
+            } else if (speedLevel >= 200 && speedLevel <= 1000 && speedLevel % 100 == 0) {
+                return 10 + ((speedLevel - 200) / 100);
+            } else {
+                return 0;  // 默认返回第一个项
+            }
+        } else if ("engraving".equals(tag)) {
+            if (speedLevel >= 100 && speedLevel <= 1000 && speedLevel % 100 == 0) {
+                return (speedLevel / 100) - 1;
+            } else if (speedLevel >= 2000 && speedLevel <= 30000 && speedLevel % 1000 == 0) {
+                return 10 + ((speedLevel - 2000) / 1000);
+            } else {
+                return 0;  // 默认返回第一个项
+            }
+        } else {
+            return 0;
         }
     }
 

@@ -95,7 +95,6 @@ public class BluetoothConnectionActivity extends AppCompatActivity {
             }
         });
 
-
         // 命令
         llCommand.setOnClickListener(new View.OnClickListener() {
             @Override

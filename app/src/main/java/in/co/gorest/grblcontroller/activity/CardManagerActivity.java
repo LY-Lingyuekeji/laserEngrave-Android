@@ -96,7 +96,7 @@ public class CardManagerActivity extends AppCompatActivity {
         recyclerViewHidden = findViewById(R.id.recycler_view_hidden);
         // 没有隐藏的项目
         tvHiddenEmpty = findViewById(R.id.tv_hidden_empty);
-    }
+    };
 
     /**
      * 初始化数据

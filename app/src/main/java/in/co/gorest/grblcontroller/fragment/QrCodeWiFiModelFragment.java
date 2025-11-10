@@ -50,8 +50,9 @@ import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.activity.EditActivity;
 import in.co.gorest.grblcontroller.events.UiToastEvent;
 import in.co.gorest.grblcontroller.util.ImgUtil;
+import in.co.gorest.grblcontroller.util.QRCodeProvider;
 
-public class QrCodeWiFiModelFragment extends Fragment {
+public class QrCodeWiFiModelFragment extends Fragment implements QRCodeProvider {
     // 用于日志记录的标签
     private final static String TAG = QrCodeWiFiModelFragment.class.getSimpleName();
     // 用于管理Wi-Fi状态的WifiManager
@@ -436,5 +437,15 @@ public class QrCodeWiFiModelFragment extends Fragment {
             }
         }
         imageView.setImageBitmap(bitmap);
+    }
+
+    @Override
+    public Bitmap getQRCodeBitmap() {
+        if (ivQrCode.getDrawable() == null) return null;
+        ivQrCode.setDrawingCacheEnabled(true);
+        ivQrCode.buildDrawingCache();
+        Bitmap bitmap = Bitmap.createBitmap(ivQrCode.getDrawingCache());
+        ivQrCode.setDrawingCacheEnabled(false);
+        return bitmap;
     }
 }

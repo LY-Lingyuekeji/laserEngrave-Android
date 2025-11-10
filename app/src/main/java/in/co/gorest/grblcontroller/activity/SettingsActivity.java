@@ -20,13 +20,14 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
+
 import java.nio.charset.StandardCharsets;
 
 import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
-
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 import in.co.gorest.grblcontroller.util.NettyClient;
+import in.co.gorest.grblcontroller.util.WebSocketManager;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -38,6 +39,10 @@ public class SettingsActivity extends AppCompatActivity {
     private ImageView ivBack;
     // 自动连接
     private Switch switchAutoConnect;
+    // 自动原点
+    private Switch switchAutoHome;
+    // 结束提醒
+    private Switch switchSoundAlert;
     // AP模式
     private LinearLayout llApModel;
     // STA模式配置
@@ -46,6 +51,9 @@ public class SettingsActivity extends AppCompatActivity {
     private LinearLayout llMachineValueSetting;
     // 电池优化设置
     private LinearLayout llBattery;
+
+    // WebSocket
+    private WebSocketManager webSocketManager;
 
 
     // 启用矢量图支持，确保在应用中可以正确显示矢量图形
@@ -89,6 +97,10 @@ public class SettingsActivity extends AppCompatActivity {
         ivBack = findViewById(R.id.iv_back);
         // 自动连接
         switchAutoConnect = findViewById(R.id.switch_auto_connect);
+        // 自动原点
+        switchAutoHome = findViewById(R.id.switch_auto_home);
+        // 结束提醒
+        switchSoundAlert = findViewById(R.id.switch_sound_alert);
         // AP模式
         llApModel = findViewById(R.id.ll_ap_model);
         // STA模式配置
@@ -107,6 +119,14 @@ public class SettingsActivity extends AppCompatActivity {
         // 获取自动连接
         boolean isAutoConnect = sharedPref.getBoolean(getString(R.string.preference_auto_connect), false);
         switchAutoConnect.setChecked(isAutoConnect);
+
+        // 获取自动原点
+        boolean isAutoHome = sharedPref.getBoolean(getString(R.string.preference_auto_home), false);
+        switchAutoHome.setChecked(isAutoHome);
+
+        // 获取结束提醒
+        boolean isSoundAlert = sharedPref.getBoolean(getString(R.string.preference_sound_alert), true);
+        switchSoundAlert.setChecked(isSoundAlert);
     }
 
     /**
@@ -136,14 +156,33 @@ public class SettingsActivity extends AppCompatActivity {
             }
         });
 
+        // 自动原点
+        switchAutoHome.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Log.d(TAG, "autoHome=" + isChecked);
+                sharedPref.edit().putBoolean(getString(R.string.preference_auto_home), isChecked).apply();
+            }
+        });
+
+        // 结束提醒
+        switchSoundAlert.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Log.d(TAG, "soundAlert=" + isChecked);
+                sharedPref.edit().putBoolean(getString(R.string.preference_sound_alert), isChecked).apply();
+            }
+        });
+
         // AP模式
         llApModel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // TODO 切换模式
-                boolean isConnected = NettyClient.getInstance(null).getConnectStatus();
+                webSocketManager = WebSocketManager.getInstance();
+                boolean isConnected = webSocketManager.isConnected();
                 if (isConnected) {
-                    NettyClient.getInstance(null).sendMsgToServer("$50=1\r\n".getBytes(StandardCharsets.UTF_8), null);
+                    webSocketManager.send("$50=1");
                     // 取消保存
                     sharedPref.edit().putString(getString(R.string.preference_sta_host), "").apply();
                     sharedPref.edit().putString(getString(R.string.preference_sta_ssid), "").apply();
@@ -179,8 +218,7 @@ public class SettingsActivity extends AppCompatActivity {
         llStaModel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(SettingsActivity.this, STAModelActivity.class));
-//                Toast.makeText(SettingsActivity.this, "功能调试中，敬请期待下一版本！", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(SettingsActivity.this, STAModelConfigurationActivity.class));
             }
         });
 

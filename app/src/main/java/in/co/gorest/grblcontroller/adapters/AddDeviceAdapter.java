@@ -17,10 +17,13 @@ import com.bumptech.glide.Glide;
 import java.util.List;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.activity.ApModelAddActivity;
+import in.co.gorest.grblcontroller.activity.STAModelAddActivity;
 import in.co.gorest.grblcontroller.model.Device;
 
 public class AddDeviceAdapter extends RecyclerView.Adapter<AddDeviceAdapter.AddDeviceViewHolder> {
 
+    // 用于日志记录的标签
+    private static final String TAG = AddDeviceAdapter.class.getSimpleName();
     private Context context; // 上下文
     private List<Device> deviceList; // 存储设备的列表
 
@@ -110,13 +113,33 @@ public class AddDeviceAdapter extends RecyclerView.Adapter<AddDeviceAdapter.AddD
 
                 // STA 连接
                 LinearLayout llModuleSta = dialog.findViewById(R.id.ll_module_sta);
+                llModuleSta.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // 跳转
+                        Intent intent = new Intent(context, STAModelAddActivity.class);
+                        intent.putExtra("deviceName", deviceName);
+                        // 跳转
+                        context.startActivity(intent);
+                        // 关闭页面
+                        ((Activity) context).finish();
+                        // 隐藏弹窗
+                        dialog.dismiss();
+                    }
+                });
+
+
                 // AP 连接
                 LinearLayout llModuleAp = dialog.findViewById(R.id.ll_module_ap);
                 llModuleAp.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        Intent intent = new Intent(context, ApModelAddActivity.class);
+                        intent.putExtra("connectTarget", "");
                         // 跳转
-                        context.startActivity(new Intent(context, ApModelAddActivity.class));
+                        context.startActivity(intent);
+                        // 关闭页面
+                        ((Activity) context).finish();
                         // 隐藏弹窗
                         dialog.dismiss();
                     }

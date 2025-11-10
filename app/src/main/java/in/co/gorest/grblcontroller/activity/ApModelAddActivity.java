@@ -18,6 +18,7 @@ import android.net.wifi.WifiNetworkSpecifier;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.text.TextUtils;
 import android.text.format.Formatter;
 import android.util.Log;
 import android.view.View;
@@ -58,6 +59,8 @@ public class ApModelAddActivity extends AppCompatActivity {
     private TextView tvConnectedHotspot;
     // 去连接热点
     private TextView tvToConnectHotspot;
+    // 连接目标
+    private String connectTarget;
 
 
     // 启用矢量图支持，确保在应用中可以正确显示矢量图形
@@ -94,7 +97,7 @@ public class ApModelAddActivity extends AppCompatActivity {
     }
 
     /**
-     * 初始化界面
+     * 初始化界
      */
     private void initView() {
         // 返回
@@ -110,6 +113,10 @@ public class ApModelAddActivity extends AppCompatActivity {
      * 初始化数据
      */
     private void initData() {
+
+        connectTarget = getIntent().getStringExtra("connectTarget");
+        Log.d(TAG, "connectTarget" + connectTarget);
+
 
         // 获取WifiManager实例
         wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
@@ -156,24 +163,46 @@ public class ApModelAddActivity extends AppCompatActivity {
             String ssid = wifiInfo.getSSID().replaceAll("^\"|\"$", ""); // 移除前后引号;
             Log.d(TAG, "ssid" + ssid);
 
-            // 检查SSID是否包含 "Laser"
-            if (ssid != null && ssid.contains("Laser") || ssid != null && ssid.contains("CNC")) {
-                Log.d(TAG, "Connected to Laser network");
-                // TODO 自定义弹窗
-                showDeviceDialog(ssid);
-            } else {
-                // 创建自定义弹窗对象
-                BaseAlertDialog baseAlertDialog = new BaseAlertDialog(ApModelAddActivity.this);
+            if (!TextUtils.isEmpty(connectTarget)) {
+                if (ssid != null && ssid.equals(connectTarget)) {
+                    // TODO 自定义弹窗
+                    showDeviceDialog(ssid);
+                } else {
+                    // 创建自定义弹窗对象
+                    BaseAlertDialog baseAlertDialog = new BaseAlertDialog(ApModelAddActivity.this);
 
-                // 显示弹窗并传入标题、内容以及确认按钮的点击事件
-                baseAlertDialog.show("温馨提示", "当前并未连接至\"Laser_XXX\"的热点，请检查后重试！", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        // 点击确认按钮后执行的操作
-                        Log.d(TAG, "用户点击了确认按钮");
-                    }
-                });
+
+                    // 显示弹窗并传入标题、内容以及确认按钮的点击事件
+                    baseAlertDialog.show("温馨提示", "当前并未连接至" + "\"" + connectTarget + "\"" + "的热点，请检查后重试！", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            // 点击确认按钮后执行的操作
+                            Log.d(TAG, "用户点击了确认按钮");
+                        }
+                    });
+                }
+            } else {
+                // 检查SSID是否包含 "Laser"
+                if (ssid != null && ssid.contains("Laser") || ssid != null && ssid.contains("CNC")) {
+                    Log.d(TAG, "Connected to Laser network");
+                    // TODO 自定义弹窗
+                    showDeviceDialog(ssid);
+                } else {
+                    // 创建自定义弹窗对象
+                    BaseAlertDialog baseAlertDialog = new BaseAlertDialog(ApModelAddActivity.this);
+
+                    // 显示弹窗并传入标题、内容以及确认按钮的点击事件
+                    baseAlertDialog.show("温馨提示", "当前并未连接至\"Laser_XXX\"的热点，请检查后重试！", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            // 点击确认按钮后执行的操作
+                            Log.d(TAG, "用户点击了确认按钮");
+                        }
+                    });
+                }
             }
+
+
         }
     }
 
@@ -209,6 +238,7 @@ public class ApModelAddActivity extends AppCompatActivity {
         laserModuleDataList.add("LdT-3W");
         laserModuleDataList.add("LdT4-10W");
         laserModuleDataList.add("LdT4-20W");
+        laserModuleDataList.add("LdT4-1064nm-2W");
 
 
         // 初始化主轴电机数据
@@ -372,10 +402,6 @@ public class ApModelAddActivity extends AppCompatActivity {
 
                 dialog.dismiss();
             }
-
-
-
-
         });
         tvCancel.setOnClickListener(v -> dialog.dismiss());
 
@@ -430,7 +456,7 @@ public class ApModelAddActivity extends AppCompatActivity {
                 String ip = Formatter.formatIpAddress(ipAddress);
                 Log.d(TAG, "Connected Wi-Fi IP Address: " + ip);
                 // 连接Telnet
-                EventBus.getDefault().post(new DeviceConnectEvent("AP", ssid, ip.substring(0, ip.lastIndexOf('.') + 1) + "1" ));
+                EventBus.getDefault().post(new DeviceConnectEvent("AP",ssid, ssid, ip.substring(0, ip.lastIndexOf('.') + 1) + "1" ));
 
                 finish();
             }
@@ -484,7 +510,7 @@ public class ApModelAddActivity extends AppCompatActivity {
                 String ip = Formatter.formatIpAddress(ipAddress);
                 Log.d(TAG, "Connected Wi-Fi IP Address: " + ip);
                 // 连接Telnet
-                EventBus.getDefault().post(new DeviceConnectEvent("AP", ssid, ip));
+                EventBus.getDefault().post(new DeviceConnectEvent("AP", ssid, ssid, ip));
 
                 finish();
             }

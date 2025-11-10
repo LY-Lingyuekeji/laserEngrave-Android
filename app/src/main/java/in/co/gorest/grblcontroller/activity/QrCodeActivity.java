@@ -4,15 +4,21 @@ package in.co.gorest.grblcontroller.activity;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -35,6 +41,10 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
@@ -52,6 +62,8 @@ import in.co.gorest.grblcontroller.fragment.QrCodeWiFiModelFragment;
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 import in.co.gorest.grblcontroller.model.Constants;
 import in.co.gorest.grblcontroller.util.NettyClient;
+import in.co.gorest.grblcontroller.util.QRCodeProvider;
+import in.co.gorest.grblcontroller.util.WebSocketManager;
 
 public class QrCodeActivity extends AppCompatActivity {
 
@@ -61,6 +73,8 @@ public class QrCodeActivity extends AppCompatActivity {
     protected EnhancedSharedPreferences sharedPref;
     // 返回
     private ImageView ivBack;
+    // 保存
+    private ImageView ivSave;
     // 机器名称
     private TextView tvMachineName;
     // 机器状态提示
@@ -83,7 +97,12 @@ public class QrCodeActivity extends AppCompatActivity {
     private ArrayList<Fragment> fragments = new ArrayList<>();
     // PagerAdapter
     private ViewPagerAdapter adapter;
-
+    // 门警告弹窗
+    private Dialog dialogDoorWarning;
+    // 火焰警告弹窗
+    private Dialog dialogFireWarning;
+    // 倾斜警告弹窗
+    private Dialog dialogProbeWarning;
     // 是否震动提醒
     private boolean isOpenVibrateAlert;
     // 震动提醒持续时长
@@ -140,6 +159,8 @@ public class QrCodeActivity extends AppCompatActivity {
     private void initView() {
         // 返回
         ivBack = findViewById(R.id.iv_back);
+        // 保存
+        ivSave = findViewById(R.id.iv_save);
         // 机器名称
         tvMachineName = findViewById(R.id.tv_machine_name);
         // 机器状态提示
@@ -207,6 +228,27 @@ public class QrCodeActivity extends AppCompatActivity {
             }
         });
 
+        // 保存
+        ivSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Fragment currentFragment = getSupportFragmentManager().findFragmentByTag("f" + viewPagerQrcode.getCurrentItem());
+                if (currentFragment != null) {
+                    Log.e(TAG, "currentFragment=" + currentFragment.getClass().getSimpleName());
+                    if (currentFragment != null && currentFragment instanceof QRCodeProvider) {
+                        Bitmap qrCodeBitmap = ((QRCodeProvider) currentFragment).getQRCodeBitmap();
+                        if (qrCodeBitmap != null) {
+                            saveBitmapToGallery(currentFragment.requireContext(), qrCodeBitmap, "LY_Save_QRcode"); // 保存二维码图片
+                        } else {
+                            Toast.makeText(QrCodeActivity.this, "二维码获取失败", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Log.e(TAG, "当前Fragment不是QRCodeProvider类型或无法获取");
+                    }
+                }
+            }
+        });
+
         // 机器状态
         tvMachineStatusTips.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -220,20 +262,12 @@ public class QrCodeActivity extends AppCompatActivity {
                     startActivity(intent);
                 } else if (tvMachineStatusTips.getText().equals("暂停")){
                     // 解除暂停
-                    NettyClient.getInstance(new Handler(new Handler.Callback() {
-                        @Override
-                        public boolean handleMessage(@NonNull Message msg) {
-                            return false;
-                        }
-                    })).sendMsgToServer(("\u0018" + "\r\n").getBytes(StandardCharsets.UTF_8), null);
+                    WebSocketManager webSocketManager = WebSocketManager.getInstance();
+                    webSocketManager.send("\u0018");
                 } else if (tvMachineStatusTips.getText().equals("警告")){
                     // 解除警告
-                    NettyClient.getInstance(new Handler(new Handler.Callback() {
-                        @Override
-                        public boolean handleMessage(@NonNull Message msg) {
-                            return false;
-                        }
-                    })).sendMsgToServer(("$X" + "\r\n").getBytes(StandardCharsets.UTF_8), null);
+                    WebSocketManager webSocketManager = WebSocketManager.getInstance();
+                    webSocketManager.send("$X");
                 } else {
                     Log.d(TAG, "无效点击");
                 }
@@ -326,6 +360,57 @@ public class QrCodeActivity extends AppCompatActivity {
     }
 
     /**
+     * 保存图片至相册
+     * @param context 上下文
+     * @param bitmap 位图
+     * @param fileName 文件名字
+     */
+    public void saveBitmapToGallery(Context context, Bitmap bitmap, String fileName) {
+        ContentResolver resolver = context.getContentResolver();
+        ContentValues values = new ContentValues();
+
+        values.put(MediaStore.Images.Media.DISPLAY_NAME, fileName + ".jpg");
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+        values.put(MediaStore.Images.Media.DATE_ADDED, System.currentTimeMillis() / 1000);
+        values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
+
+        Uri imageUri;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            values.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/MyApp");
+            values.put(MediaStore.Images.Media.IS_PENDING, 1);
+
+            imageUri = resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+        } else {
+            String imagePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/MyApp";
+            File imageDir = new File(imagePath);
+            if (!imageDir.exists()) {
+                imageDir.mkdirs();
+            }
+            File imageFile = new File(imageDir, fileName + ".jpg");
+            imageUri = Uri.fromFile(imageFile);
+        }
+
+        if (imageUri != null) {
+            try {
+                OutputStream outputStream = resolver.openOutputStream(imageUri);
+                if (outputStream != null) {
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+                    outputStream.close();
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    values.clear();
+                    values.put(MediaStore.Images.Media.IS_PENDING, 0);
+                    resolver.update(imageUri, values, null, null);
+                }
+                Toast.makeText(context, "图片已保存", Toast.LENGTH_SHORT).show();
+            } catch (IOException e) {
+                e.printStackTrace();
+                Toast.makeText(context, "保存失败", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    /**
      * 请求结果回调
      */
     @Override
@@ -384,24 +469,39 @@ public class QrCodeActivity extends AppCompatActivity {
                     return; // 不是当前页面，直接 return
                 }
 
-                if (event.getMessage().contains("MSG:Safe door err!")  && tvMachineStatusTips.getText().equals("工作中")) {
-                    // TODO 开门弹窗
+                if (event.getMessage().contains("MSG:Safe door err") && tvMachineStatusTips.getText().equals("工作中")) { // 开门警告弹窗打开
+                    // TODO 开门警告弹窗
                     showDialogDoorWarning();
                     if (isOpenVibrateAlert) {
                         vibratePhone(this, vibrateAlertTime * 1000);
                     }
-                } else if (event.getMessage().contains("MSG:Flame err!")  && tvMachineStatusTips.getText().equals("工作中")) {
-                    // TODO 火焰弹窗
+                } else if (event.getMessage().contains("MSG:Safe door reset") && tvMachineStatusTips.getText().equals("暂停")) { // 开门警告弹窗关闭
+                    // 隐藏开门警告弹窗
+                    dialogDoorWarning.dismiss();
+                    // TODO 记录日志
+
+                } else if (event.getMessage().contains("MSG:Flame err") && tvMachineStatusTips.getText().equals("工作中")) { // 火焰警告弹窗打开
+                    // TODO 火焰警告弹窗
                     showDialogFireWarning();
                     if (isOpenVibrateAlert) {
                         vibratePhone(this, vibrateAlertTime * 1000);
                     }
-                } else if (event.getMessage().contains("MSG:Probe err!")  && tvMachineStatusTips.getText().equals("工作中")) {
-                    // TODO 倾斜弹窗
+                } else if (event.getMessage().contains("MSG:Safe Flame reset") && tvMachineStatusTips.getText().equals("暂停")) { // 火焰警告弹窗关闭
+                    // 隐藏火焰警告弹窗
+                    dialogFireWarning.dismiss();
+                    // TODO 记录日志
+
+                } else if (event.getMessage().contains("MSG:Tilt sensor") && tvMachineStatusTips.getText().equals("工作中")) { // 倾斜警告弹窗打开
+                    // TODO 倾斜警告弹窗
                     showDialogProbeWarning();
                     if (isOpenVibrateAlert) {
                         vibratePhone(this, vibrateAlertTime * 1000);
                     }
+                } else if (event.getMessage().contains("MSG:Safe Probe reset") && tvMachineStatusTips.getText().equals("暂停")) { // 倾斜警告弹窗关闭
+                    // 隐藏倾斜警告弹窗
+                    dialogProbeWarning.dismiss();
+                    // TODO 记录日志
+
                 }
             }
         }
@@ -411,93 +511,93 @@ public class QrCodeActivity extends AppCompatActivity {
      * 开门风险提示弹窗
      */
     private void showDialogDoorWarning() {
-        Dialog dialog = new Dialog(this, R.style.CustomDialog);
-        dialog.setContentView(R.layout.dialog_door_warning);
+        dialogDoorWarning = new Dialog(this, R.style.CustomDialog);
+        dialogDoorWarning.setContentView(R.layout.dialog_door_warning);
         // 设置窗口背景为透明，以显示圆角效果
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        if (dialogDoorWarning.getWindow() != null) {
+            dialogDoorWarning.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
         // 确认
-        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
+        TextView tvDialogRiskWarningConfirm = dialogDoorWarning.findViewById(R.id.tv_dialog_door_warning_confirm);
         // 确定
         tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // 隐藏弹窗
-                if (dialog.isShowing()) {
-                    dialog.dismiss();
+                if (dialogDoorWarning.isShowing()) {
+                    dialogDoorWarning.dismiss();
                 }
             }
         });
         // 设置Dialog的宽高
-        if (dialog.getWindow() != null) {
+        if (dialogDoorWarning.getWindow() != null) {
             // 设置弹窗宽度为屏幕的80%，高度自适应
-            dialog.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+            dialogDoorWarning.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
         }
         // 显示 Dialog
-        dialog.show();
+        dialogDoorWarning.show();
     }
 
     /**
      * 火焰风险提示弹窗
      */
     private void showDialogFireWarning() {
-        Dialog dialog = new Dialog(this, R.style.CustomDialog);
-        dialog.setContentView(R.layout.dialog_fire_warning);
+        dialogFireWarning = new Dialog(this, R.style.CustomDialog);
+        dialogFireWarning.setContentView(R.layout.dialog_fire_warning);
         // 设置窗口背景为透明，以显示圆角效果
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        if (dialogFireWarning.getWindow() != null) {
+            dialogFireWarning.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
         // 确认
-        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
+        TextView tvDialogRiskWarningConfirm = dialogFireWarning.findViewById(R.id.tv_dialog_door_warning_confirm);
         // 确定
         tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // 隐藏弹窗
-                if (dialog.isShowing()) {
-                    dialog.dismiss();
+                if (dialogFireWarning.isShowing()) {
+                    dialogFireWarning.dismiss();
                 }
             }
         });
         // 设置Dialog的宽高
-        if (dialog.getWindow() != null) {
+        if (dialogFireWarning.getWindow() != null) {
             // 设置弹窗宽度为屏幕的80%，高度自适应
-            dialog.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+            dialogFireWarning.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
         }
         // 显示 Dialog
-        dialog.show();
+        dialogFireWarning.show();
     }
 
     /**
      * 倾斜风险提示弹窗
      */
     private void showDialogProbeWarning() {
-        Dialog dialog = new Dialog(this, R.style.CustomDialog);
-        dialog.setContentView(R.layout.dialog_probe_warning);
+        dialogProbeWarning = new Dialog(this, R.style.CustomDialog);
+        dialogProbeWarning.setContentView(R.layout.dialog_probe_warning);
         // 设置窗口背景为透明，以显示圆角效果
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        if (dialogProbeWarning.getWindow() != null) {
+            dialogProbeWarning.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
         // 确认
-        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
+        TextView tvDialogRiskWarningConfirm = dialogProbeWarning.findViewById(R.id.tv_dialog_door_warning_confirm);
         // 确定
         tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // 隐藏弹窗
-                if (dialog.isShowing()) {
-                    dialog.dismiss();
+                if (dialogProbeWarning.isShowing()) {
+                    dialogProbeWarning.dismiss();
                 }
             }
         });
         // 设置Dialog的宽高
-        if (dialog.getWindow() != null) {
+        if (dialogProbeWarning.getWindow() != null) {
             // 设置弹窗宽度为屏幕的80%，高度自适应
-            dialog.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+            dialogProbeWarning.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
         }
         // 显示 Dialog
-        dialog.show();
+        dialogProbeWarning.show();
     }
 
     /**

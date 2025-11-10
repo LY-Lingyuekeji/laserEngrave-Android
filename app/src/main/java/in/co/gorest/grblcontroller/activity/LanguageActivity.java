@@ -2,9 +2,12 @@
 package in.co.gorest.grblcontroller.activity;
 
 import android.annotation.SuppressLint;
+import android.app.ActivityManager;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowInsetsController;
@@ -265,7 +268,7 @@ public class LanguageActivity extends AppCompatActivity {
         EventBus.getDefault().post(new LanguageChangeEvent(String.valueOf(language)));
 
         finish();
-        // 重启应用
+//        // 重启应用
 //        final Intent launchIntent = getApplication().getPackageManager().getLaunchIntentForPackage(getPackageName());
 //        if (launchIntent != null) {
 //            new Handler().postDelayed(new Runnable() {

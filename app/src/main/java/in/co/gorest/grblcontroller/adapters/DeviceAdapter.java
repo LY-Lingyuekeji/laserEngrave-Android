@@ -163,6 +163,7 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.DeviceView
         laserModuleDataList.add("LdT-3W");
         laserModuleDataList.add("LdT4-10W");
         laserModuleDataList.add("LdT4-20W");
+        laserModuleDataList.add("LdT4-1064nm-2W");
 
 
         // 初始化主轴电机数据
@@ -314,16 +315,23 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.DeviceView
                 });
             } else {
 
-                // 获取当前 Wi-Fi 网络的 SSID 和密码
-                String ssid = wifiNetwork.getSsid();
-                Log.d(TAG, "ssid=" + ssid);
-                String password = "12345678"; //
-                // 连接到 Wi-Fi
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                    connectToWifiForAndroidQ(context, ssid, password);
+                if (wifiNetwork.getMode().equals("AP")) {
+                    // 获取当前 Wi-Fi 网络的 SSID 和密码
+                    String ssid = wifiNetwork.getSsid();
+                    Log.d(TAG, "ssid=" + ssid);
+                    String password = "12345678"; //
+                    // 连接到 Wi-Fi
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        connectToWifiForAndroidQ(context, ssid, password);
+                    } else {
+                        connectToWifi(context, ssid, password);
+                    }
                 } else {
-                    connectToWifi(context, ssid, password);
+                    // 连接Telnet
+                    EventBus.getDefault().post(new DeviceConnectEvent(wifiNetwork.getMode(),tvMachineName.getText().toString() , wifiNetwork.getSsid(), wifiNetwork.getIpAddress()));
                 }
+
+
 
                 dialog.dismiss();
             }
@@ -383,7 +391,7 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.DeviceView
                 String ip = Formatter.formatIpAddress(ipAddress);
                 Log.d(TAG, "Connected Wi-Fi IP Address: " + ip);
                 // 连接Telnet
-                EventBus.getDefault().post(new DeviceConnectEvent("AP", ssid, ip.substring(0, ip.lastIndexOf('.') + 1) + "1" ));
+                EventBus.getDefault().post(new DeviceConnectEvent("AP", ssid, ssid, ip.substring(0, ip.lastIndexOf('.') + 1) + "1" ));
             }
 
             @Override
@@ -435,7 +443,7 @@ public class DeviceAdapter extends RecyclerView.Adapter<DeviceAdapter.DeviceView
                 String ip = Formatter.formatIpAddress(ipAddress);
                 Log.d(TAG, "Connected Wi-Fi IP Address: " + ip);
                 // 连接Telnet
-                EventBus.getDefault().post(new DeviceConnectEvent("AP", ssid, ip));
+                EventBus.getDefault().post(new DeviceConnectEvent("AP", ssid, ssid, ip));
             }
 
             @Override

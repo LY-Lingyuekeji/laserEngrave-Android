@@ -67,6 +67,7 @@
     <string name="preference_operation_mode" translatable="false">preference_operation_mode</string>
     <string name="preference_language" translatable="false">preference_language</string>
     <string name="preference_connect_type" translatable="false">preference_connect_type</string>
+    <string name="preference_sta_type_ipaddress" translatable="false">preference_sta_type_ipaddress</string>
     <string name="preference_device_name" translatable="false">preference_device_name</string>
     <string name="preference_device_address" translatable="false">preference_device_address</string>
     <string name="preference_engrave_list_item" translatable="false">preference_engrave_list_item</string>
@@ -95,6 +96,8 @@
     <string name="preference_radio_button_speed_cnc" translatable="false">preference_radio_button_speed_cnc</string>
     <string name="preference_laser_level" translatable="false">preference_laser_level</string>
     <string name="preference_auto_connect" translatable="false">preference_auto_connect</string>
+    <string name="preference_auto_home" translatable="false">preference_auto_home</string>
+    <string name="preference_sound_alert" translatable="false">preference_sound_alert</string>
     <string name="preference_wifi_ssid" translatable="false">preference_wifi_ssid</string>
     <string name="preference_wifi_password" translatable="false">preference_wifi_password</string>
     <string name="preference_laser_level_line_judge_setting" translatable="false">preference_laser_level_line_judge_setting</string>
@@ -112,6 +115,11 @@
     <string name="preference_laser_module" translatable="false">preference_laser_module</string>
     <string name="preference_recommended_power" translatable="false">preference_recommended_power</string>
     <string name="preference_recommended_speed" translatable="false">preference_recommended_speed</string>
+    <string name="preference_recommended_scanning_gap" translatable="false">preference_recommended_scanning_gap</string>
+    <string name="preference_recommended_engrave_count" translatable="false">preference_recommended_engrave_count</string>
+    <string name="preference_recommended_scanning_orientation" translatable="false">preference_recommended_scanning_orientation</string>
+    <string name="preference_recommended_air" translatable="false">preference_recommended_air</string>
+    <string name="preference_recommended_zdown" translatable="false">preference_recommended_zdown</string>
     <string name="preference_scandevice_guide_isshow" translatable="false">preference_scandevice_guide_isshow</string>
     <string name="preference_connectdevice_guide_isshow" translatable="false">preference_connectdevice_guide_isshow</string>
     <string name="preference_main_shaft_level" translatable="false">preference_main_shaft_level</string>
@@ -126,6 +134,8 @@
 
     <string name="preference_vibrate_alert" translatable="false">preference_vibrate_alert</string>
     <string name="preference_vibrate_alert_time" translatable="false">preference_vibrate_alert_time</string>
+
+    <string name="preference_show_start_tips" translatable="false">preference_show_start_tips</string>
 
     <string name="connect_type" translatable="false">connect_type</string>
 

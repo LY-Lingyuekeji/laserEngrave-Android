@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="300dp"
+    android:layout_width="350dp"
     android:layout_height="wrap_content"
     android:background="@drawable/bg_white_ffffff_r10"
     android:orientation="vertical"
@@ -238,7 +238,7 @@
             android:layout_centerVertical="true"
             android:layout_alignParentEnd="true"
             android:background="@drawable/bg_gray_e6e6e6_r10"
-            android:paddingHorizontal="10dp">
+            android:paddingHorizontal="5dp">
 
             <Spinner
                 android:id="@+id/spinner_laser_module"

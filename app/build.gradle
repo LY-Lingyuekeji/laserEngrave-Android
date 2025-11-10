@@ -18,10 +18,22 @@ android {
     defaultConfig {
         applicationId "com.lingyue.laserengraving"
         minSdkVersion 26
-        versionCode 1138
-        versionName "1.1.38"
+        versionCode 1163
+        versionName "1.1.63"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
+
+
+        externalNativeBuild {
+            cmake {
+                cppFlags ""
+            }
+        }
+
+        ndk {
+            abiFilters 'armeabi-v7a', 'arm64-v8a'
+        }
+
     }
 
     buildTypes {
@@ -70,6 +82,18 @@ android {
 
     packagingOptions {
         exclude 'META-INF/*'
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "src/main/cpp/CMakeLists.txt"
+        }
+    }
+
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['src/main/jniLibs']
+        }
     }
 }
 
@@ -144,7 +168,7 @@ dependencies {
     implementation 'com.journeyapps:zxing-android-embedded:4.2.0'
 
     // openCV
-    implementation 'org.opencv:opencv:4.10.0-kleidicv'
+//    implementation 'org.opencv:opencv-android:4.5.3'
     // 颜色选择器
     implementation 'com.github.shixiuwen:colorpicker:v1.0.5'
     // 圆形进度动画控件
@@ -164,8 +188,14 @@ dependencies {
     // 图片裁剪
     implementation 'com.github.yalantis:ucrop:2.2.10'
 
+    implementation 'com.quickbirdstudios:opencv:4.5.3.0'
 
+    implementation 'com.google.mlkit:text-recognition:16.0.0'
 
+    // 指示器
+    implementation "com.tbuonomo:dotsindicator:4.2"
+
+//    implementation "io.github.sceneview:sceneview:2.2.1"
 }
 
 apply plugin: 'com.google.gms.google-services'

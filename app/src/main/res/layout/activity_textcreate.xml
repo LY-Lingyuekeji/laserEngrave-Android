@@ -109,19 +109,21 @@
             android:id="@+id/ll_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:clipToPadding="false"
             android:padding="10dp"
             android:gravity="center"
             android:orientation="vertical"
             android:layout_above="@id/ll_function"
             android:background="@drawable/bg_white_ffffff_r10">
 
-            <TextView
+            <in.co.gorest.grblcontroller.util.StrokeTextView
                 android:id="@+id/tv_container"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:padding="10dp"
                 android:text=""
                 android:textColor="@color/colorBlack"
-                android:textSize="16sp"/>
+                android:textSize="16sp" />
 
 
         </LinearLayout>
@@ -254,10 +256,220 @@
                 android:layout_marginTop="20dp"
                 android:orientation="vertical">
 
-                <!-- 撤销 & 加粗 & 恢复 -->
+                <!-- 倾斜 & 下划线 & 删除线 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <!-- 倾斜 -->
+                    <LinearLayout
+                        android:id="@+id/ll_hollow"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:background="@drawable/bg_gray_999999_r10"
+                        android:padding="5dp"
+                        android:layout_weight="1">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_hollow"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="12sp"
+                            android:textColor="@color/colorWhite"
+                            android:layout_marginTop="5dp"
+                            android:text="镂空"/>
+
+
+                    </LinearLayout>
+
+                    <!-- 倾斜 -->
+                    <LinearLayout
+                        android:id="@+id/ll_tilt"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginStart="10dp"
+                        android:gravity="center"
+                        android:background="@drawable/bg_gray_999999_r10"
+                        android:padding="5dp"
+                        android:layout_weight="1">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_tilt"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="12sp"
+                            android:textColor="@color/colorWhite"
+                            android:layout_marginTop="5dp"
+                            android:text="倾斜"/>
+
+
+                    </LinearLayout>
+
+                    <!-- 下划线 -->
+                    <LinearLayout
+                        android:id="@+id/ll_underline"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:background="@drawable/bg_gray_999999_r10"
+                        android:layout_marginStart="10dp"
+                        android:padding="5dp"
+                        android:layout_weight="1">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_underline"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="12sp"
+                            android:textColor="@color/colorWhite"
+                            android:layout_marginTop="5dp"
+                            android:text="下划线"/>
+
+
+                    </LinearLayout>
+
+                    <!-- 加粗 -->
+                    <LinearLayout
+                        android:id="@+id/ll_bold"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:background="@drawable/bg_gray_999999_r10"
+                        android:layout_marginStart="10dp"
+                        android:padding="5dp"
+                        android:layout_weight="1">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_bold"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="12sp"
+                            android:textColor="@color/colorWhite"
+                            android:layout_marginTop="5dp"
+                            android:text="加粗"/>
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- 对齐 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:orientation="horizontal">
+
+                    <!-- 左对齐 -->
+                    <LinearLayout
+                        android:id="@+id/ll_align_left"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:background="@drawable/bg_gray_999999_r10"
+                        android:padding="5dp"
+                        android:layout_weight="1">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_align_left"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="12sp"
+                            android:textColor="@color/colorWhite"
+                            android:layout_marginTop="5dp"
+                            android:text="左对齐"/>
+
+
+                    </LinearLayout>
+
+                    <!-- 居中对齐 -->
+                    <LinearLayout
+                        android:id="@+id/ll_align_center"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:background="@drawable/bg_gray_999999_r10"
+                        android:layout_marginStart="15dp"
+                        android:padding="5dp"
+                        android:layout_weight="1">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_align_center"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="12sp"
+                            android:textColor="@color/colorWhite"
+                            android:layout_marginTop="5dp"
+                            android:text="居中对齐"/>
+
+
+                    </LinearLayout>
+
+                    <!-- 右对齐 -->
+                    <LinearLayout
+                        android:id="@+id/ll_align_right"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:background="@drawable/bg_gray_999999_r10"
+                        android:layout_marginStart="15dp"
+                        android:padding="5dp"
+                        android:layout_weight="1">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_align_right"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="12sp"
+                            android:textColor="@color/colorWhite"
+                            android:layout_marginTop="5dp"
+                            android:text="右对齐"/>
+
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- 撤销 & 字体 & 恢复 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
                     android:orientation="horizontal">
 
                     <!-- 撤销 -->
@@ -287,9 +499,9 @@
 
                     </LinearLayout>
 
-                    <!-- 加粗 -->
+                    <!-- 字体 -->
                     <LinearLayout
-                        android:id="@+id/ll_bold"
+                        android:id="@+id/ll_font"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:gravity="center"
@@ -302,7 +514,7 @@
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
-                            android:src="@drawable/ic_bold"/>
+                            android:src="@drawable/ic_font"/>
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -310,10 +522,10 @@
                             android:textSize="12sp"
                             android:textColor="@color/colorWhite"
                             android:layout_marginTop="5dp"
-                            android:text="加粗"/>
+                            android:text="字体"/>
                     </LinearLayout>
 
-                    <!-- 删除线 -->
+                    <!-- 恢复 -->
                     <LinearLayout
                         android:id="@+id/ll_redo"
                         android:layout_width="0dp"
@@ -337,190 +549,6 @@
                             android:textColor="@color/colorWhite"
                             android:layout_marginTop="5dp"
                             android:text="恢复"/>
-
-
-                    </LinearLayout>
-
-                </LinearLayout>
-
-                <!-- 倾斜 & 下划线 & 删除线 -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="5dp"
-                    android:orientation="horizontal">
-
-                    <!-- 倾斜 -->
-                    <LinearLayout
-                        android:id="@+id/ll_tilt"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:gravity="center"
-                        android:background="@drawable/bg_green_1e853a_r10"
-                        android:padding="5dp"
-                        android:layout_weight="1">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_tilt"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="12sp"
-                            android:textColor="@color/colorWhite"
-                            android:layout_marginTop="5dp"
-                            android:text="倾斜"/>
-
-
-                    </LinearLayout>
-
-                    <!-- 下划线 -->
-                    <LinearLayout
-                        android:id="@+id/ll_underline"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:orientation="vertical"
-                        android:background="@drawable/bg_green_1e853a_r10"
-                        android:layout_marginStart="15dp"
-                        android:padding="5dp"
-                        android:layout_weight="1">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_underline"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="12sp"
-                            android:textColor="@color/colorWhite"
-                            android:layout_marginTop="5dp"
-                            android:text="下划线"/>
-
-
-                    </LinearLayout>
-
-                    <!-- 删除线 -->
-                    <LinearLayout
-                        android:id="@+id/ll_deleteline"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:orientation="vertical"
-                        android:background="@drawable/bg_green_1e853a_r10"
-                        android:layout_marginStart="15dp"
-                        android:padding="5dp"
-                        android:layout_weight="1">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_deleteline"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="12sp"
-                            android:textColor="@color/colorWhite"
-                            android:layout_marginTop="5dp"
-                            android:text="删除线"/>
-
-
-                    </LinearLayout>
-
-                </LinearLayout>
-
-                <!-- 对齐 -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="5dp"
-                    android:orientation="horizontal">
-
-                    <!-- 左对齐 -->
-                    <LinearLayout
-                        android:id="@+id/ll_align_left"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:gravity="center"
-                        android:background="@drawable/bg_green_1e853a_r10"
-                        android:padding="5dp"
-                        android:layout_weight="1">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_align_left"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="12sp"
-                            android:textColor="@color/colorWhite"
-                            android:layout_marginTop="5dp"
-                            android:text="左对齐"/>
-
-
-                    </LinearLayout>
-
-                    <!-- 居中对齐 -->
-                    <LinearLayout
-                        android:id="@+id/ll_align_center"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:orientation="vertical"
-                        android:background="@drawable/bg_green_1e853a_r10"
-                        android:layout_marginStart="15dp"
-                        android:padding="5dp"
-                        android:layout_weight="1">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_align_center"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="12sp"
-                            android:textColor="@color/colorWhite"
-                            android:layout_marginTop="5dp"
-                            android:text="居中对齐"/>
-
-
-                    </LinearLayout>
-
-                    <!-- 右对齐 -->
-                    <LinearLayout
-                        android:id="@+id/ll_align_right"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:orientation="vertical"
-                        android:background="@drawable/bg_green_1e853a_r10"
-                        android:layout_marginStart="15dp"
-                        android:padding="5dp"
-                        android:layout_weight="1">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_align_right"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:textSize="12sp"
-                            android:textColor="@color/colorWhite"
-                            android:layout_marginTop="5dp"
-                            android:text="右对齐"/>
 
 
                     </LinearLayout>

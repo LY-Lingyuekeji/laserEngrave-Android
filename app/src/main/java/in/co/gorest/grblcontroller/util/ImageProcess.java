@@ -22,9 +22,10 @@ import java.util.Arrays;
 public class ImageProcess {
 
     private static String TAG = "ImageProcess";
-//    /**
-//     * 将彩色图转换为黑白图
-//     */
+
+    /**
+     * 将彩色图转换为黑白图
+     */
 //    protected static Bitmap convert2GreyImgNew(Bitmap img, int threshold,float gamma) {
 //        int width = img.getWidth();         //获取位图的宽
 //        int height = img.getHeight();       //获取位图的高
@@ -71,75 +72,91 @@ public class ImageProcess {
 
 
     protected static Bitmap convert2GreyImgNew(Bitmap img, int threshold, float gamma, float contrast, float sharpenStrength) {
-        int width = img.getWidth();         // 获取位图的宽
-        int height = img.getHeight();       // 获取位图的高
-        int[] pixels = new int[width * height]; // 通过位图的大小创建像素点数组
+        int width = img.getWidth();
+        int height = img.getHeight();
+        int[] pixels = new int[width * height];
         img.getPixels(pixels, 0, width, 0, 0, width, height);
-        int alpha = 0xFF << 24;
 
-        // 计算伽马校正查找表（加速计算）
+        // γ查找表
         int[] gammaTable = new int[256];
         for (int i = 0; i < 256; i++) {
             gammaTable[i] = (int) (255 * Math.pow(i / 255.0, gamma));
         }
 
         int[] greyPixels = new int[width * height];
+        int[] alphaMap = new int[width * height]; // 👈 用于保存每个像素的透明度
 
+        // 灰度 & gamma & 对比度
         for (int i = 0; i < height; i++) {
             for (int j = 0; j < width; j++) {
-                int color = pixels[width * i + j];
+                int index = width * i + j;
+                int color = pixels[index];
+
+                int alpha = (color >> 24) & 0xFF; // 👈 提取原始透明度
+                alphaMap[index] = alpha;
+
+                // 如果完全透明，跳过处理，稍后恢复
+                if (alpha == 0) {
+                    greyPixels[index] = 0;
+                    continue;
+                }
+
                 int red = (color >> 16) & 0xFF;
                 int green = (color >> 8) & 0xFF;
                 int blue = color & 0xFF;
 
-                // 计算灰度值
                 int grey = (int) (red * 0.3 + green * 0.59 + blue * 0.11);
-
-                // 伽马校正
                 grey = gammaTable[grey];
 
-                // 应用对比度调整
                 grey = (int) ((((grey / 255.0 - 0.5) * contrast) + 0.5) * 255);
-                grey = Math.max(0, Math.min(255, grey)); // 限制在 0-255 之间
+                grey = Math.max(0, Math.min(255, grey));
 
-                greyPixels[width * i + j] = grey;
+                greyPixels[index] = grey;
             }
         }
 
-        // 拉普拉斯锐化核
-        int[][] laplacianKernel = {
-                { 0, -1,  0 },
-                { -1,  4, -1 },
-                { 0, -1,  0 }
-        };
-
+        // 锐化
         int[] sharpenedPixels = new int[width * height];
-
         for (int i = 1; i < height - 1; i++) {
             for (int j = 1; j < width - 1; j++) {
                 int sum = 0;
                 for (int ki = -1; ki <= 1; ki++) {
                     for (int kj = -1; kj <= 1; kj++) {
-                        sum += greyPixels[(i + ki) * width + (j + kj)] * laplacianKernel[ki + 1][kj + 1];
+                        int index = (i + ki) * width + (j + kj);
+                        int kernel = (ki == 0 && kj == 0) ? 4 : -1;
+                        sum += greyPixels[index] * kernel;
                     }
                 }
-                int sharpened = (int) (greyPixels[i * width + j] + sharpenStrength * sum);
-                sharpened = Math.max(0, Math.min(255, sharpened)); // 限制在 0-255
-                sharpenedPixels[i * width + j] = sharpened;
+                int centerIndex = i * width + j;
+                int sharpened = (int) (greyPixels[centerIndex] + sharpenStrength * sum);
+                sharpened = Math.max(0, Math.min(255, sharpened));
+                sharpenedPixels[centerIndex] = sharpened;
             }
         }
 
-        // 应用二值化
+        // 二值化 + 恢复透明
         for (int i = 0; i < width * height; i++) {
             int grey = sharpenedPixels[i];
-            grey = (threshold >= 0 && threshold <= 255) ? (grey < threshold ? 0 : 255) : grey;
-            pixels[i] = alpha | (grey << 16) | (grey << 8) | grey;
+            int alpha = alphaMap[i];
+
+            if (alpha == 0) {
+                // 完全透明，保留透明
+                pixels[i] = 0;
+                continue;
+            }
+
+            if (threshold >= 0 && threshold <= 255) {
+                grey = (grey < threshold) ? 0 : 255;
+            }
+
+            pixels[i] = (alpha << 24) | (grey << 16) | (grey << 8) | grey;
         }
 
-        Bitmap result = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+        Bitmap result = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         result.setPixels(pixels, 0, width, 0, 0, width, height);
         return result;
     }
+
 
     /**
      * 将彩色图转换为黑白图
@@ -152,7 +169,6 @@ public class ImageProcess {
 
         img.getPixels(pixels, 0, width, 0, 0, width, height);
         int alpha = 0xFF << 24;
-
         for(int i = 0; i < height; i++)  {
             for(int j = 0; j < width; j++) {
                 int grey = pixels[width * i + j];
@@ -161,14 +177,16 @@ public class ImageProcess {
                 int green = ((grey & 0x0000FF00) >> 8);
                 int blue = (grey & 0x000000FF);
 
-                // 计算灰度值
                 grey = (int)((float) red * 0.3 + (float)green * 0.59 + (float)blue * 0.11);
 
                 if ((threshold != -1) && (threshold >=0) && (threshold <= 255))
                 {
-                    if (grey < threshold) {
+                    if (grey < threshold)
+                    {
                         grey = 0;
-                    } else {
+                    }
+                    else
+                    {
                         grey = 255;
                     }
                 }
@@ -207,7 +225,29 @@ public class ImageProcess {
     /**
      * 将彩色图转换为灰度图，这个函数需要捕获OOM的异常
      */
-    public static Bitmap convertToGreyImage(Bitmap image, float printWidth, float printHeight, float resol, float gamma, float contrast, float sharpenStrength) {
+//    public static Bitmap convertToGreyImage(Bitmap image, float printWidth, float printHeight, float resol, float gamma, float contrast, float sharpenStrength) {
+//        if (image == null) {
+//            return null;
+//        }
+//        Log.e(TAG, "resol:" + resol);
+//        // 先调整大小
+//        Bitmap adjustBitmap = imageResize(image, (int) (printWidth / resol), (int) (printHeight / resol));
+//        if (adjustBitmap == null) {
+//            return null;
+//        }
+//        // 转换成灰度图或者黑白图
+//        adjustBitmap = convert2GreyImgNew(adjustBitmap, gamma, contrast, sharpenStrength);
+//        if (adjustBitmap == null) {
+//            return null;
+//        }
+//
+//        return adjustBitmap;
+//    }
+
+    /**
+     * 将彩色图转换为灰度图，这个函数需要捕获OOM的异常
+     */
+    public static Bitmap convertToGreyImage(Bitmap image, float printWidth, float printHeight, float resol) {
         if (image == null) {
             return null;
         }
@@ -218,7 +258,7 @@ public class ImageProcess {
             return null;
         }
         // 转换成灰度图或者黑白图
-        adjustBitmap = convert2GreyImgNew(adjustBitmap, gamma, contrast, sharpenStrength);
+        adjustBitmap = convert2GreyImg(adjustBitmap);
         if (adjustBitmap == null) {
             return null;
         }

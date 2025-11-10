@@ -1,20 +1,12 @@
 package in.co.gorest.grblcontroller.fragment;
 
-import android.annotation.SuppressLint;
-import android.content.ContentResolver;
-import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-
-import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,36 +14,27 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
 import in.co.gorest.grblcontroller.GrblController;
+import in.co.gorest.grblcontroller.PuzzleActivity;
 import in.co.gorest.grblcontroller.R;
+import in.co.gorest.grblcontroller.TestAiActivity;
 import in.co.gorest.grblcontroller.activity.AboutActivity;
 import in.co.gorest.grblcontroller.activity.AgreementActivity;
-import in.co.gorest.grblcontroller.activity.GCodeTestActivity;
-import in.co.gorest.grblcontroller.activity.GuideActivity;
+import in.co.gorest.grblcontroller.activity.EngraveHistoryActivity;
 import in.co.gorest.grblcontroller.activity.LanguageActivity;
 import in.co.gorest.grblcontroller.activity.ModelActivity;
 import in.co.gorest.grblcontroller.activity.QuestionActivity;
 import in.co.gorest.grblcontroller.activity.SettingsActivity;
+import in.co.gorest.grblcontroller.activity.TestActivity;
 import in.co.gorest.grblcontroller.base.BaseDialog;
 import in.co.gorest.grblcontroller.events.LanguageChangeEvent;
 import in.co.gorest.grblcontroller.events.ModelChangeEvent;
 import in.co.gorest.grblcontroller.events.NewVersionEvent;
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 import in.co.gorest.grblcontroller.util.DataCleanManager;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 public class SettingFragment extends Fragment {
     // 用于日志记录的标签
@@ -68,6 +51,8 @@ public class SettingFragment extends Fragment {
     private RelativeLayout rlSettingLanguage;
     // 语言
     private TextView tvLanguage;
+    // 历史记录
+    private RelativeLayout rlSettingHistory;
     // 用户协议
     private RelativeLayout rlSettingAgreement;
     // 清除缓存
@@ -82,6 +67,10 @@ public class SettingFragment extends Fragment {
     private RelativeLayout rlNewVersionTips;
     // 版本
     private TextView tvVersionName;
+
+    // 测试测试
+    private RelativeLayout rlSettingTest;
+
 
     public SettingFragment() {}
 
@@ -139,6 +128,8 @@ public class SettingFragment extends Fragment {
         rlSettingLanguage = view.findViewById(R.id.rl_setting_language);
         // 语言
         tvLanguage = view.findViewById(R.id.tv_language);
+        // 历史记录
+        rlSettingHistory = view.findViewById(R.id.rl_setting_history);
         // 用户协议
         rlSettingAgreement = view.findViewById(R.id.rl_setting_agreement);
         // 清除缓存
@@ -153,6 +144,8 @@ public class SettingFragment extends Fragment {
         rlNewVersionTips = view.findViewById(R.id.rl_new_version_tips);
         // 版本
         tvVersionName = view.findViewById(R.id.tv_version_name);
+        // 测试测试
+        rlSettingTest = view.findViewById(R.id.rl_setting_test);
     }
 
     /**
@@ -216,6 +209,14 @@ public class SettingFragment extends Fragment {
             }
         });
 
+        // 历史记录
+        rlSettingHistory.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getActivity(), EngraveHistoryActivity.class));
+            }
+        });
+
         // 用户协议
         rlSettingAgreement.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -263,6 +264,16 @@ public class SettingFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(getActivity(), AboutActivity.class));
+            }
+        });
+
+        rlSettingTest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                startActivity(new Intent(getActivity(), TestActivity.class));
+//                startActivity(new Intent(getActivity(), TestBluetoothActivity.class));
+                startActivity(new Intent(getActivity(), TestAiActivity.class));
+//                startActivity(new Intent(getActivity(), PuzzleActivity.class));
             }
         });
     }
@@ -342,7 +353,6 @@ public class SettingFragment extends Fragment {
             }else if ("6".equals(language)) {
                 tvLanguage.setText("日语");
             }
-
         }
     }
 }

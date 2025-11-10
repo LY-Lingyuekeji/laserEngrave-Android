@@ -49,8 +49,8 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/bg_white_ffffff_r20"
         android:layout_margin="10dp"
+        android:background="@drawable/bg_white_ffffff_r20"
         android:paddingHorizontal="15dp"
         android:paddingVertical="6dp">
 
@@ -108,11 +108,11 @@
             android:id="@+id/ll_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="10dp"
+            android:layout_above="@id/ll_function"
+            android:background="@drawable/bg_white_ffffff_r10"
             android:gravity="center"
             android:orientation="vertical"
-            android:layout_above="@id/ll_function"
-            android:background="@drawable/bg_white_ffffff_r10">
+            android:padding="10dp">
 
             <com.king.drawboard.view.DrawBoardView
                 android:id="@+id/drawBoardView"
@@ -126,11 +126,11 @@
             android:id="@+id/ll_function"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/bg_white_ffffff_r10"
+            android:layout_alignParentBottom="true"
             android:layout_marginTop="20dp"
-            android:padding="10dp"
-            android:layout_alignParentBottom="true">
+            android:background="@drawable/bg_white_ffffff_r10"
+            android:orientation="vertical"
+            android:padding="10dp">
 
             <!-- 功能 -->
             <LinearLayout
@@ -138,36 +138,11 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="当前模式："
-                        android:textColor="@color/colorBlack"
-                        android:textSize="20sp"
-                        android:textStyle="bold"/>
-
-                    <!-- 绘画模式 -->
-                    <TextView
-                        android:id="@+id/tv_draw_mode"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text=""
-                        android:textSize="20sp"
-                        android:textColor="@color/colorGreen"/>
-
-                </LinearLayout>
-
                 <!-- 功能 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:layout_marginTop="20dp">
+                    android:orientation="vertical">
 
                     <!-- 路径 -->
                     <LinearLayout
@@ -180,24 +155,24 @@
                             android:id="@+id/ll_path"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_gray_999999_r10"
                             android:gravity="center"
-                            android:background="@drawable/bg_green_1e853a_r10"
-                            android:padding="5dp"
-                            android:layout_weight="1">
+                            android:orientation="vertical"
+                            android:padding="5dp">
 
                             <ImageView
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
-                                android:src="@drawable/icon_tool_pen_white"/>
+                                android:src="@drawable/icon_tool_pen_white" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textSize="12sp"
-                                android:textColor="@color/colorWhite"
                                 android:layout_marginTop="5dp"
-                                android:text="路径"/>
+                                android:text="路径"
+                                android:textColor="@color/colorWhite"
+                                android:textSize="12sp" />
 
 
                         </LinearLayout>
@@ -207,25 +182,25 @@
                             android:id="@+id/ll_line"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:gravity="center"
-                            android:background="@drawable/bg_green_1e853a_r10"
                             android:layout_marginStart="15dp"
-                            android:padding="5dp"
-                            android:layout_weight="1">
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_gray_999999_r10"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:padding="5dp">
 
                             <ImageView
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
-                                android:src="@drawable/icon_tool_line_white"/>
+                                android:src="@drawable/icon_tool_line_white" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textSize="12sp"
-                                android:textColor="@color/colorWhite"
                                 android:layout_marginTop="5dp"
-                                android:text="直线"/>
+                                android:text="直线"
+                                android:textColor="@color/colorWhite"
+                                android:textSize="12sp" />
 
 
                         </LinearLayout>
@@ -235,25 +210,25 @@
                             android:id="@+id/ll_rectangle"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="15dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_gray_999999_r10"
                             android:gravity="center"
                             android:orientation="vertical"
-                            android:background="@drawable/bg_green_1e853a_r10"
-                            android:layout_marginStart="15dp"
-                            android:padding="5dp"
-                            android:layout_weight="1">
+                            android:padding="5dp">
 
                             <ImageView
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
-                                android:src="@drawable/icon_tool_rectangle_white"/>
+                                android:src="@drawable/icon_tool_rectangle_white" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textSize="12sp"
-                                android:textColor="@color/colorWhite"
                                 android:layout_marginTop="5dp"
-                                android:text="矩形"/>
+                                android:text="矩形"
+                                android:textColor="@color/colorWhite"
+                                android:textSize="12sp" />
 
 
                         </LinearLayout>
@@ -264,32 +239,32 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginTop="5dp">
+                        android:layout_marginTop="5dp"
+                        android:orientation="horizontal">
 
                         <!-- 椭圆 -->
                         <LinearLayout
                             android:id="@+id/ll_oval"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_gray_999999_r10"
                             android:gravity="center"
-                            android:background="@drawable/bg_green_1e853a_r10"
-                            android:padding="5dp"
-                            android:layout_weight="1">
+                            android:orientation="vertical"
+                            android:padding="5dp">
 
                             <ImageView
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
-                                android:src="@drawable/icon_tool_oval_white"/>
+                                android:src="@drawable/icon_tool_oval_white" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textSize="12sp"
-                                android:textColor="@color/colorWhite"
                                 android:layout_marginTop="5dp"
-                                android:text="椭圆"/>
+                                android:text="椭圆"
+                                android:textColor="@color/colorWhite"
+                                android:textSize="12sp" />
 
 
                         </LinearLayout>
@@ -299,116 +274,91 @@
                             android:id="@+id/ll_circle"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="15dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_gray_999999_r10"
                             android:gravity="center"
                             android:orientation="vertical"
-                            android:background="@drawable/bg_green_1e853a_r10"
-                            android:layout_marginStart="15dp"
-                            android:padding="5dp"
-                            android:layout_weight="1">
+                            android:padding="5dp">
 
                             <ImageView
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
-                                android:src="@drawable/icon_tool_circle_white"/>
+                                android:src="@drawable/icon_tool_circle_white" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textSize="12sp"
-                                android:textColor="@color/colorWhite"
                                 android:layout_marginTop="5dp"
-                                android:text="圆形"/>
+                                android:text="圆形"
+                                android:textColor="@color/colorWhite"
+                                android:textSize="12sp" />
 
 
                         </LinearLayout>
-
-                        <!-- 马赛克 -->
-                        <LinearLayout
-                            android:id="@+id/ll_mosic"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:orientation="vertical"
-                            android:background="@drawable/bg_green_1e853a_r10"
-                            android:layout_marginStart="15dp"
-                            android:padding="5dp"
-                            android:layout_weight="1">
-
-                            <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
-                                android:src="@drawable/icon_tool_mosic_white"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textSize="12sp"
-                                android:textColor="@color/colorWhite"
-                                android:layout_marginTop="5dp"
-                                android:text="马赛克"/>
-                        </LinearLayout>
-
-                    </LinearLayout>
-
-                    <!-- 橡皮擦 & 颜色 & 粗细 -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginTop="5dp">
 
                         <!-- 橡皮擦 -->
                         <LinearLayout
                             android:id="@+id/ll_eraser"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
+                            android:layout_marginStart="15dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_gray_999999_r10"
                             android:gravity="center"
-                            android:background="@drawable/bg_green_1e853a_r10"
-                            android:padding="5dp"
-                            android:layout_weight="1">
+                            android:orientation="vertical"
+                            android:padding="5dp">
 
                             <ImageView
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
-                                android:src="@drawable/icon_tool_eraser_white"/>
+                                android:src="@drawable/icon_tool_eraser_white" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textSize="12sp"
-                                android:textColor="@color/colorWhite"
                                 android:layout_marginTop="5dp"
-                                android:text="橡皮擦"/>
+                                android:text="橡皮擦"
+                                android:textColor="@color/colorWhite"
+                                android:textSize="12sp" />
 
 
                         </LinearLayout>
+
+                    </LinearLayout>
+
+                    <!--  颜色 & 粗细 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:orientation="horizontal">
 
                         <!-- 颜色 -->
                         <LinearLayout
                             android:id="@+id/ll_color"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="15dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_green_1e853a_r10"
                             android:gravity="center"
                             android:orientation="vertical"
-                            android:background="@drawable/bg_green_1e853a_r10"
-                            android:layout_marginStart="15dp"
-                            android:padding="5dp"
-                            android:layout_weight="1">
+                            android:padding="5dp">
 
                             <ImageView
                                 android:id="@+id/iv_color"
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
-                                android:background="@color/colorBlack"/>
+                                android:background="@color/colorBlack" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textSize="12sp"
-                                android:textColor="@color/colorWhite"
                                 android:layout_marginTop="5dp"
-                                android:text="颜色"/>
+                                android:text="颜色"
+                                android:textColor="@color/colorWhite"
+                                android:textSize="12sp" />
 
 
                         </LinearLayout>
@@ -418,25 +368,25 @@
                             android:id="@+id/ll_size"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="15dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_green_1e853a_r10"
                             android:gravity="center"
                             android:orientation="vertical"
-                            android:background="@drawable/bg_green_1e853a_r10"
-                            android:layout_marginStart="15dp"
-                            android:padding="5dp"
-                            android:layout_weight="1">
+                            android:padding="5dp">
 
                             <ImageView
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
-                                android:src="@drawable/icon_size"/>
+                                android:src="@drawable/icon_size" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textSize="12sp"
-                                android:textColor="@color/colorWhite"
                                 android:layout_marginTop="5dp"
-                                android:text="粗细"/>
+                                android:text="粗细"
+                                android:textColor="@color/colorWhite"
+                                android:textSize="12sp" />
                         </LinearLayout>
 
                     </LinearLayout>
@@ -453,24 +403,24 @@
                             android:id="@+id/ll_undo"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:gravity="center"
+                            android:layout_weight="1"
                             android:background="@drawable/bg_green_1e853a_r10"
-                            android:padding="5dp"
-                            android:layout_weight="1">
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:padding="5dp">
 
                             <ImageView
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
-                                android:src="@drawable/ic_undo"/>
+                                android:src="@drawable/ic_undo" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textSize="12sp"
-                                android:textColor="@color/colorWhite"
                                 android:layout_marginTop="5dp"
-                                android:text="撤销"/>
+                                android:text="撤销"
+                                android:textColor="@color/colorWhite"
+                                android:textSize="12sp" />
 
 
                         </LinearLayout>
@@ -480,25 +430,25 @@
                             android:id="@+id/ll_clean"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="15dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_green_1e853a_r10"
                             android:gravity="center"
                             android:orientation="vertical"
-                            android:background="@drawable/bg_green_1e853a_r10"
-                            android:layout_marginStart="15dp"
-                            android:padding="5dp"
-                            android:layout_weight="1">
+                            android:padding="5dp">
 
                             <ImageView
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
-                                android:src="@drawable/icon_clean"/>
+                                android:src="@drawable/icon_clean" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textSize="12sp"
-                                android:textColor="@color/colorWhite"
                                 android:layout_marginTop="5dp"
-                                android:text="清除"/>
+                                android:text="清除"
+                                android:textColor="@color/colorWhite"
+                                android:textSize="12sp" />
                         </LinearLayout>
 
                         <!-- 恢复 -->
@@ -506,29 +456,28 @@
                             android:id="@+id/ll_redo"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginStart="15dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_green_1e853a_r10"
                             android:gravity="center"
                             android:orientation="vertical"
-                            android:background="@drawable/bg_green_1e853a_r10"
-                            android:layout_marginStart="15dp"
-                            android:padding="5dp"
-                            android:layout_weight="1">
+                            android:padding="5dp">
 
                             <ImageView
                                 android:layout_width="24dp"
                                 android:layout_height="24dp"
-                                android:src="@drawable/ic_redo"/>
+                                android:src="@drawable/ic_redo" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textSize="12sp"
-                                android:textColor="@color/colorWhite"
                                 android:layout_marginTop="5dp"
-                                android:text="恢复"/>
+                                android:text="恢复"
+                                android:textColor="@color/colorWhite"
+                                android:textSize="12sp" />
 
 
                         </LinearLayout>
-
 
 
                     </LinearLayout>
@@ -538,7 +487,6 @@
 
 
             </LinearLayout>
-
 
 
         </LinearLayout>

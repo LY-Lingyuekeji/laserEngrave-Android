@@ -16,13 +16,18 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.Message;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.provider.Settings;
 import android.text.Editable;
+import android.text.InputFilter;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -40,18 +45,27 @@ import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.zhy.http.okhttp.OkHttpUtils;
 import com.zhy.http.okhttp.callback.StringCallback;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.opencv.android.OpenCVLoader;
+
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -60,8 +74,10 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
 import in.co.gorest.grblcontroller.BuildConfig;
 import in.co.gorest.grblcontroller.GrblController;
+import in.co.gorest.grblcontroller.MainActivity;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.base.BaseAlertDialog;
 import in.co.gorest.grblcontroller.base.BaseDialog;
@@ -72,7 +88,11 @@ import in.co.gorest.grblcontroller.fragment.ParameterBottomSheetFragment;
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 import in.co.gorest.grblcontroller.model.Constants;
 import in.co.gorest.grblcontroller.model.EffectBean;
+import in.co.gorest.grblcontroller.model.EngraveHistoryRecord;
+import in.co.gorest.grblcontroller.model.ScanDirection;
+import in.co.gorest.grblcontroller.model.ZoomViewRecord;
 import in.co.gorest.grblcontroller.util.FileManager;
+import in.co.gorest.grblcontroller.util.FileUtil;
 import in.co.gorest.grblcontroller.util.FileUtils;
 import in.co.gorest.grblcontroller.util.GcodeResults;
 import in.co.gorest.grblcontroller.util.GridRelativeLayout;
@@ -87,6 +107,7 @@ import in.co.gorest.grblcontroller.util.RxTimer;
 import in.co.gorest.grblcontroller.util.ScaleView;
 import in.co.gorest.grblcontroller.util.ScreenInchUtils;
 import in.co.gorest.grblcontroller.util.VerticalScaleView;
+import in.co.gorest.grblcontroller.util.WebSocketManager;
 import in.co.gorest.grblcontroller.util.ZoomView;
 import in.co.gorest.grblcontroller.util.ZoomViewBean;
 import io.reactivex.Observable;
@@ -203,11 +224,36 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
     private int consecutiveMatches = 0;
     // 是否正在对刀
     private boolean isKinfe = false;
+    // 门警告弹窗
+    private Dialog dialogDoorWarning;
+    // 火焰警告弹窗
+    private Dialog dialogFireWarning;
+    // 倾斜警告弹窗
+    private Dialog dialogProbeWarning;
     // 是否震动提醒
     private boolean isOpenVibrateAlert;
     // 震动提醒持续时长
     private int vibrateAlertTime;
 
+    // 切片进度条
+    private ProgressBar transformProgressBar;
+    // 切片进度值
+    private TextView transformProgressText;
+
+    // 雕刻次数
+    private int totalEngraveCount = 1;
+    // 创建主线程的 Handler，用于处理延迟任务
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    // 用于记录当前的校验任务（防止重复触发）
+    private Runnable validateRunnable;
+    // 防抖的延迟时间（毫秒）——当用户停止输入超过这个时间才进行校验
+    private static final long DEBOUNCE_DELAY = 500;
+    // 当前模式
+    private String connectType;
+    // 自动原点
+    boolean isAutoHome;
+    // 结束提醒
+    boolean isSoundAlert;
 
     // 启用矢量图支持，确保在应用中可以正确显示矢量图形
     static {
@@ -274,8 +320,6 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
         rlCamera = findViewById(R.id.rl_camera);
         // 雕刻
         btnEngrave = findViewById(R.id.btn_engrave);
-        // 素材图片
-//        ivPreview = findViewById(R.id.iv_preview);
         // X
         etXpos = findViewById(R.id.et_x_pos);
         // Y
@@ -320,12 +364,16 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
             tvMachineName.setText(machineName);
         }
 
+        // 获取当前模式
+        connectType = sharedPref.getString(getString(R.string.preference_connect_type), "AP");
+        Log.d(TAG, "connectType=" + connectType);
+
         // 图片路径
         inputUri = getIntent().getParcelableExtra(BuildConfig.APPLICATION_ID + ".InputUri");
         Log.d(TAG, "inputUri=" + inputUri);
         String type = getIntent().getStringExtra("type");
         // 加工模式
-        int operationMode = getIntent().getIntExtra("operationMode",-1);
+        int operationMode = getIntent().getIntExtra("operationMode", -1);
         Log.d(TAG, "operationMode=" + operationMode);
         mCompositeDisposable = new CompositeDisposable();
         locations = ScreenInchUtils.mmToPx(this, 1) + 1;
@@ -367,6 +415,10 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
         // 获取保存的危险警报震动提醒时长实例值
         vibrateAlertTime = sharedPref.getInt(getString(R.string.preference_vibrate_alert_time), 1);
 
+        // 获取保存的自动原点实例值
+        isAutoHome = sharedPref.getBoolean(getString(R.string.preference_auto_home), false);
+        // 获取保存的结束提醒实例值
+        isSoundAlert = sharedPref.getBoolean(getString(R.string.preference_sound_alert), true);
     }
 
 
@@ -421,7 +473,7 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
         btnEngrave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (strMachineStatus.equals(Constants.MACHINE_STATUS_RUN)) {
+                if (!TextUtils.isEmpty(strMachineStatus) && strMachineStatus.equals(Constants.MACHINE_STATUS_RUN)) {
                     BaseDialog.showCustomDialog(PreViewActivity.this, "温馨提示",
                             "检测到设备正在雕刻是否跳转到雕刻界面？",
                             "跳转", "取消",
@@ -429,6 +481,8 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
                                 Intent intent = new Intent(PreViewActivity.this, EngraveActivity.class);
                                 String imagePath = sharedPref.getString(getString(R.string.preference_image_path), "");
                                 String filePath = sharedPref.getString(getString(R.string.preference_file_path), "");
+
+                                intent.putExtra("machineName", tvMachineName.getText().toString());
                                 intent.putExtra("imagePath", imagePath);
                                 intent.putExtra("filePath", filePath);
                                 startActivity(intent);
@@ -436,7 +490,7 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
                             v1 -> {
                                 Log.d(TAG, "用户选择取消");
                             });
-                } else if (strMachineStatus.equals(Constants.MACHINE_STATUS_HOLD)) {
+                } else if (!TextUtils.isEmpty(strMachineStatus) && strMachineStatus.equals(Constants.MACHINE_STATUS_HOLD)) {
                     sendJogCommand("\u0018");
                 } else {
                     // 检查速度和激光功率
@@ -455,25 +509,18 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
                     Intent intent = new Intent(PreViewActivity.this, EngraveActivity.class);
                     String imagePath = sharedPref.getString(getString(R.string.preference_image_path), "");
                     String filePath = sharedPref.getString(getString(R.string.preference_file_path), "");
+                    intent.putExtra("machineName", tvMachineName.getText().toString());
                     intent.putExtra("imagePath", imagePath);
                     intent.putExtra("filePath", filePath);
                     startActivity(intent);
-                } else if (tvMachineStatusTips.getText().equals("暂停")){
+                } else if (tvMachineStatusTips.getText().equals("暂停")) {
                     // 解除暂停
-                    NettyClient.getInstance(new Handler(new Handler.Callback() {
-                        @Override
-                        public boolean handleMessage(@NonNull Message msg) {
-                            return false;
-                        }
-                    })).sendMsgToServer(("\u0018" + "\r\n").getBytes(StandardCharsets.UTF_8), null);
-                } else if (tvMachineStatusTips.getText().equals("警告")){
+                    WebSocketManager webSocketManager = WebSocketManager.getInstance();
+                    webSocketManager.send("\u0018");
+                } else if (tvMachineStatusTips.getText().equals("警告")) {
                     // 解除警告
-                    NettyClient.getInstance(new Handler(new Handler.Callback() {
-                        @Override
-                        public boolean handleMessage(@NonNull Message msg) {
-                            return false;
-                        }
-                    })).sendMsgToServer(("$X" + "\r\n").getBytes(StandardCharsets.UTF_8), null);
+                    WebSocketManager webSocketManager = WebSocketManager.getInstance();
+                    webSocketManager.send("$X");
                 } else {
                     Log.d(TAG, "无效点击");
                 }
@@ -701,11 +748,19 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
         llSpeedlevel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ParameterBottomSheetFragment parameterBottomSheetFragment =  ParameterBottomSheetFragment.newInstance(zoomViewPosition);
-                if (zoomViewBeanslist.get(zoomViewPosition).getOperationMode() == 2) {
-                    parameterBottomSheetFragment.show(getSupportFragmentManager(), "isCutting");
+                ParameterBottomSheetFragment parameterBottomSheetFragment = ParameterBottomSheetFragment.newInstance(zoomViewPosition);
+                if (tvMachineName.getText().toString().contains("CNC")) {
+                    if (zoomViewBeanslist.get(zoomViewPosition).getOperationMode() == 2) {
+                        parameterBottomSheetFragment.show(getSupportFragmentManager(), "CNC|isCutting");
+                    } else {
+                        parameterBottomSheetFragment.show(getSupportFragmentManager(), "CNC|isEngraving");
+                    }
                 } else {
-                    parameterBottomSheetFragment.show(getSupportFragmentManager(), "isEngraving");
+                    if (zoomViewBeanslist.get(zoomViewPosition).getOperationMode() == 2) {
+                        parameterBottomSheetFragment.show(getSupportFragmentManager(), "Laser|isCutting");
+                    } else {
+                        parameterBottomSheetFragment.show(getSupportFragmentManager(), "Laser|isEngraving");
+                    }
                 }
             }
         });
@@ -714,11 +769,19 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
         llLaserlevel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ParameterBottomSheetFragment parameterBottomSheetFragment =  ParameterBottomSheetFragment.newInstance(zoomViewPosition);
-                if (zoomViewBeanslist.get(zoomViewPosition).getOperationMode() == 2) {
-                    parameterBottomSheetFragment.show(getSupportFragmentManager(), "isCutting");
+                ParameterBottomSheetFragment parameterBottomSheetFragment = ParameterBottomSheetFragment.newInstance(zoomViewPosition);
+                if (tvMachineName.getText().toString().contains("CNC")) {
+                    if (zoomViewBeanslist.get(zoomViewPosition).getOperationMode() == 2) {
+                        parameterBottomSheetFragment.show(getSupportFragmentManager(), "CNC|isCutting");
+                    } else {
+                        parameterBottomSheetFragment.show(getSupportFragmentManager(), "CNC|isEngraving");
+                    }
                 } else {
-                    parameterBottomSheetFragment.show(getSupportFragmentManager(), "isEngraving");
+                    if (zoomViewBeanslist.get(zoomViewPosition).getOperationMode() == 2) {
+                        parameterBottomSheetFragment.show(getSupportFragmentManager(), "Laser|isCutting");
+                    } else {
+                        parameterBottomSheetFragment.show(getSupportFragmentManager(), "Laser|isEngraving");
+                    }
                 }
             }
         });
@@ -732,8 +795,63 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
                     return;
                 }
 
-                // 显示巡边弹窗
-                showDialogLineJugde();
+                WebSocketManager webSocketManager = WebSocketManager.getInstance();
+                boolean isConnected = webSocketManager.isConnected();
+                if (isConnected) {
+                    if (tvMachineStatusTips.getText().toString().equals("暂停")) {
+                        BaseDialog.showCustomDialog(PreViewActivity.this, "温馨提示",
+                                "检测到机器处于暂停状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                                "确定", "取消",
+                                v1 -> {
+                                    // 解除暂停
+                                    sendJogCommand("\u0018");
+                                },
+                                v1 -> {
+                                    Log.d(TAG, "用户选择取消");
+                                });
+                    } else if (tvMachineStatusTips.getText().toString().equals("警告")) {
+                        BaseDialog.showCustomDialog(PreViewActivity.this, "温馨提示",
+                                "检测到机器处于警告状态，无法进行操作！\r\n\r\n是否解除当前状态？",
+                                "确定", "取消",
+                                v1 -> {
+                                    // 解除警告
+                                    sendJogCommand("$X");
+                                },
+                                v1 -> {
+                                    Log.d(TAG, "用户选择取消");
+                                });
+                    } else if (tvMachineStatusTips.getText().toString().equals("工作中")) {
+                        BaseDialog.showCustomDialog(PreViewActivity.this, "温馨提示",
+                                "检测到机器处于工作状态，无法进行操作！\r\n\r\n是否停止当前工作？",
+                                "确定", "取消",
+                                v1 -> {
+                                    // 暂停雕刻
+                                    sendJogCommand("!");
+                                    // 终止雕刻
+                                    sendJogCommand("\u0018");
+                                },
+                                v1 -> {
+                                    Log.d(TAG, "用户选择取消");
+                                });
+                    } else {
+                        // 显示巡边弹窗
+                        showDialogLineJugde();
+                    }
+
+                } else {
+                    BaseDialog.showCustomDialog(PreViewActivity.this,
+                            "温馨提示", "检测到您还未连接设备，无法进行雕刻！\r\n\r\n是否连接设备？",
+                            "确定", "取消",
+                            vbd -> {
+                                Intent intent = new Intent(PreViewActivity.this, MainActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                startActivity(intent);
+                                finish();
+                            },
+                            vbd -> {
+                                Log.d(TAG, "用户点击取消");
+                            });
+                }
             }
         });
 
@@ -750,12 +868,21 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
         llParameter.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ParameterBottomSheetFragment parameterBottomSheetFragment =  ParameterBottomSheetFragment.newInstance(zoomViewPosition);
-                if (zoomViewBeanslist.get(zoomViewPosition).getOperationMode() == 2) {
-                    parameterBottomSheetFragment.show(getSupportFragmentManager(), "isCutting");
+                ParameterBottomSheetFragment parameterBottomSheetFragment = ParameterBottomSheetFragment.newInstance(zoomViewPosition);
+                if (tvMachineName.getText().toString().contains("CNC")) {
+                    if (zoomViewBeanslist.get(zoomViewPosition).getOperationMode() == 2) {
+                        parameterBottomSheetFragment.show(getSupportFragmentManager(), "CNC|isCutting");
+                    } else {
+                        parameterBottomSheetFragment.show(getSupportFragmentManager(), "CNC|isEngraving");
+                    }
                 } else {
-                    parameterBottomSheetFragment.show(getSupportFragmentManager(), "isEngraving");
+                    if (zoomViewBeanslist.get(zoomViewPosition).getOperationMode() == 2) {
+                        parameterBottomSheetFragment.show(getSupportFragmentManager(), "Laser|isCutting");
+                    } else {
+                        parameterBottomSheetFragment.show(getSupportFragmentManager(), "Laser|isEngraving");
+                    }
                 }
+
             }
         });
 
@@ -831,11 +958,19 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
                         // 点击确认按钮后执行的操作
                         Log.d(TAG, "用户点击了确认按钮");
                         // 打开弹窗
-                        ParameterBottomSheetFragment parameterBottomSheetFragment =  ParameterBottomSheetFragment.newInstance(zoomViewPosition);
-                        if (zoomViewBeanslist.get(zoomViewPosition).getOperationMode() == 2) {
-                            parameterBottomSheetFragment.show(getSupportFragmentManager(), "isCutting");
+                        ParameterBottomSheetFragment parameterBottomSheetFragment = ParameterBottomSheetFragment.newInstance(zoomViewPosition);
+                        if (tvMachineName.getText().toString().contains("CNC")) {
+                            if (zoomViewBeanslist.get(zoomViewPosition).getOperationMode() == 2) {
+                                parameterBottomSheetFragment.show(getSupportFragmentManager(), "CNC|isCutting");
+                            } else {
+                                parameterBottomSheetFragment.show(getSupportFragmentManager(), "CNC|isEngraving");
+                            }
                         } else {
-                            parameterBottomSheetFragment.show(getSupportFragmentManager(), "isEngraving");
+                            if (zoomViewBeanslist.get(zoomViewPosition).getOperationMode() == 2) {
+                                parameterBottomSheetFragment.show(getSupportFragmentManager(), "Laser|isCutting");
+                            } else {
+                                parameterBottomSheetFragment.show(getSupportFragmentManager(), "Laser|isEngraving");
+                            }
                         }
 
                     }
@@ -923,25 +1058,38 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
             minEditHighY = Math.min(minEditHighY, startY);
         }
         Log.d(TAG, "最小X=" + minEditWideX + "---最小Y=" + minEditHighY + "---最大X=" + maxEditWideX + "---最大Y=" + maxEditHighY);
-        // 起点回到左下角
-        sendJogCommand("G0 X" + minEditWideX + " Y" + minEditHighY);
-        sendJogCommand("M3 S" + (lineJudgeLaserLevel * 10));
-        sendJogCommand("F3500");
+        // 定义指令列表
+        List<String> jogCommands = new ArrayList<>();
+        jogCommands.add("G0 X" + minEditWideX + " Y" + minEditHighY);                   // 起点
+        jogCommands.add("M3 S" + (lineJudgeLaserLevel * 10));                          // 打开激光
+        jogCommands.add("F3500");                                                     // 设置速度
+        jogCommands.add("G1 X" + maxEditWideX + " Y" + minEditHighY);  // 右下角
+        jogCommands.add("G1 X" + maxEditWideX + " Y" + maxEditHighY);  // 右上角
+        jogCommands.add("G1 X" + minEditWideX + " Y" + maxEditHighY);  // 左上角
+        jogCommands.add("G1 X" + minEditWideX + " Y" + minEditHighY);  // 左下角
+        jogCommands.add("M5");                                                        // 关闭激光
+        jogCommands.add("G0 X" + minEditWideX + " Y" + minEditHighY);  // 回到起点
 
-        // 沿矩形边缘走一圈
-        sendJogCommand("G1 X" + maxEditWideX + " Y" + minEditHighY);  // → 右下角
-        sendJogCommand("G1 X" + maxEditWideX + " Y" + maxEditHighY);  // ↑ 右上角
-        sendJogCommand("G1 X" + minEditWideX + " Y" + maxEditHighY);  // ← 左上角
-        sendJogCommand("G1 X" + minEditWideX + " Y" + minEditHighY);  // ↓ 回到起点
+        // 使用 Handler 分批延迟发送
+        Handler jogHandler = new Handler(Looper.getMainLooper());
+        final int[] index = {0};  // 指令索引
 
-        sendJogCommand("M5");
+        Runnable sendNextJogCommand = new Runnable() {
+            @Override
+            public void run() {
+                if (index[0] < jogCommands.size()) {
+                    sendJogCommand(jogCommands.get(index[0]));
+                    index[0]++;
+                    jogHandler.postDelayed(this, 500);  // 每条指令间隔 500ms
+                } else {
+                    // 指令发送完毕后执行恢复检测
+                    checkCoordinatesUntilOriginal(dialog, originalStutas);
+                }
+            }
+        };
 
-        // 回到原始起点或指定位置
-        sendJogCommand("G0 X" + minEditWideX + " Y" + minEditHighY);
-
-        // 开始轮询检查坐标是否恢复
-        checkCoordinatesUntilOriginal(dialog, originalStutas);
-
+        // 启动指令发送流程
+        jogHandler.post(sendNextJogCommand);
         // 显示 Dialog
         dialog.show();
     }
@@ -962,11 +1110,95 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
         dialog.setCancelable(false);
         dialog.setCanceledOnTouchOutside(false);  // 点击外部空白区域取消 Dialog
 
-
+        // 雕刻次数 -
+        TextView tvEngraveNumSub = dialog.findViewById(R.id.tv_engrave_num_sub);
+        // 雕刻次数
+        EditText etEngraveNum = dialog.findViewById(R.id.et_engrave_num);
+        // 雕刻次数 +
+        TextView tvEngraveNumAdd = dialog.findViewById(R.id.tv_engrave_num_add);
         // 预览范围
         TextView tvDialogLineJugde = dialog.findViewById(R.id.tv_dialog_linejugde);
         // 雕刻
         TextView tvDialogEngrave = dialog.findViewById(R.id.tv_dialog_engrave);
+
+        // 设置初始值
+        etEngraveNum.setText(totalEngraveCount + "");
+
+        // 最大和最小值
+        final int MIN_COUNT = 1;
+        final int MAX_COUNT = 100;
+
+        // 减按钮
+        tvEngraveNumSub.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String input = etEngraveNum.getText().toString().trim();
+                int count = TextUtils.isEmpty(input) ? MIN_COUNT : Integer.parseInt(input);
+                if (count > MIN_COUNT) {
+                    count--;
+                    etEngraveNum.setText(count + "");
+                    totalEngraveCount = Integer.valueOf(etEngraveNum.getText().toString().trim());
+                } else {
+                    Toast.makeText(PreViewActivity.this, "最少为 " + MIN_COUNT + " 次", Toast.LENGTH_SHORT).show();
+                    etEngraveNum.setText(String.valueOf(MIN_COUNT));
+                    totalEngraveCount = Integer.valueOf(etEngraveNum.getText().toString().trim());
+                }
+            }
+        });
+
+        // 加按钮
+        tvEngraveNumAdd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String input = etEngraveNum.getText().toString().trim();
+                int count = TextUtils.isEmpty(input) ? MIN_COUNT : Integer.parseInt(input);
+                if (count < MAX_COUNT) {
+                    count++;
+                    etEngraveNum.setText(count + "");
+                    totalEngraveCount = Integer.valueOf(etEngraveNum.getText().toString().trim());
+                } else {
+                    Toast.makeText(PreViewActivity.this, "最多为 " + MAX_COUNT + " 次", Toast.LENGTH_SHORT).show();
+                    etEngraveNum.setText(String.valueOf(MAX_COUNT));
+                    totalEngraveCount = Integer.valueOf(etEngraveNum.getText().toString().trim());
+                }
+            }
+        });
+
+        // 限制输入框只能输入数字，最大为 2 位数
+        etEngraveNum.setFilters(new InputFilter[]{
+                new InputFilter.LengthFilter(3)
+        });
+
+        // 给 EditText 添加文本变化监听器
+        etEngraveNum.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                // 文本变化后的回调，这里实现防抖逻辑
+
+                // 1. 如果有上一次未执行的校验任务，先取消它
+                if (validateRunnable != null) {
+                    handler.removeCallbacks(validateRunnable);
+                }
+
+                // 2. 创建一个新的校验任务
+                validateRunnable = () -> {
+                    // 在延迟结束后执行的逻辑，比如检查数值是否在范围内
+                    validateEngraveNum(etEngraveNum, MIN_COUNT, MAX_COUNT);
+                };
+
+                // 3. 将任务延迟执行，只有在延迟期间没有新的输入，任务才会真正执行
+                handler.postDelayed(validateRunnable, DEBOUNCE_DELAY);
+            }
+        });
+
 
         // 预览范围
         tvDialogLineJugde.setOnClickListener(new View.OnClickListener() {
@@ -976,17 +1208,50 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
                     Toast.makeText(PreViewActivity.this, "请先添加图片", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                // 显示巡边弹窗
-                showDialogLineJugde();
+                WebSocketManager webSocketManager = WebSocketManager.getInstance();
+                boolean isConnected = webSocketManager.isConnected();
+                if (isConnected) {
+                    // 显示巡边弹窗
+                    showDialogLineJugde();
+                } else {
+                    BaseDialog.showCustomDialog(PreViewActivity.this,
+                            "温馨提示", "检测到您还未连接设备，无法进行雕刻！\r\n\r\n是否连接设备？",
+                            "确定", "取消",
+                            vbd -> {
+                                Intent intent = new Intent(PreViewActivity.this, MainActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                startActivity(intent);
+                                finish();
+                            },
+                            vbd -> {
+                                Log.d(TAG, "用户点击取消");
+                            });
+                }
             }
         });
         // 雕刻
         tvDialogEngrave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                // TODO 准备雕刻
-                beginToEngrave();
+                WebSocketManager webSocketManager = WebSocketManager.getInstance();
+                boolean isConnected = webSocketManager.isConnected();
+                if (isConnected) {
+                    // TODO 准备雕刻
+                    beginToEngrave();
+                } else {
+                    BaseDialog.showCustomDialog(PreViewActivity.this,
+                            "温馨提示", "检测到您还未连接设备，无法进行雕刻！\r\n\r\n是否连接设备？",
+                            "确定", "取消",
+                            vbd -> {
+                                Intent intent = new Intent(PreViewActivity.this, MainActivity.class);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                                startActivity(intent);
+                                finish();
+                            },
+                            vbd -> {
+                                Log.d(TAG, "用户点击取消");
+                            });
+                }
 
                 // 隐藏弹窗
                 dialog.dismiss();
@@ -1001,16 +1266,55 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
         dialog.show();
     }
 
+
+    /**
+     * 校验雕刻次数
+     *
+     * @param et        输入框
+     * @param MIN_COUNT 最小雕刻次数
+     * @param MAX_COUNT 最大雕刻次数
+     * @return true(合规) or false(不合规)
+     */
+    private boolean validateEngraveNum(EditText et, int MIN_COUNT, int MAX_COUNT) {
+        String input = et.getText().toString().trim();
+        if (TextUtils.isEmpty(input)) {
+            Toast.makeText(this, "请输入雕刻次数", Toast.LENGTH_SHORT).show();
+            et.setText(String.valueOf(MIN_COUNT));
+            totalEngraveCount = Integer.valueOf(et.getText().toString().trim());
+            return false;
+        }
+
+        int value;
+        try {
+            value = Integer.parseInt(input);
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "请输入有效数字", Toast.LENGTH_SHORT).show();
+            et.setText(String.valueOf(MIN_COUNT));
+            totalEngraveCount = Integer.valueOf(et.getText().toString().trim());
+            return false;
+        }
+
+        if (value < MIN_COUNT) {
+            Toast.makeText(this, "最少为 " + MIN_COUNT + " 次", Toast.LENGTH_SHORT).show();
+            et.setText(String.valueOf(MIN_COUNT));
+            totalEngraveCount = Integer.valueOf(et.getText().toString().trim());
+            return false;
+        } else if (value > MAX_COUNT) {
+            Toast.makeText(this, "最多为 " + MAX_COUNT + " 次", Toast.LENGTH_SHORT).show();
+            et.setText(String.valueOf(MAX_COUNT));
+            totalEngraveCount = Integer.valueOf(et.getText().toString().trim());
+            return false;
+        }
+
+        return true;
+    }
+
+
     /**
      * 准备雕刻
      */
     private void beginToEngrave() {
-        // 获取当前模式
-        String connectType = sharedPref.getString(getString(R.string.preference_connect_type), "AP");
-        if (!connectType.equals("AP")) {
-            Toast.makeText(PreViewActivity.this, "蓝牙模式暂不支持TF上传，敬请期待下一版本", Toast.LENGTH_SHORT).show();
-        } else {
-
+        if (connectType.equals("AP") || connectType.equals("STA")) {
             Bitmap mergedBitmap = combineBitmapsFromZoomBeans(
                     PreViewActivity.this,
                     zoomViewBeanslist,
@@ -1022,87 +1326,16 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
             // 保存成文件
             finalBitmapFile = ImgUtil.saveBitmap("2_finalBitmap_" + System.currentTimeMillis() + ".png", mergedBitmap);
 
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    // Transform 切片弹窗
+            new Thread(() -> {
+                try {
+                    // 生成切片弹窗
                     transformData();
 
-                    // 切片转换
                     Image2Gcode image2Gcode = new Image2Gcode();
-                    List<String> allStrContent  = new ArrayList<>();
+                    int totalImages = zoomViewBeanslist.size();
+                    int[] currentIndex = {0}; // 当前处理到第几张图
 
-                    for (int i = 0; i < zoomViewBeanslist.size(); i++) {
-                        BitmapFactory.Options mOptions = new BitmapFactory.Options();
-                        mOptions.inScaled = false;
-                        List<String> strcontent = new ArrayList<>();
-                        ZoomViewBean zoomViewBean = zoomViewBeanslist.get(i);
-                        Log.d(TAG, "path=" + zoomViewBean.getUri().getPath());
-                        InputStream input = null;
-                        try {
-                            input = getContentResolver().openInputStream(zoomViewBean.getUri());
-                        } catch (FileNotFoundException e) {
-                            throw new RuntimeException(e);
-                        }
-                        Bitmap bitmaps = BitmapFactory.decodeStream(input, null, mOptions);
-                        int printWidth = zoomViewBean.getWide();
-                        int printHeight = zoomViewBean.getHeight();
-                        float resol = zoomViewBean.getResols();
-                        Bitmap adjustBitmap = ImageProcess.imageResize(bitmaps, printWidth, printHeight, resol);
-                        FileManager.get().addDelPath(zoomViewBean.getUri().getPath());
-
-                        Log.d(TAG, "type=" + zoomViewBean.getTypes() + "----wx=" + zoomViewBean.getEditWideX() + "----hy=" + zoomViewBean.getEditHighY());
-                        Log.d(TAG, "zw=" + zoomViewBean.getWide() + "----zh=" + zoomViewBean.getHeight());
-                        Log.d(TAG, "w=" + etWidth.getText().toString() + "----h=" + etHeight.getText().toString());
-
-
-                        switch (zoomViewBean.getTypes()) {
-                            case "1"://灰度图
-                                if (tvMachineName.getText().toString().contains("CNC")) {
-                                    strcontent = image2Gcode.image2GcodeForCNC(adjustBitmap, 0.15f
-                                            , 800, 2, zoomViewBean.getEditWideX(), zoomViewBean.getEditHighY());
-                                } else {
-                                    strcontent = image2Gcode.image2Gcode(adjustBitmap, resol
-                                            , zoomViewBean.getSpeedLevel(), zoomViewBean.getLaserLevel() * 10, zoomViewBean.getEditWideX(), zoomViewBean.getEditHighY());
-                                }
-                                break;
-                            case "2"://黑白图
-                            case "4":// 素描模式
-                                if (tvMachineName.getText().toString().contains("CNC")) {
-                                    strcontent = image2Gcode.image2GcodeForCNC(adjustBitmap, 0.15f
-                                            , 800, 2, zoomViewBean.getEditWideX(), zoomViewBean.getEditHighY());
-                                } else {
-                                    strcontent = image2Gcode.image2Gcode(adjustBitmap, resol
-                                            , zoomViewBean.getSpeedLevel(), zoomViewBean.getLaserLevel() * 10, zoomViewBean.getEditWideX(), zoomViewBean.getEditHighY());
-                                }
-
-                                break;
-                            case "3"://轮廓模式//这里要传入原始图像
-                                Bitmap initBitmap = null;
-                                try {
-                                    initBitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(zoomViewBean.getInitBitmapUri()),
-                                            null, mOptions);
-                                } catch (FileNotFoundException e) {
-                                    throw new RuntimeException(e);
-                                }
-                                Matrix m = new Matrix();
-                                for (EffectBean effectBean : zoomViewBean.getEffectBeans()) {
-                                    if (effectBean.getEffectType() == 1) {
-                                        m.postScale(-1, 1);   //镜像水平翻转
-                                    } else if (effectBean.getEffectType() == 2) {
-                                        m.postRotate(effectBean.getRotate());  //旋转
-                                    }
-                                }
-                                initBitmap = Bitmap.createBitmap(initBitmap, 0, 0, initBitmap.getWidth(), initBitmap.getHeight(), m, true);
-                                Bitmap outlineAdjustBitmap = ImageProcess.imageResize(initBitmap, printWidth, printHeight, resol);
-
-
-                                strcontent = image2Gcode.outlineImage2Gcode(outlineAdjustBitmap, printWidth, printHeight, zoomViewBean.getSpeedLevel(),
-                                        zoomViewBean.getLaserLevel() * 10, zoomViewBean.getEditWideX(), zoomViewBean.getEditHighY());
-                                break;
-                        }
-                        allStrContent.addAll(strcontent);
-                    }
+                    // 创建输出路径
                     String FILE_NAME = "";
                     long timestamp = System.currentTimeMillis();
                     Date date = new Date(timestamp);
@@ -1113,35 +1346,113 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
                     } else {
                         FILE_NAME = "Laser_" + formattedDate + ".nc";
                     }
+                    String filePath = GrblController.getInstance().getExternalFilesDir(null) + "/laser/";
+                    String strFilePath = filePath + "/" + FILE_NAME;
+                    File file = new File(strFilePath);
+                    if (file.exists()) file.delete();
 
-                    FileUtils.writeTxtToFile(allStrContent, GrblController.getInstance().getExternalFilesDir(null) + "/laser/", FILE_NAME, new GcodeResults() {
-                        @Override
-                        public void onGcodeResults(String results, File file) {
-                            Log.d(TAG, "file:" + file.getPath());
-                            // 隐藏切片弹窗
+                    BufferedWriter writer = new BufferedWriter(new FileWriter(file, true));
+
+                    for (int i = 0; i < zoomViewBeanslist.size(); i++) {
+                        BitmapFactory.Options mOptions = new BitmapFactory.Options();
+                        mOptions.inScaled = false;
+                        ZoomViewBean zoomViewBean = zoomViewBeanslist.get(i);
+
+                        InputStream input = getContentResolver().openInputStream(zoomViewBean.getUri());
+                        Bitmap bitmaps = BitmapFactory.decodeStream(input, null, mOptions);
+
+                        int printWidth = zoomViewBean.getWide();
+                        int printHeight = zoomViewBean.getHeight();
+                        float resol = zoomViewBean.getResols();
+
+                        Bitmap adjustBitmap = ImageProcess.imageResize(bitmaps, printWidth, printHeight, resol);
+                        FileManager.get().addDelPath(zoomViewBean.getUri().getPath());
+
+                        List<String> strcontent = new ArrayList<>();
+
+                        Image2Gcode.GcodeProgressCallback callback = percent -> {
+                            int overallPercent = (int) ((currentIndex[0] + percent / 100f) * 100 / totalImages);
                             runOnUiThread(() -> {
-                                dialogTransform.dismiss();
-                            });
+                                Log.d(TAG, "转换中 " + overallPercent + "%");
 
-                            // 开始切片
-                            if (file != null) {
-                                uploadFile(file, MAX_RETRY_NUM);
-                            } else {
-                                Toast.makeText(PreViewActivity.this, "切片失败，请检查并重试！", Toast.LENGTH_SHORT).show();
+                            });
+                        };
+
+                        switch (zoomViewBean.getTypes()) {
+                            case "1": // 灰度图
+                            case "2": // 黑白图
+                            case "4": // 素描图
+                                if (tvMachineName.getText().toString().contains("CNC")) {
+                                    strcontent = image2Gcode.image2GcodeForCNC(adjustBitmap, zoomViewBean.getWide(), zoomViewBean.getHeight(), 200, 5,
+                                            zoomViewBean.getEditWideX(), zoomViewBean.getEditHighY());
+                                } else {
+                                    strcontent = image2Gcode.image2Gcode(adjustBitmap, printWidth, printHeight, resol,
+                                            zoomViewBean.getSpeedLevel(), zoomViewBean.getLaserLevel() * 10,
+                                            zoomViewBean.getEditWideX(), zoomViewBean.getEditHighY(),
+                                            zoomViewBean.getScanDirection(), callback);
+                                }
+                                break;
+                            case "3": // 轮廓模式
+                                Bitmap initBitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(zoomViewBean.getInitBitmapUri()),
+                                        null, mOptions);
+                                Matrix m = new Matrix();
+                                for (EffectBean effectBean : zoomViewBean.getEffectBeans()) {
+                                    if (effectBean.getEffectType() == 1) {
+                                        m.postScale(-1, 1); // 镜像水平翻转
+                                    } else if (effectBean.getEffectType() == 2) {
+                                        m.postRotate(effectBean.getRotate());
+                                    }
+                                }
+                                initBitmap = Bitmap.createBitmap(initBitmap, 0, 0, initBitmap.getWidth(), initBitmap.getHeight(), m, true);
+                                Bitmap outlineBitmap = ImageProcess.imageResize(initBitmap, printWidth, printHeight, resol);
+                                strcontent = image2Gcode.outlineImage2Gcode(outlineBitmap, printWidth, printHeight,
+                                        zoomViewBean.getSpeedLevel(), zoomViewBean.getLaserLevel() * 10,
+                                        zoomViewBean.getEditWideX(), zoomViewBean.getEditHighY(), zoomViewBean.isAir(), zoomViewBean.getzDown());
+                                break;
+                        }
+
+                        // 写入重复次数（雕刻多次）
+                        for (int t = 0; t < totalEngraveCount; t++) {
+                            for (String line : strcontent) {
+                                writer.write(line);
+                                writer.newLine();
                             }
-
                         }
 
-                        @Override
-                        public void onGcodeResults(List<String> gcode) {
-                            // 隐藏切片弹窗
-                            runOnUiThread(() -> {
-                                dialogTransform.dismiss();
-                            });
-                        }
+                        writer.flush();
+                        currentIndex[0]++;
+                    }
+
+                    // 添加结尾命令
+                    if (isAutoHome) {
+                        writer.write("$H");
+                        writer.newLine();
+                    }
+                    if (isSoundAlert) {
+                        writer.write("$bb");
+                        writer.newLine();
+                    }
+
+                    writer.flush();
+                    writer.close();
+
+                    // 可选：回调或提示生成完成
+                    runOnUiThread(() -> {
+                        Toast.makeText(PreViewActivity.this, "G-code 生成完成", Toast.LENGTH_SHORT).show();
+                        uploadFile(file, MAX_RETRY_NUM);
+                    });
+
+                } catch (Exception e) {
+                    Log.e(TAG, "G-code 转换异常", e);
+                    runOnUiThread(() -> {
+                        Toast.makeText(PreViewActivity.this, "G-code 转换失败: " + e.getMessage(), Toast.LENGTH_LONG).show();
                     });
                 }
             }).start();
+
+
+        } else {
+            Toast.makeText(PreViewActivity.this, "蓝牙模式暂不支持TF上传，敬请期待下一版本", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -1154,6 +1465,9 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
         View dialogView = inflater.inflate(R.layout.dialog_transform, null);
         // content
         TextView content = dialogView.findViewById(R.id.dialog_content);
+        // 获取 ProgressBar 和 TextView
+        transformProgressBar = dialogView.findViewById(R.id.progressBar);
+        transformProgressText = dialogView.findViewById(R.id.progressText);
         // UI线程
         runOnUiThread(() -> {
             // 创建弹窗
@@ -1202,6 +1516,15 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
         });
     }
 
+    private void updateTransformProgress(int percent) {
+        runOnUiThread(() -> {
+            // 设置进度条
+            transformProgressBar.setProgress(percent);
+            // 设置进度值
+            transformProgressText.setText(percent + "%");
+        });
+    }
+
     /**
      * 上传文件
      *
@@ -1229,6 +1552,10 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
                 dialogUpload.show();
             });
 
+
+            WebSocketManager webSocketManager = WebSocketManager.getInstance();
+            webSocketManager.disconnect();
+
             // 初始化
             OkHttpUtils.getInstance();
             OkHttpClient client = new OkHttpClient.Builder()
@@ -1239,50 +1566,63 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
 
             OkHttpUtils.initClient(client);
 
-            // 文件上传
-            OkHttpUtils.post().addFile("myfile[]", file.getName(), file).url("http://192.168.4.1/upload").addParams("path", "/").addParams("/" + file.getName() + "S", String.valueOf(file.length())).tag(this).build().execute(new StringCallback() {
+            if (connectType.equals("AP") || connectType.equals("STA")) {
+                String ipAddress = sharedPref.getString(getString(R.string.preference_sta_type_ipaddress), "");
+                if (!TextUtils.isEmpty(ipAddress)) {
+                    Log.d(TAG, "ipAddress = " + ipAddress);
+                    // 文件上传
+                    OkHttpUtils.post().addFile("myfile[]", file.getName(), file)
+                            .url("http://" + ipAddress + "/upload")
+                            .addParams("path", "/")
+                            .addParams("/" + file.getName(), String.valueOf(file.length()))
+                            .tag(this).build().execute(new StringCallback() {
 
-                @Override
-                public void inProgress(float f, long j, int i) {
-                    super.inProgress(f, j, i);
-                    Log.e(TAG, "onResponse  inProgress=" + f + "---" + j + "---" + i);
-                    runOnUiThread(() -> {
-                        progressBar.setProgress((int) (f * 100.0f));
-                        progressText.setText(((int) (f * 100.0f)) + "%");
-                    });
+                                @Override
+                                public void inProgress(float f, long j, int i) {
+                                    super.inProgress(f, j, i);
+                                    Log.e(TAG, "onResponse  inProgress=" + f + "---" + j + "---" + i);
+                                    runOnUiThread(() -> {
+                                        progressBar.setProgress((int) (f * 100.0f));
+                                        progressText.setText(((int) (f * 100.0f)) + "%");
+                                    });
+                                }
 
+                                @Override
+                                public void onError(Call call, Exception exc, int i) {
+                                    // 隐藏上传弹窗
+                                    runOnUiThread(() -> {
+                                        dialogUpload.dismiss();
+                                    });
+                                    Log.d(TAG, "e=" + exc.getMessage().toString());
+                                    exc.printStackTrace();
+                                    Toast.makeText(PreViewActivity.this, "上传失败，请检查并重试", Toast.LENGTH_SHORT).show();
+                                    uploadFile(file, MAX_RETRY_NUM--);
+                                }
+
+                                @Override
+                                public void onResponse(String str3, int i) {
+                                    Log.e(TAG, "onResponse=" + str3);
+                                    Toast.makeText(PreViewActivity.this, "上传完成", Toast.LENGTH_SHORT).show();
+                                    // 隐藏上传弹窗
+                                    runOnUiThread(() -> {
+                                        dialogUpload.dismiss();
+                                    });
+                                    // 重新连接
+                                    webSocketManager.connect(ipAddress);
+                                    // 对刀弹窗
+                                    showDialogKinfe(finalBitmapFile.getAbsolutePath(), file.getPath());
+
+                                }
+                            });
+                } else {
+                    Toast.makeText(PreViewActivity.this, "上传地址为空，请联系客服！", Toast.LENGTH_SHORT).show();
                 }
-
-                @Override
-                public void onError(Call call, Exception exc, int i) {
-                    // 隐藏上传弹窗
-                    runOnUiThread(() -> {
-                        dialogUpload.dismiss();
-                    });
-                    Log.d(TAG, "e=" + exc.getMessage().toString());
-                    exc.printStackTrace();
-                    Toast.makeText(PreViewActivity.this, "上传失败，请检查并重试", Toast.LENGTH_SHORT).show();
-                    uploadFile(file, MAX_RETRY_NUM--);
-                }
-
-                @Override
-                public void onResponse(String str3, int i) {
-                    Log.e(TAG, "onResponse=" + str3);
-                    Toast.makeText(PreViewActivity.this, "上传完成", Toast.LENGTH_SHORT).show();
-                    // 隐藏上传弹窗
-                    runOnUiThread(() -> {
-                        dialogUpload.dismiss();
-                    });
-
-                    // 对刀弹窗
-                    showDialogKinfe(finalBitmapFile.getAbsolutePath(), file.getPath());
-
-                }
-            });
+            } else {
+                Toast.makeText(PreViewActivity.this, "蓝牙模式暂不支持TF上传，敬请期待下一版本", Toast.LENGTH_SHORT).show();
+            }
         } else {
             Toast.makeText(PreViewActivity.this, "上传失败，请检查并重试", Toast.LENGTH_SHORT).show();
         }
-
     }
 
     /**
@@ -1359,11 +1699,20 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
                             if (dialog.isShowing()) {
                                 dialog.dismiss();
                             }
+
+                            // 保存历史记录
+                            saveEngraveRecord();
+
                             // 跳转雕刻页面
                             Intent intent = new Intent(PreViewActivity.this, EngraveActivity.class);
+                            intent.putExtra("machineName", tvMachineName.getText().toString());
                             intent.putExtra("imagePath", bitmapFilePath);
                             intent.putExtra("filePath", filePath);
+                            intent.putExtra("totalEngraveCount", totalEngraveCount);
+                            Log.d(TAG, "totalEngraveCount=" + totalEngraveCount);
+                            // 启动跳转
                             startActivity(intent);
+                            // 关闭当前页面
                             finish();
                         } else {
                             // 如果3次不一致，则继续等待
@@ -1386,7 +1735,7 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
                     Toast.makeText(PreViewActivity.this, "正在对刀中，无法取消", Toast.LENGTH_SHORT).show();
                 } else {
                     // 不对刀确认弹窗
-                    showNotKinfeConfirm(bitmapFilePath, filePath);
+                    showNotKinfeConfirm(bitmapFilePath, filePath, totalEngraveCount);
                     // 隐藏弹窗
                     if (dialog.isShowing()) {
                         dialog.dismiss();
@@ -1405,18 +1754,24 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
      * @param bitmapFilePath
      * @param filePath
      */
-    private void showNotKinfeConfirm(String bitmapFilePath, String filePath) {
+    private void showNotKinfeConfirm(String bitmapFilePath, String filePath, int engraveCount) {
         BaseDialog.showCustomDialog(this,
                 "温馨提示",
                 "不对焦存在一定的风险，可能导致雕刻达不到预期的效果，是否取消？",
                 "确定",
                 "取消",
                 v -> {
+                    // 保存历史记录
+                    saveEngraveRecord();
                     // 跳转雕刻页面
                     Intent intent = new Intent(PreViewActivity.this, EngraveActivity.class);
+                    intent.putExtra("machineName", tvMachineName.getText().toString());
                     intent.putExtra("imagePath", bitmapFilePath);
                     intent.putExtra("filePath", filePath);
+                    intent.putExtra("totalEngraveCount", engraveCount);
+                    // 启动跳转
                     startActivity(intent);
+                    // 关闭当前页面
                     finish();
                 },
                 v -> {
@@ -1491,13 +1846,55 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
      */
     private void sendJogCommand(String command) {
         Log.d(TAG, "command=" + command);
-        NettyClient.getInstance(new Handler(new Handler.Callback() {
-            @Override
-            public boolean handleMessage(@NonNull Message msg) {
-                return false;
-            }
-        })).sendMsgToServer((command + "\r\n").getBytes(StandardCharsets.UTF_8), null);
+        WebSocketManager webSocketManager = WebSocketManager.getInstance();
+        webSocketManager.send(command);
     }
+
+    /**
+     * 保存历史记录
+     */
+    private void saveEngraveRecord() {
+        EngraveHistoryRecord record = new EngraveHistoryRecord();
+        record.setTimestamp(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+        record.setMachineName(tvMachineName.getText().toString());
+        List<ZoomViewRecord> recordBeans = new ArrayList<>();
+        for (ZoomViewBean bean : zoomViewBeanslist) {
+            ZoomViewRecord rec = new ZoomViewRecord();
+            rec.setResols(bean.getResols());
+            rec.setDepthProgress(bean.getDepthProgress());
+            rec.setSpeedProgress(bean.getSpeedProgress());
+            rec.setSpeedLevel(bean.getSpeedLevel());
+            rec.setLaserLevel(bean.getLaserLevel());
+            rec.setOperationMode(bean.getOperationMode());
+            rec.setScaleX(bean.getScaleX());
+            rec.setScaleY(bean.getScaleY());
+            rec.setAndReverse(bean.isAndReverse());
+            rec.setSharp(bean.getSharp());
+            rec.setWide(bean.getWide());
+            rec.setHeight(bean.getHeight());
+            rec.setEditScrollX(bean.getEditScrollX());
+            rec.setEditWideX(bean.getEditWideX());
+            rec.setEditHighY(bean.getEditHighY());
+            rec.setGcodes(bean.getGcodes());
+            rec.setTypes(bean.getTypes());
+            rec.setImagePath(bean.getUri() != null ? bean.getUri().toString() : "");
+            recordBeans.add(rec);
+        }
+        record.setZoomViewRecords(recordBeans);
+        record.setTotalEngraveCount(totalEngraveCount);
+        record.setLocations(locations);
+        record.setImagePath(finalBitmapFile != null ? finalBitmapFile.getAbsolutePath() : "");
+
+        // 创建文件路径及目录
+        File directory = new File(GrblController.getInstance().getExternalFilesDir(null) + "/history");
+        if (!directory.exists()) directory.mkdirs(); // 确保目录存在
+
+        File file = new File(directory, "engrave_history.json");
+        List<EngraveHistoryRecord> allHistory = FileUtil.readEngraveHistoryFromFile(file);
+        allHistory.add(record);
+        FileUtil.saveEngraveHistoryToFile(allHistory, file);
+    }
+
 
     /**
      * ServiceMessageEvent
@@ -1555,24 +1952,39 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
                     return; // 不是当前页面，直接 return
                 }
 
-                if (event.getMessage().contains("MSG:Safe door err!")  && tvMachineStatusTips.getText().equals("工作中")) {
-                    // TODO 开门弹窗
+                if (event.getMessage().contains("MSG:Safe door err") && tvMachineStatusTips.getText().equals("工作中")) { // 开门警告弹窗打开
+                    // TODO 开门警告弹窗
                     showDialogDoorWarning();
                     if (isOpenVibrateAlert) {
                         vibratePhone(this, vibrateAlertTime * 1000);
                     }
-                } else if (event.getMessage().contains("MSG:Flame err!")  && tvMachineStatusTips.getText().equals("工作中")) {
-                    // TODO 火焰弹窗
+                } else if (event.getMessage().contains("MSG:Safe door reset") && tvMachineStatusTips.getText().equals("暂停")) { // 开门警告弹窗关闭
+                    // 隐藏开门警告弹窗
+                    dialogDoorWarning.dismiss();
+                    // TODO 记录日志
+
+                } else if (event.getMessage().contains("MSG:Flame err") && tvMachineStatusTips.getText().equals("工作中")) { // 火焰警告弹窗打开
+                    // TODO 火焰警告弹窗
                     showDialogFireWarning();
                     if (isOpenVibrateAlert) {
                         vibratePhone(this, vibrateAlertTime * 1000);
                     }
-                } else if (event.getMessage().contains("MSG:Probe err!")  && tvMachineStatusTips.getText().equals("工作中")) {
-                    // TODO 倾斜弹窗
+                } else if (event.getMessage().contains("MSG:Safe Flame reset") && tvMachineStatusTips.getText().equals("暂停")) { // 火焰警告弹窗关闭
+                    // 隐藏火焰警告弹窗
+                    dialogFireWarning.dismiss();
+                    // TODO 记录日志
+
+                } else if (event.getMessage().contains("MSG:Tilt sensor") && tvMachineStatusTips.getText().equals("工作中")) { // 倾斜警告弹窗打开
+                    // TODO 倾斜警告弹窗
                     showDialogProbeWarning();
                     if (isOpenVibrateAlert) {
                         vibratePhone(this, vibrateAlertTime * 1000);
                     }
+                } else if (event.getMessage().contains("MSG:Safe Probe reset") && tvMachineStatusTips.getText().equals("暂停")) { // 倾斜警告弹窗关闭
+                    // 隐藏倾斜警告弹窗
+                    dialogProbeWarning.dismiss();
+                    // TODO 记录日志
+
                 }
             }
 
@@ -1583,98 +1995,99 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
      * 开门风险提示弹窗
      */
     private void showDialogDoorWarning() {
-        Dialog dialog = new Dialog(this, R.style.CustomDialog);
-        dialog.setContentView(R.layout.dialog_door_warning);
+        dialogDoorWarning = new Dialog(this, R.style.CustomDialog);
+        dialogDoorWarning.setContentView(R.layout.dialog_door_warning);
         // 设置窗口背景为透明，以显示圆角效果
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        if (dialogDoorWarning.getWindow() != null) {
+            dialogDoorWarning.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
         // 确认
-        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
+        TextView tvDialogRiskWarningConfirm = dialogDoorWarning.findViewById(R.id.tv_dialog_door_warning_confirm);
         // 确定
         tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // 隐藏弹窗
-                if (dialog.isShowing()) {
-                    dialog.dismiss();
+                if (dialogDoorWarning.isShowing()) {
+                    dialogDoorWarning.dismiss();
                 }
             }
         });
         // 设置Dialog的宽高
-        if (dialog.getWindow() != null) {
+        if (dialogDoorWarning.getWindow() != null) {
             // 设置弹窗宽度为屏幕的80%，高度自适应
-            dialog.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+            dialogDoorWarning.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
         }
         // 显示 Dialog
-        dialog.show();
+        dialogDoorWarning.show();
     }
 
     /**
      * 火焰风险提示弹窗
      */
     private void showDialogFireWarning() {
-        Dialog dialog = new Dialog(this, R.style.CustomDialog);
-        dialog.setContentView(R.layout.dialog_fire_warning);
+        dialogFireWarning = new Dialog(this, R.style.CustomDialog);
+        dialogFireWarning.setContentView(R.layout.dialog_fire_warning);
         // 设置窗口背景为透明，以显示圆角效果
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        if (dialogFireWarning.getWindow() != null) {
+            dialogFireWarning.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
         // 确认
-        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
+        TextView tvDialogRiskWarningConfirm = dialogFireWarning.findViewById(R.id.tv_dialog_door_warning_confirm);
         // 确定
         tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // 隐藏弹窗
-                if (dialog.isShowing()) {
-                    dialog.dismiss();
+                if (dialogFireWarning.isShowing()) {
+                    dialogFireWarning.dismiss();
                 }
             }
         });
         // 设置Dialog的宽高
-        if (dialog.getWindow() != null) {
+        if (dialogFireWarning.getWindow() != null) {
             // 设置弹窗宽度为屏幕的80%，高度自适应
-            dialog.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+            dialogFireWarning.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
         }
         // 显示 Dialog
-        dialog.show();
+        dialogFireWarning.show();
     }
 
     /**
      * 倾斜风险提示弹窗
      */
     private void showDialogProbeWarning() {
-        Dialog dialog = new Dialog(this, R.style.CustomDialog);
-        dialog.setContentView(R.layout.dialog_probe_warning);
+        dialogProbeWarning = new Dialog(this, R.style.CustomDialog);
+        dialogProbeWarning.setContentView(R.layout.dialog_probe_warning);
         // 设置窗口背景为透明，以显示圆角效果
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        if (dialogProbeWarning.getWindow() != null) {
+            dialogProbeWarning.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
         // 确认
-        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
+        TextView tvDialogRiskWarningConfirm = dialogProbeWarning.findViewById(R.id.tv_dialog_door_warning_confirm);
         // 确定
         tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // 隐藏弹窗
-                if (dialog.isShowing()) {
-                    dialog.dismiss();
+                if (dialogProbeWarning.isShowing()) {
+                    dialogProbeWarning.dismiss();
                 }
             }
         });
         // 设置Dialog的宽高
-        if (dialog.getWindow() != null) {
+        if (dialogProbeWarning.getWindow() != null) {
             // 设置弹窗宽度为屏幕的80%，高度自适应
-            dialog.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+            dialogProbeWarning.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
         }
         // 显示 Dialog
-        dialog.show();
+        dialogProbeWarning.show();
     }
 
     /**
      * 震动提醒
-     * @param context 上下文
+     *
+     * @param context      上下文
      * @param milliseconds 震动时长
      */
     public void vibratePhone(Context context, long milliseconds) {
@@ -1918,7 +2331,8 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
 
     /**
      * 缝合图层到位图
-     * @param context 上下文
+     *
+     * @param context           上下文
      * @param zoomViewBeanslist 图层数据
      * @param unitSize
      * @return
@@ -1984,18 +2398,27 @@ public class PreViewActivity extends AppCompatActivity implements ParameterBotto
 
 
     @Override
-    public void onLaserParametersSelected(int index, int power, int speed) {
-        Log.d(TAG, "index=" + index + "------power=" + power + "------speed=" + speed);
+    public void onLaserParametersSelected(int index, int power, int speed, float resols, ScanDirection scanDirection, int engraveCount, boolean isAir, int zDown) {
+        Log.d(TAG, "index=" + index + "------power=" + power + "------speed=" + speed
+                + "------resols=" + resols + "------scanDirection=" + scanDirection
+                + "------engraveCount=" + engraveCount + "------isAir=" + isAir +  "------zDown=" + zDown);
 
         if (index >= 0 && index < zoomViewBeanslist.size()) {
             ZoomViewBean bean = zoomViewBeanslist.get(index);
             bean.setLaserLevel(power);
             bean.setSpeedLevel(speed);
+            bean.setResols(resols);
+            bean.setScanDirection(scanDirection);
+            bean.setAir(isAir);
+            bean.setzDown(zDown);
+
 
             if (index == zoomViewPosition) {
                 tvLaserlevel.setText(power + "");
                 tvSpeedlevel.setText(speed + "");
             }
         }
+
+        totalEngraveCount = engraveCount;
     }
 }

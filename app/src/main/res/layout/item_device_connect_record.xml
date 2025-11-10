@@ -1,0 +1,170 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_white_ffffff_r20"
+    android:orientation="vertical"
+    android:padding="10dp"
+    android:layout_margin="10dp">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <RelativeLayout
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:background="@drawable/bg_gray_f9f9f9_r20">
+
+            <ImageView
+                android:id="@+id/iv_image"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="5dp"/>
+
+
+            <TextView
+                android:id="@+id/tv_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="已连接"
+                android:textColor="@color/colorWhite"
+                android:textSize="12sp"
+                android:background="@drawable/bg_green_1e853a_r20_noleftbottom"
+                android:paddingVertical="3dp"
+                android:paddingHorizontal="10dp"/>
+
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="10dp"
+            android:orientation="vertical">
+
+            <!-- 设备名称 && 模式-->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <!-- 设备名称 -->
+                <TextView
+                    android:id="@+id/tv_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="设备名称"
+                    android:textColor="@color/colorBlack"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <!-- 模式 -->
+                <TextView
+                    android:id="@+id/tv_mode"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:paddingVertical="3dp"
+                    android:paddingHorizontal="10dp"
+                    android:text="AP"
+                    android:textColor="@color/colorGreen"
+                    android:textSize="12sp"
+                    android:layout_gravity="center_vertical"
+                    android:background="@drawable/bg_green_401e853a_r10"/>
+
+            </LinearLayout>
+
+            <!-- WiFi -->
+            <TextView
+                android:id="@+id/tv_ssid"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="WIFI:"
+                android:textSize="12sp"
+                android:textColor="#8a8a8a"
+                android:drawableLeft="@drawable/ic_wifi"
+                android:drawablePadding="6dp"
+                android:gravity="center_vertical"/>
+
+            <!-- 激光模组 -->
+            <TextView
+                android:id="@+id/tv_laser_module"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:text="激光模组:"
+                android:textSize="12sp"
+                android:textColor="#8a8a8a"
+                android:drawableLeft="@drawable/ic_lasermodule"
+                android:drawablePadding="6dp"
+                android:gravity="center_vertical"/>
+
+            <!-- 激光模组 -->
+            <TextView
+                android:id="@+id/tv_size"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:text="行程:"
+                android:textSize="12sp"
+                android:textColor="#8a8a8a"
+                android:drawableLeft="@drawable/ic_size"
+                android:drawablePadding="6dp"
+                android:gravity="center_vertical"/>
+
+            <!-- ip -->
+            <TextView
+                android:id="@+id/tv_ip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:text="IP:"
+                android:textSize="12sp"
+                android:textColor="#8a8a8a"
+                android:drawableLeft="@drawable/ic_ip"
+                android:drawablePadding="6dp"
+                android:gravity="center_vertical"/>
+
+            <!-- 上次连接时间 -->
+            <TextView
+                android:id="@+id/tv_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:text="上次连接时间:"
+                android:textSize="12sp"
+                android:textColor="#8a8a8a"
+                android:gravity="center_vertical"/>
+
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+    <!-- 分割线 -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_marginVertical="15dp"
+        android:layout_height="1dp"
+        android:background="#eee" />
+
+    <!-- 连接 -->
+    <TextView
+        android:id="@+id/tv_connect"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:background="@drawable/bg_green_1e853a_r100"
+        android:gravity="center"
+        android:padding="10dp"
+        android:text="连接"
+        android:textColor="@color/colorWhite"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+
+</LinearLayout>

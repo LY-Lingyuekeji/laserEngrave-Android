@@ -150,7 +150,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginStart="5dp"
-                                    android:text="ESP_S3"
+                                    android:text="V 1.0.0"
                                     android:textColor="#A3A3A3"
                                     android:textSize="12sp" />
 
@@ -270,69 +270,69 @@
                             android:id="@+id/rb_machine_detail_xyz"
                             android:layout_width="0dp"
                             android:layout_height="100dp"
-                            android:padding="10dp"
                             android:layout_weight="1"
                             android:background="@drawable/radio_button_selector"
                             android:button="@null"
                             android:drawableTop="@drawable/ic_c"
                             android:drawablePadding="20dp"
                             android:gravity="center"
+                            android:padding="10dp"
                             android:text="XYZ常规雕刻"
                             android:textColor="@drawable/radio_button_text_selector"
                             android:textSize="14sp"
-                            android:textStyle="bold"/>
+                            android:textStyle="bold" />
 
                         <RadioButton
                             android:id="@+id/rb_machine_detail_yyr_threelevel"
                             android:layout_width="0dp"
                             android:layout_height="100dp"
-                            android:padding="10dp"
-                            android:layout_weight="1"
                             android:layout_marginStart="15dp"
+                            android:layout_weight="1"
                             android:background="@drawable/radio_button_selector"
                             android:button="@null"
                             android:drawableTop="@drawable/ic_c"
                             android:drawablePadding="20dp"
                             android:gravity="center"
+                            android:padding="10dp"
                             android:text="YRR转轴雕刻(三档旋转轴)"
                             android:textColor="@drawable/radio_button_text_selector"
                             android:textSize="14sp"
-                            android:textStyle="bold"/>
+                            android:textStyle="bold" />
 
                         <RadioButton
                             android:id="@+id/rb_machine_detail_yyr_non_polar"
                             android:layout_width="0dp"
                             android:layout_height="100dp"
-                            android:padding="10dp"
-                            android:layout_weight="1"
                             android:layout_marginStart="15dp"
+                            android:layout_weight="1"
                             android:background="@drawable/radio_button_selector"
                             android:button="@null"
                             android:drawableTop="@drawable/ic_c"
                             android:drawablePadding="20dp"
                             android:gravity="center"
+                            android:padding="10dp"
                             android:text="YRR转轴雕刻(无极旋转轴)"
                             android:textColor="@drawable/radio_button_text_selector"
                             android:textSize="14sp"
-                            android:textStyle="bold"/>
+                            android:textStyle="bold" />
 
                         <RadioButton
                             android:id="@+id/rb_machine_detail_yrc"
                             android:layout_width="0dp"
                             android:layout_height="100dp"
-                            android:padding="10dp"
-                            android:layout_weight="1"
                             android:layout_marginStart="15dp"
+                            android:layout_weight="1"
                             android:background="@drawable/radio_button_selector"
                             android:button="@null"
                             android:drawableTop="@drawable/ic_c"
                             android:drawablePadding="20dp"
                             android:gravity="center"
+                            android:padding="10dp"
                             android:text="Y轴卡盘雕刻"
                             android:textColor="@drawable/radio_button_text_selector"
                             android:textSize="14sp"
                             android:textStyle="bold"
-                            android:visibility="gone"/>
+                            android:visibility="gone" />
 
 
                     </RadioGroup>
@@ -340,44 +340,72 @@
                 </LinearLayout>
 
                 <!-- 激光模组 -->
-                <RelativeLayout
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:background="@drawable/bg_white_ffffff_r10"
+                    android:orientation="vertical"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="15dp">
 
-                    <TextView
-                        android:id="@+id/tv_machine_detail_module_toggle"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentStart="true"
-                        android:layout_centerVertical="true"
-                        android:text="激光模组切换"
-                        android:textColor="@color/colorBlack"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
+                    <!-- 激光模组切换 -->
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
 
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_alignParentEnd="true"
-                        android:layout_centerVertical="true"
-                        android:background="@drawable/bg_gray_e6e6e6_r10"
-                        android:paddingHorizontal="10dp"
-                        android:paddingVertical="5dp">
-
-                        <Spinner
-                            android:id="@+id/spinner_machine_detail_laser_module"
+                        <TextView
+                            android:id="@+id/tv_machine_detail_module_toggle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:spinnerMode="dropdown" />
+                            android:layout_alignParentStart="true"
+                            android:layout_centerVertical="true"
+                            android:text="激光模组切换"
+                            android:textColor="@color/colorBlack"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
 
-                    </LinearLayout>
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:background="@drawable/bg_gray_e6e6e6_r10"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="5dp">
+
+                            <Spinner
+                                android:id="@+id/spinner_machine_detail_laser_module"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:spinnerMode="dropdown" />
+
+                        </LinearLayout>
 
 
-                </RelativeLayout>
+                    </RelativeLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="15dp"
+                        android:background="#e8e8e8" />
+
+                    <!-- 一键抬升Z轴 -->
+                    <TextView
+                        android:id="@+id/tv_machine_detail_zup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="5dp"
+                        android:background="@drawable/bg_green_1e853a_r10"
+                        android:gravity="center"
+                        android:padding="10dp"
+                        android:text="一键抬升Z轴"
+                        android:textColor="@color/colorWhite"
+                        android:textSize="16sp" />
+
+
+                </LinearLayout>
 
                 <!-- 火焰传感器 -->
                 <RelativeLayout
@@ -475,7 +503,7 @@
 
                 </RelativeLayout>
 
-                <!-- 红十字激光预览 -->
+                <!-- 红十字激光 -->
                 <RelativeLayout
                     android:id="@+id/rl_machine_detail_rtlaser_module"
                     android:layout_width="match_parent"
@@ -498,6 +526,38 @@
 
                     <Switch
                         android:id="@+id/switch_machine_detail_rtlaser_module"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="5dp" />
+
+                </RelativeLayout>
+
+                <!-- 照明灯 -->
+                <RelativeLayout
+                    android:id="@+id/rl_machine_detail_led_module"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:background="@drawable/bg_white_ffffff_r10"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="15dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:text="照明灯"
+                        android:textColor="@color/colorBlack"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+
+                    <Switch
+                        android:id="@+id/switch_machine_detail_led_module"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
@@ -545,7 +605,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:layout_marginBottom="16dp"
+
                     android:background="@drawable/bg_white_ffffff_r10"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="15dp">
@@ -563,6 +623,39 @@
 
                     <Switch
                         android:id="@+id/switch_machine_detail_external_screen"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="5dp" />
+
+                </RelativeLayout>
+
+                <!-- 锁定XYZ轴电机 -->
+                <RelativeLayout
+                    android:id="@+id/rl_machine_detail_lock_motor"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="16dp"
+                    android:background="@drawable/bg_white_ffffff_r10"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="15dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"
+                        android:text="锁定XYZ电机"
+                        android:textColor="@color/colorBlack"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+
+                    <Switch
+                        android:id="@+id/switch_machine_detail_lock_motor"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"

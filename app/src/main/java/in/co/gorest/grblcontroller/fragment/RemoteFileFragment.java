@@ -2,6 +2,7 @@ package in.co.gorest.grblcontroller.fragment;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -30,13 +31,18 @@ import java.util.regex.Matcher;
 
 import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
+import in.co.gorest.grblcontroller.activity.ApModelAddActivity;
+import in.co.gorest.grblcontroller.activity.FileActivity;
 import in.co.gorest.grblcontroller.adapters.RemoteFileAdapter;
+import in.co.gorest.grblcontroller.base.BaseAlertDialog;
+import in.co.gorest.grblcontroller.base.BaseDialog;
 import in.co.gorest.grblcontroller.events.MaterialSelectedEvent;
 import in.co.gorest.grblcontroller.events.RemoteFileLineJugdeCommandMessageEvent;
 import in.co.gorest.grblcontroller.events.ServiceMessageEvent;
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 import in.co.gorest.grblcontroller.model.Constants;
 import in.co.gorest.grblcontroller.util.NettyClient;
+import in.co.gorest.grblcontroller.util.WebSocketManager;
 import in.co.gorest.grblcontroller.util.ZoomViewBean;
 
 public class RemoteFileFragment extends Fragment {
@@ -119,7 +125,8 @@ public class RemoteFileFragment extends Fragment {
      */
     private void initData() {
         // TODO 检查连接并获取SD卡列表
-        boolean isConnected = NettyClient.getInstance(null).getConnectStatus();
+        WebSocketManager webSocketManager = WebSocketManager.getInstance();
+        boolean isConnected = webSocketManager.isConnected();
         if (isConnected) {
             Log.d(TAG, "isConnected=" + isConnected);
             checkSdCardData();
@@ -139,38 +146,8 @@ public class RemoteFileFragment extends Fragment {
      * 获取SD信息
      */
     private void  checkSdCardData() {
-        NettyClient.getInstance(new Handler(new Handler.Callback() {
-            @Override
-            public boolean handleMessage(@NonNull Message msg) {
-                Log.d(TAG, "message=" + msg.obj);
-                if (!TextUtils.isEmpty(msg.obj.toString())) {
-                    // 检查数据是否符合预期的格式
-                    if (isValidData(msg.obj.toString())) {
-                        // 如果符合格式，解析并添加到 remoteFileList
-                        parseData(msg.obj.toString());
-                        Log.d(TAG, "Updated remoteFileList: " + remoteFileList);
-                        // 设置 LayoutManager
-                        rvRemoteFile.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
-                        // 初始化适配器
-                        adapter = new RemoteFileAdapter(requireActivity(), remoteFileList);
-                        // 设置适配器
-                        rvRemoteFile.setAdapter(adapter);
-
-                        if (isValidSdCardData(msg.obj.toString())) {
-                            // 解析并设置 SD 卡的空间信息
-                            parseSdCardData(msg.obj.toString());
-                        }
-                    } else if (isValidSdCardData(msg.obj.toString())) {
-                        // 解析并设置 SD 卡的空间信息
-                        parseSdCardData(msg.obj.toString());
-                    }
-                } else {
-                    // 如果为空就重新查询
-                    checkSdCardData();
-                }
-                return false;
-            }
-        })).sendMsgToServer("$SD/List\r\n".getBytes(StandardCharsets.UTF_8), null);
+        WebSocketManager webSocketManager = WebSocketManager.getInstance();
+        webSocketManager.send("$SD/List");
     }
 
     /**
@@ -238,6 +215,33 @@ public class RemoteFileFragment extends Fragment {
             tvSdFree.setText(free);
             tvSdUsed.setText(used);
             tvSdTotal.setText(total);
+
+            // 转换为 MB
+            double freeMB = 0;
+            if (free != null) {
+                if (free.endsWith("GB")) {
+                    double gb = Double.parseDouble(free.replace("GB", "").trim());
+                    freeMB = gb * 1024;
+                } else if (free.endsWith("MB")) {
+                    freeMB = Double.parseDouble(free.replace("MB", "").trim());
+                }
+            }
+
+            // 弹窗提示
+            if (freeMB < 100) {
+                // 创建自定义弹窗对象
+                BaseAlertDialog baseAlertDialog = new BaseAlertDialog(requireContext());
+
+                // 显示弹窗并传入标题、内容以及确认按钮的点击事件
+                baseAlertDialog.show("存储空间不足", "检测到SD卡剩余空间小于100MB\r\n\r\n" +
+                        "避免出现异常情况，请断电拔出SD卡进行清理或在此页面进行单文件清理后再操作。", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        // 点击确认按钮后执行的操作
+                        Log.d(TAG, "用户点击了确认按钮");
+                    }
+                });
+            }
         }
     }
 
@@ -248,13 +252,11 @@ public class RemoteFileFragment extends Fragment {
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onRemoteFileLineJugdeCommandMessageEvent(RemoteFileLineJugdeCommandMessageEvent event) {
-       float maxX = event.getMaxX();
-       float maxY = event.getMaxY();
+        float maxX = event.getMaxX();
+        float maxY = event.getMaxY();
 
-       // 显示巡边弹窗
-       showDialogLineJugde(maxX, maxY);
-
-
+        // 显示巡边弹窗
+        showDialogLineJugde(maxX, maxY);
     }
 
     /**
@@ -380,12 +382,8 @@ public class RemoteFileFragment extends Fragment {
      */
     private void sendJogCommand(String command) {
         Log.d(TAG, "command=" + command);
-        NettyClient.getInstance(new Handler(new Handler.Callback() {
-            @Override
-            public boolean handleMessage(@NonNull Message msg) {
-                return false;
-            }
-        })).sendMsgToServer((command + "\r\n").getBytes(StandardCharsets.UTF_8), null);
+        WebSocketManager webSocketManager = WebSocketManager.getInstance();
+        webSocketManager.send(command);
     }
 
     /**
@@ -403,6 +401,33 @@ public class RemoteFileFragment extends Fragment {
                 Log.d(TAG, "status=" + parts[0] + " Mpos=" + parts[1] + " Wpos=" + parts[2] + " Fs=" + parts[3]);
 
                 strMachineStatus = parts[0];
+            } else {
+                if (event.getMessage().contains("[FILE:")) {
+                    String message = event.getMessage();
+
+                    if (isValidData(message)) {
+                        // 如果符合格式，解析并添加到 remoteFileList
+                        parseData(message);
+                        Log.d(TAG, "Updated remoteFileList: " + remoteFileList);
+                        // 设置 LayoutManager
+                        rvRemoteFile.setLayoutManager(new LinearLayoutManager(getActivity(), LinearLayoutManager.VERTICAL, false));
+                        // 初始化适配器
+                        adapter = new RemoteFileAdapter(requireActivity(), remoteFileList);
+                        // 设置适配器
+                        rvRemoteFile.setAdapter(adapter);
+
+                        if (isValidSdCardData(message)) {
+                            // 解析并设置 SD 卡的空间信息
+                            parseSdCardData(message);
+                        }
+                    } else if (isValidSdCardData(message)) {
+                        // 解析并设置 SD 卡的空间信息
+                        parseSdCardData(message);
+                    }
+                } else {
+                    // 如果为空就重新查询
+                    checkSdCardData();
+                }
             }
         }
     }

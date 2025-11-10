@@ -69,6 +69,7 @@ import in.co.gorest.grblcontroller.util.MyTabLayout;
 import in.co.gorest.grblcontroller.util.NettyClient;
 import in.co.gorest.grblcontroller.util.PictureUtil;
 import in.co.gorest.grblcontroller.util.ScreenInchUtils;
+import in.co.gorest.grblcontroller.util.WebSocketManager;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
@@ -150,6 +151,12 @@ public class EditActivity extends AppCompatActivity {
     // handler
     public Handler handler = new Handler();
 
+    // 门警告弹窗
+    private Dialog dialogDoorWarning;
+    // 火焰警告弹窗
+    private Dialog dialogFireWarning;
+    // 倾斜警告弹窗
+    private Dialog dialogProbeWarning;
     // 是否震动提醒
     private boolean isOpenVibrateAlert;
     // 震动提醒持续时长
@@ -276,18 +283,6 @@ public class EditActivity extends AppCompatActivity {
         seekBarBrightness.setProgressDefault(50);
         tvBrightness.setText(seekBarBrightness.getProgressDefault() + "%");
 
-//        if (!OpenCVLoader.initLocal()) {
-//            try {
-//                System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-//            } catch (UnsatisfiedLinkError e) {
-//                Log.e("OpenCV", "Cannot load OpenCV library", e);
-//            }
-//        } else {
-//            // OpenCV initialized successfully
-//            Log.d(TAG, "OpenCV initialized successfully");
-//        }
-
-
         // 获取保存的危险警报震动提醒实例值
         isOpenVibrateAlert = sharedPref.getBoolean(getString(R.string.preference_vibrate_alert), true);
         // 获取保存的危险警报震动提醒时长实例值
@@ -353,20 +348,12 @@ public class EditActivity extends AppCompatActivity {
                     startActivity(intent);
                 } else if (tvMachineStatusTips.getText().equals("暂停")){
                     // 解除暂停
-                    NettyClient.getInstance(new Handler(new Handler.Callback() {
-                        @Override
-                        public boolean handleMessage(@NonNull Message msg) {
-                            return false;
-                        }
-                    })).sendMsgToServer(("\u0018" + "\r\n").getBytes(StandardCharsets.UTF_8), null);
+                    WebSocketManager webSocketManager = WebSocketManager.getInstance();
+                    webSocketManager.send("\u0018");
                 } else if (tvMachineStatusTips.getText().equals("警告")){
                     // 解除警告
-                    NettyClient.getInstance(new Handler(new Handler.Callback() {
-                        @Override
-                        public boolean handleMessage(@NonNull Message msg) {
-                            return false;
-                        }
-                    })).sendMsgToServer(("$X" + "\r\n").getBytes(StandardCharsets.UTF_8), null);
+                    WebSocketManager webSocketManager = WebSocketManager.getInstance();
+                    webSocketManager.send("$X");
                 } else {
                     Log.d(TAG, "无效点击");
                 }
@@ -545,10 +532,10 @@ public class EditActivity extends AppCompatActivity {
                     public void subscribe(final ObservableEmitter<String> e) throws Exception {
                         switch (effect) {
                             case 0://灰度图
-                                finalBitmap = ImageProcess.convertToGreyImage(initedBitmap, initedBitmap.getWidth(), initedBitmap.getHeight(), 1, 1.8f, 1.5f, 1.5f);
+                                finalBitmap = ImageProcess.convertToGreyImage(initedBitmap, initedBitmap.getWidth(), initedBitmap.getHeight(), 1);
                                 break;
                             case 1://黑白图
-                                finalBitmap = ImageProcess.convertToBlackWhiteImage(initedBitmap, initedBitmap.getWidth(), initedBitmap.getHeight(), 1, sharp);
+                                finalBitmap = ImageProcess.convertToBlackWhiteImage(initedBitmap, initedBitmap.getWidth(), initedBitmap.getHeight(),  1, sharp);
                                 if (andReverse) {
                                     finalBitmap = ImageProcess.ReverseBlackAndWhiteImage(finalBitmap);
                                 }
@@ -569,7 +556,7 @@ public class EditActivity extends AppCompatActivity {
                             }
                         }
                         finalBitmap = Bitmap.createBitmap(finalBitmap, 0, 0, finalBitmap.getWidth(), finalBitmap.getHeight(), m, true);
-//                        // 调整对比度
+                        // 调整对比度
                         finalBitmap = adjustContrast(finalBitmap, contrastLevel);
                         // 调整亮度
                         finalBitmap = adjustBrightness(finalBitmap, brightnessLevel);
@@ -694,32 +681,31 @@ public class EditActivity extends AppCompatActivity {
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
 
-        int brightness = (int) brightnessLevel;  // 转换为整数
+        int brightness = (int) brightnessLevel;
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 int pixelColor = bitmap.getPixel(x, y);
 
                 int A = Color.alpha(pixelColor);
+
+                // 🚫 跳过完全透明像素，避免“边框”问题
+                if (A == 0) continue;
+
                 int R = Color.red(pixelColor);
                 int G = Color.green(pixelColor);
                 int B = Color.blue(pixelColor);
 
-                // 调整亮度
-                R = (int) (R + brightness);
-                G = (int) (G + brightness);
-                B = (int) (B + brightness);
-
-                // 确保 RGB 值在 0 到 255 之间
-                R = Math.min(Math.max(R, 0), 255);
-                G = Math.min(Math.max(G, 0), 255);
-                B = Math.min(Math.max(B, 0), 255);
+                R = Math.min(Math.max(R + brightness, 0), 255);
+                G = Math.min(Math.max(G + brightness, 0), 255);
+                B = Math.min(Math.max(B + brightness, 0), 255);
 
                 bitmap.setPixel(x, y, Color.argb(A, R, G, B));
             }
         }
         return bitmap;
     }
+
 
 
     /**
@@ -740,6 +726,25 @@ public class EditActivity extends AppCompatActivity {
         seekBarContrast.setAlpha(enable ? 1.0f : 0.5f);
     }
 
+
+    /**
+     * 将原始图像中的透明区域恢复到处理后的灰度图中
+     */
+    public Bitmap restoreAlphaFromOriginal(Bitmap grayBitmap, Bitmap original) {
+        Bitmap output = grayBitmap.copy(Bitmap.Config.ARGB_8888, true);
+        int width = output.getWidth();
+        int height = output.getHeight();
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                if (Color.alpha(original.getPixel(x, y)) == 0) {
+                    // 设置为全透明
+                    output.setPixel(x, y, Color.argb(0, 0, 0, 0));
+                }
+            }
+        }
+        return output;
+    }
 
 
 
@@ -796,24 +801,39 @@ public class EditActivity extends AppCompatActivity {
                     return; // 不是当前页面，直接 return
                 }
 
-                if (event.getMessage().contains("MSG:Safe door err!")  && tvMachineStatusTips.getText().equals("工作中")) {
-                    // TODO 开门弹窗
+                if (event.getMessage().contains("MSG:Safe door err") && tvMachineStatusTips.getText().equals("工作中")) { // 开门警告弹窗打开
+                    // TODO 开门警告弹窗
                     showDialogDoorWarning();
                     if (isOpenVibrateAlert) {
                         vibratePhone(this, vibrateAlertTime * 1000);
                     }
-                } else if (event.getMessage().contains("MSG:Flame err!")  && tvMachineStatusTips.getText().equals("工作中")) {
-                    // TODO 火焰弹窗
+                } else if (event.getMessage().contains("MSG:Safe door reset") && tvMachineStatusTips.getText().equals("暂停")) { // 开门警告弹窗关闭
+                    // 隐藏开门警告弹窗
+                    dialogDoorWarning.dismiss();
+                    // TODO 记录日志
+
+                } else if (event.getMessage().contains("MSG:Flame err") && tvMachineStatusTips.getText().equals("工作中")) { // 火焰警告弹窗打开
+                    // TODO 火焰警告弹窗
                     showDialogFireWarning();
                     if (isOpenVibrateAlert) {
                         vibratePhone(this, vibrateAlertTime * 1000);
                     }
-                } else if (event.getMessage().contains("MSG:Probe err!")  && tvMachineStatusTips.getText().equals("工作中")) {
-                    // TODO 倾斜弹窗
+                } else if (event.getMessage().contains("MSG:Safe Flame reset") && tvMachineStatusTips.getText().equals("暂停")) { // 火焰警告弹窗关闭
+                    // 隐藏火焰警告弹窗
+                    dialogFireWarning.dismiss();
+                    // TODO 记录日志
+
+                } else if (event.getMessage().contains("MSG:Tilt sensor") && tvMachineStatusTips.getText().equals("工作中")) { // 倾斜警告弹窗打开
+                    // TODO 倾斜警告弹窗
                     showDialogProbeWarning();
                     if (isOpenVibrateAlert) {
                         vibratePhone(this, vibrateAlertTime * 1000);
                     }
+                } else if (event.getMessage().contains("MSG:Safe Probe reset") && tvMachineStatusTips.getText().equals("暂停")) { // 倾斜警告弹窗关闭
+                    // 隐藏倾斜警告弹窗
+                    dialogProbeWarning.dismiss();
+                    // TODO 记录日志
+
                 }
             }
 
@@ -824,93 +844,93 @@ public class EditActivity extends AppCompatActivity {
      * 开门风险提示弹窗
      */
     private void showDialogDoorWarning() {
-        Dialog dialog = new Dialog(this, R.style.CustomDialog);
-        dialog.setContentView(R.layout.dialog_door_warning);
+        dialogDoorWarning = new Dialog(this, R.style.CustomDialog);
+        dialogDoorWarning.setContentView(R.layout.dialog_door_warning);
         // 设置窗口背景为透明，以显示圆角效果
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        if (dialogDoorWarning.getWindow() != null) {
+            dialogDoorWarning.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
         // 确认
-        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
+        TextView tvDialogRiskWarningConfirm = dialogDoorWarning.findViewById(R.id.tv_dialog_door_warning_confirm);
         // 确定
         tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // 隐藏弹窗
-                if (dialog.isShowing()) {
-                    dialog.dismiss();
+                if (dialogDoorWarning.isShowing()) {
+                    dialogDoorWarning.dismiss();
                 }
             }
         });
         // 设置Dialog的宽高
-        if (dialog.getWindow() != null) {
+        if (dialogDoorWarning.getWindow() != null) {
             // 设置弹窗宽度为屏幕的80%，高度自适应
-            dialog.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+            dialogDoorWarning.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
         }
         // 显示 Dialog
-        dialog.show();
+        dialogDoorWarning.show();
     }
 
     /**
      * 火焰风险提示弹窗
      */
     private void showDialogFireWarning() {
-        Dialog dialog = new Dialog(this, R.style.CustomDialog);
-        dialog.setContentView(R.layout.dialog_fire_warning);
+        dialogFireWarning = new Dialog(this, R.style.CustomDialog);
+        dialogFireWarning.setContentView(R.layout.dialog_fire_warning);
         // 设置窗口背景为透明，以显示圆角效果
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        if (dialogFireWarning.getWindow() != null) {
+            dialogFireWarning.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
         // 确认
-        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
+        TextView tvDialogRiskWarningConfirm = dialogFireWarning.findViewById(R.id.tv_dialog_door_warning_confirm);
         // 确定
         tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // 隐藏弹窗
-                if (dialog.isShowing()) {
-                    dialog.dismiss();
+                if (dialogFireWarning.isShowing()) {
+                    dialogFireWarning.dismiss();
                 }
             }
         });
         // 设置Dialog的宽高
-        if (dialog.getWindow() != null) {
+        if (dialogFireWarning.getWindow() != null) {
             // 设置弹窗宽度为屏幕的80%，高度自适应
-            dialog.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+            dialogFireWarning.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
         }
         // 显示 Dialog
-        dialog.show();
+        dialogFireWarning.show();
     }
 
     /**
      * 倾斜风险提示弹窗
      */
     private void showDialogProbeWarning() {
-        Dialog dialog = new Dialog(this, R.style.CustomDialog);
-        dialog.setContentView(R.layout.dialog_probe_warning);
+        dialogProbeWarning = new Dialog(this, R.style.CustomDialog);
+        dialogProbeWarning.setContentView(R.layout.dialog_probe_warning);
         // 设置窗口背景为透明，以显示圆角效果
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        if (dialogProbeWarning.getWindow() != null) {
+            dialogProbeWarning.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
         // 确认
-        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
+        TextView tvDialogRiskWarningConfirm = dialogProbeWarning.findViewById(R.id.tv_dialog_door_warning_confirm);
         // 确定
         tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // 隐藏弹窗
-                if (dialog.isShowing()) {
-                    dialog.dismiss();
+                if (dialogProbeWarning.isShowing()) {
+                    dialogProbeWarning.dismiss();
                 }
             }
         });
         // 设置Dialog的宽高
-        if (dialog.getWindow() != null) {
+        if (dialogProbeWarning.getWindow() != null) {
             // 设置弹窗宽度为屏幕的80%，高度自适应
-            dialog.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+            dialogProbeWarning.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
         }
         // 显示 Dialog
-        dialog.show();
+        dialogProbeWarning.show();
     }
 
     /**

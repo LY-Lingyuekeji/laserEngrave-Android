@@ -121,55 +121,55 @@ public class NettyClient {
                                 pipeline.addLast("deflater", new HttpContentCompressor());
                             }
                         }).handler(new SimpleChannelInboundHandler<ByteBuf>() { // from class: makerbase.com.mkslaser.netty.NettyClient.1
-                    @Override // io.netty.channel.ChannelInboundHandlerAdapter, io.netty.channel.ChannelInboundHandler
-                    public void channelActive(ChannelHandlerContext channelHandlerContext) throws Exception {
-                        NettyClient.getInstance(NettyClient.handler).setConnectStatus(true);
-                        PrefUtil.getInstance().put("currentStatus", "IDLE");
-                        Log.i("NettyClient", "channelActive: 连接上服务器");
-                        String unused = NettyClient.mhost = str;
-                        Message message = new Message();
-                        message.what = 6;
-                        NettyClient.handler.sendMessage(message);
-                        NettyClient.this.handleMessage(6, "");
-                    }
+                            @Override // io.netty.channel.ChannelInboundHandlerAdapter, io.netty.channel.ChannelInboundHandler
+                            public void channelActive(ChannelHandlerContext channelHandlerContext) throws Exception {
+                                NettyClient.getInstance(NettyClient.handler).setConnectStatus(true);
+                                PrefUtil.getInstance().put("currentStatus", "IDLE");
+                                Log.i("NettyClient", "channelActive: 连接上服务器");
+                                String unused = NettyClient.mhost = str;
+                                Message message = new Message();
+                                message.what = 6;
+                                NettyClient.handler.sendMessage(message);
+                                NettyClient.this.handleMessage(6, "");
+                            }
 
-                    @Override // io.netty.channel.ChannelInboundHandlerAdapter, io.netty.channel.ChannelInboundHandler
-                    public void channelInactive(ChannelHandlerContext channelHandlerContext) throws Exception {
-                        Log.i("NettyClient", "channelActive: 未连接上服务器");
-                        String unused = NettyClient.mhost = "";
-                        NettyClient.getInstance(NettyClient.handler).setConnectStatus(false);
-                        NettyClient.getInstance(NettyClient.handler).reconnect(str, i);
-                        Message message = new Message();
-                        message.what = 0;
-                        NettyClient.handler.sendMessage(message);
-                    }
+                            @Override // io.netty.channel.ChannelInboundHandlerAdapter, io.netty.channel.ChannelInboundHandler
+                            public void channelInactive(ChannelHandlerContext channelHandlerContext) throws Exception {
+                                Log.i("NettyClient", "channelActive: 未连接上服务器");
+                                String unused = NettyClient.mhost = "";
+                                NettyClient.getInstance(NettyClient.handler).setConnectStatus(false);
+                                NettyClient.getInstance(NettyClient.handler).reconnect(str, i);
+                                Message message = new Message();
+                                message.what = 0;
+                                NettyClient.handler.sendMessage(message);
+                            }
 
-                    /* JADX INFO: Access modifiers changed from: protected */
-                    @Override // io.netty.channel.SimpleChannelInboundHandler
-                    public void channelRead0(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf) throws Exception {
-                        String byteBuf2 = Unpooled.copiedBuffer(byteBuf).toString(Charset.forName("utf-8"));
-                        Log.i("NettyClient", "服务器返回-->" + byteBuf2);
-                        Message message = new Message();
-                        message.what = 2;
-                        message.obj = byteBuf2;
-                        NettyClient.handler.sendMessage(message);
-                        NettyClient.this.handleMessage(2, byteBuf2);
-                        int unused = NettyClient.hasSendCount = 0;
+                            /* JADX INFO: Access modifiers changed from: protected */
+                            @Override // io.netty.channel.SimpleChannelInboundHandler
+                            public void channelRead0(ChannelHandlerContext channelHandlerContext, ByteBuf byteBuf) throws Exception {
+                                String byteBuf2 = Unpooled.copiedBuffer(byteBuf).toString(Charset.forName("utf-8"));
+                                Log.i("NettyClient", "服务器返回-->" + byteBuf2);
+                                Message message = new Message();
+                                message.what = 2;
+                                message.obj = byteBuf2;
+                                NettyClient.handler.sendMessage(message);
+                                NettyClient.this.handleMessage(2, byteBuf2);
+                                int unused = NettyClient.hasSendCount = 0;
 
-                        // 传递消息
-                        EventBus.getDefault().post(new ServiceMessageEvent(byteBuf2));
-                    }
-                }).connect(str, i).addListener((GenericFutureListener<? extends Future<? super Void>>) new ChannelFutureListener() { // from class: makerbase.com.mkslaser.netty.NettyClient.3
-                    @Override // io.netty.util.concurrent.GenericFutureListener
-                    public void operationComplete(ChannelFuture channelFuture) throws Exception {
-                        if (channelFuture.isSuccess()) {
-                            NettyClient.this.isConnect = true;
-                            NettyClient.this.channel = channelFuture.channel();
-                            return;
-                        }
-                        NettyClient.this.isConnect = false;
-                    }
-                }).sync();
+                                // 传递消息
+                                EventBus.getDefault().post(new ServiceMessageEvent(byteBuf2));
+                            }
+                        }).connect(str, i).addListener((GenericFutureListener<? extends Future<? super Void>>) new ChannelFutureListener() { // from class: makerbase.com.mkslaser.netty.NettyClient.3
+                            @Override // io.netty.util.concurrent.GenericFutureListener
+                            public void operationComplete(ChannelFuture channelFuture) throws Exception {
+                                if (channelFuture.isSuccess()) {
+                                    NettyClient.this.isConnect = true;
+                                    NettyClient.this.channel = channelFuture.channel();
+                                    return;
+                                }
+                                NettyClient.this.isConnect = false;
+                            }
+                        }).sync();
             } catch (Exception e) {
                 Log.i("Exception-----", e.getMessage());
                 mhost = "";

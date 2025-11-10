@@ -48,6 +48,7 @@ import in.co.gorest.grblcontroller.events.ServiceMessageEvent;
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 import in.co.gorest.grblcontroller.model.Constants;
 import in.co.gorest.grblcontroller.util.NettyClient;
+import in.co.gorest.grblcontroller.util.WebSocketManager;
 import in.co.gorest.grblcontroller.util.ZoomViewBean;
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -185,7 +186,8 @@ public class RemoteFileAdapter extends RecyclerView.Adapter<RemoteFileAdapter.Vi
                             "确定", "取消",
                             v -> {
                                 // 执行删除操作
-                                NettyClient.getInstance(null).sendMsgToServer(("$SD/Delete=" + fileName + "\r\n").getBytes(StandardCharsets.UTF_8), null);
+                                WebSocketManager webSocketManager = WebSocketManager.getInstance();
+                                webSocketManager.send("$SD/Delete=" + fileName);
                                 // 从数据源中移除被删除的文件
                                 dataList.remove(position);
                                 // 通知适配器更新列表，移除指定项

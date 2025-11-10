@@ -45,12 +45,18 @@ public class BLEService extends Service {
         @SuppressLint("MissingPermission")
         @Override // android.bluetooth.BluetoothAdapter.LeScanCallback
         public void onLeScan(BluetoothDevice bluetoothDevice, int i, byte[] bArr) {
-            if (bluetoothDevice.getName() == null || !bluetoothDevice.getName().equals("MKS_BLE")) {
-                return;
+//            if (bluetoothDevice.getName() == null || !bluetoothDevice.getName().equals("MKS_BLE")) {
+//                return;
+//            }
+//            BLEService bLEService = BLEService.this;
+//            bLEService.mBluetoothGatt = bluetoothDevice.connectGatt(bLEService.getApplicationContext(), false, BLEService.this.mGattCallback);
+//            BLEService.this.mDevice = bluetoothDevice;
+            if (bluetoothDevice.getName() != null) {
+                Intent intent = new Intent("BLE_SCAN_RESULT");
+                intent.putExtra("name", bluetoothDevice.getName());
+                intent.putExtra("address", bluetoothDevice.getAddress());
+                LocalBroadcastManager.getInstance(BLEService.this).sendBroadcast(intent);
             }
-            BLEService bLEService = BLEService.this;
-            bLEService.mBluetoothGatt = bluetoothDevice.connectGatt(bLEService.getApplicationContext(), false, BLEService.this.mGattCallback);
-            BLEService.this.mDevice = bluetoothDevice;
         }
     };
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() { // from class: makerbase.com.mkslaser.Service.BLEService.2
@@ -314,9 +320,9 @@ public class BLEService extends Service {
         }
         characteristic.setValue(bArr);
         if (this.mBluetoothGatt.writeCharacteristic(characteristic)) {
-            Log.i("BluetoothService1111", "write characteristic success");
+            Log.i("BluetoothService", "write characteristic success");
         } else {
-            Log.e("BluetoothService1111", "write characteristic failed");
+            Log.e("BluetoothService", "write characteristic failed");
         }
     }
 }

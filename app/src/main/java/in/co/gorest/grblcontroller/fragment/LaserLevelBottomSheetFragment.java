@@ -38,7 +38,7 @@ public class LaserLevelBottomSheetFragment extends BottomSheetDialogFragment {
     // ListView
     private ListView listView;
     // 选项
-    private String[] options = new String[]{"10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%"};
+    private String[] options = new String[100];
 
     private OnLaserPowerSelectedListener listener;
 
@@ -109,6 +109,11 @@ public class LaserLevelBottomSheetFragment extends BottomSheetDialogFragment {
      * 初始化数据
      */
     private void initData() {
+        // 动态生成options数组
+        for (int i = 0; i < 100; i++) {
+            options[i] = String.valueOf(i + 1) + "%";
+        }
+
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1, options) {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
@@ -145,8 +150,9 @@ public class LaserLevelBottomSheetFragment extends BottomSheetDialogFragment {
                     return;
                 }
 
-                if (Integer.valueOf(etCustomizeLaserPower.getText().toString()) <= 0) {
-                    Toast.makeText(requireContext(), "请输入非0的激光功率", Toast.LENGTH_SHORT).show();
+                if (Integer.valueOf(etCustomizeLaserPower.getText().toString()) < 1) {
+                    Toast.makeText(requireContext(), "最小功率仅支持1%", Toast.LENGTH_SHORT).show();
+                    etCustomizeLaserPower.setText("1");
                     return;
                 }
 
@@ -191,30 +197,10 @@ public class LaserLevelBottomSheetFragment extends BottomSheetDialogFragment {
      */
     private int getIndexFromPower(int laserLevel) {
 
-        switch (laserLevel) {
-            case 10:
-                return 0;  // 对应 "10%"
-            case 20:
-                return 1;  // 对应 "20%"
-            case 30:
-                return 2;  // 对应 "30%"
-            case 40:
-                return 3;  // 对应 "40%"
-            case 50:
-                return 4;  // 对应 "50%"
-            case 60:
-                return 5;  // 对应 "60%"
-            case 70:
-                return 6;  // 对应 "70%"
-            case 80:
-                return 7;  // 对应 "80%"
-            case 90:
-                return 8;  // 对应 "90%"
-            case 100:
-                return 9;  // 对应 "100%"
-            default:
-                return 0;  // 默认选中 "10%"，如果值不在指定范围内
+        if (laserLevel >= 1 && laserLevel <= 100) {
+            return laserLevel - 1; // 数组从0开始
         }
+        return -1;
     }
 
     public interface OnLaserPowerSelectedListener {

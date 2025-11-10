@@ -35,6 +35,7 @@ import in.co.gorest.grblcontroller.adapters.MessageAdapter;
 import in.co.gorest.grblcontroller.events.ServiceMessageEvent;
 import in.co.gorest.grblcontroller.model.MessageModel;
 import in.co.gorest.grblcontroller.util.NettyClient;
+import in.co.gorest.grblcontroller.util.WebSocketManager;
 
 public class CommandBottomSheetFragment extends BottomSheetDialogFragment {
     // 用于日志记录的标签
@@ -216,16 +217,19 @@ public class CommandBottomSheetFragment extends BottomSheetDialogFragment {
      * @param command 命令
      */
     private void sendJogCommand(String command) {
-        boolean isConnected = NettyClient.getInstance().getConnectStatus();
+        WebSocketManager webSocketManager = WebSocketManager.getInstance();
+        boolean isConnected = webSocketManager.isConnected();
+//        boolean isConnected = NettyClient.getInstance().getConnectStatus();
         Log.d(TAG, "isConnected=" + isConnected);
         if (isConnected) {
             Log.d(TAG, "command=" + command);
-            NettyClient.getInstance(new Handler(new Handler.Callback() {
-                @Override
-                public boolean handleMessage(@NonNull Message msg) {
-                    return false;
-                }
-            })).sendMsgToServer((command + "\r\n").getBytes(StandardCharsets.UTF_8), null);
+//            NettyClient.getInstance(new Handler(new Handler.Callback() {
+//                @Override
+//                public boolean handleMessage(@NonNull Message msg) {
+//                    return false;
+//                }
+//            })).sendMsgToServer((command + "\r\n").getBytes(StandardCharsets.UTF_8), null);
+            webSocketManager.send(command + "\r\n");
         } else {
             Log.d(TAG, "未连接上设备");
         }

@@ -45,8 +45,9 @@ import in.co.gorest.grblcontroller.activity.MyCaptureActivity;
 import in.co.gorest.grblcontroller.events.ModelChangeEvent;
 import in.co.gorest.grblcontroller.events.ScanResultMessageEvent;
 import in.co.gorest.grblcontroller.util.ImgUtil;
+import in.co.gorest.grblcontroller.util.QRCodeProvider;
 
-public class QrCodeCopyModelFragment extends Fragment {
+public class QrCodeCopyModelFragment extends Fragment implements QRCodeProvider {
     // 用于日志记录的标签
     private final static String TAG = QrCodeCopyModelFragment.class.getSimpleName();
     // 二维码
@@ -260,5 +261,15 @@ public class QrCodeCopyModelFragment extends Fragment {
             Log.d(TAG, "ScanResult=" + event.getMessage());
             etQrCodeText.setText(event.getMessage());
         }
+    }
+
+    @Override
+    public Bitmap getQRCodeBitmap() {
+        if (ivQrCode.getDrawable() == null) return null;
+        ivQrCode.setDrawingCacheEnabled(true);
+        ivQrCode.buildDrawingCache();
+        Bitmap bitmap = Bitmap.createBitmap(ivQrCode.getDrawingCache());
+        ivQrCode.setDrawingCacheEnabled(false);
+        return bitmap;
     }
 }

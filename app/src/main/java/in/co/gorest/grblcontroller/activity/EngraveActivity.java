@@ -7,7 +7,9 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -15,6 +17,8 @@ import android.os.Message;
 import android.os.SystemClock;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
+import android.provider.Settings;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,20 +29,25 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
+
 import com.bumptech.glide.Glide;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+
 import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.base.BaseDialog;
@@ -47,6 +56,7 @@ import in.co.gorest.grblcontroller.events.ServiceMessageEvent;
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 import in.co.gorest.grblcontroller.model.Constants;
 import in.co.gorest.grblcontroller.util.NettyClient;
+import in.co.gorest.grblcontroller.util.WebSocketManager;
 
 public class EngraveActivity extends AppCompatActivity {
 
@@ -60,16 +70,32 @@ public class EngraveActivity extends AppCompatActivity {
     private EnhancedSharedPreferences sharedPref;
     // 返回
     private ImageView ivBack;
-    // 预览图
-    private ImageView ivPreview;
-    // 预览图遮罩层
-    private View maskView;
-    // 文件名
-    private TextView tvFilename;
+    // 机器状态
+    private TextView tvMachineStatus;
+    // 机器状态
+    private String machineStatus;
     // 雕刻速度
     private TextView tvSpeed;
     // 激光功率
     private TextView tvLaserlevel;
+    // X轴坐标
+    private TextView tvWposX;
+    // Y轴坐标
+    private TextView tvWposY;
+    // Z轴坐标
+    private TextView tvWposZ;
+
+    // 预览图
+    private ImageView ivPreview;
+    // 预览图遮罩层
+    private View maskView;
+    // 雕刻次数 TextView
+    private TextView tvEngraveCount;
+    // 雕刻次数
+    private int totalEngraveCount;
+
+    // 文件名
+    private TextView tvFilename;
     // 进度条
     private ProgressBar progressBar;
     // 百分比
@@ -83,16 +109,18 @@ public class EngraveActivity extends AppCompatActivity {
     // 终止
     private TextView tvStop;
 
-    // 机器状态
-    private String machineStatus;
+
     // 耗时线程
     private Handler elapsedTimeHandler = new Handler();
     // 开始时间
-    private long startTime;
+    private long startTime = 0;
     // 文件总行号
     private int totalLines;
     // 耗时
-    private long elapsedTime;
+    private long elapsedTime = 0;
+    //  当前是否是暂停状态
+    private boolean isPaused = false;
+    private long pausedElapsedTime = 0;   // 暂停时累计的耗时
     // 进度更新线程
     private Handler progressHandler = new Handler();
     // 是否更新标识
@@ -108,7 +136,22 @@ public class EngraveActivity extends AppCompatActivity {
 
     // 添加这个变量用于记录上一次状态
     private String lastMachineStatus = "";
-    private int currentProgress = 0;       // 当前进度记录
+    // 当前进度记录
+    private int currentProgress = 0;
+    // 机器名称
+    private String machineName;
+    // 图片路径
+    private String imagePath;
+    // 文件路径
+    private String filePath;
+
+    // 门警告弹窗
+    private Dialog dialogDoorWarning;
+    // 火焰警告弹窗
+    private Dialog dialogFireWarning;
+    // 倾斜警告弹窗
+    private Dialog dialogProbeWarning;
+
 
     // 启用矢量图支持，确保在应用中可以正确显示矢量图形
     static {
@@ -162,16 +205,26 @@ public class EngraveActivity extends AppCompatActivity {
     private void initView() {
         // 返回
         ivBack = findViewById(R.id.iv_back);
-        // 预览图
-        ivPreview = findViewById(R.id.iv_preview);
-        // 预览图遮罩层
-        maskView = findViewById(R.id.maskView);
-        // 文件名
-        tvFilename = findViewById(R.id.tv_filename);
+        // 机器状态
+        tvMachineStatus = findViewById(R.id.tv_machine_status);
         // 雕刻速度
         tvSpeed = findViewById(R.id.tv_speed);
         // 激光功率
         tvLaserlevel = findViewById(R.id.tv_laserlevel);
+        // X轴坐标（工件）
+        tvWposX = findViewById(R.id.tv_wpos_x);
+        // Y轴坐标（工件）
+        tvWposY = findViewById(R.id.tv_wpos_y);
+        // Z轴坐标（工件）
+        tvWposZ = findViewById(R.id.tv_wpos_z);
+        // 预览图
+        ivPreview = findViewById(R.id.iv_preview);
+        // 预览图遮罩层
+        maskView = findViewById(R.id.maskView);
+        // 雕刻次数
+        tvEngraveCount = findViewById(R.id.tv_engrave_count);
+        // 文件名
+        tvFilename = findViewById(R.id.tv_filename);
         // 进度条
         progressBar = findViewById(R.id.progressBar);
         // 百分比
@@ -184,8 +237,6 @@ public class EngraveActivity extends AppCompatActivity {
         tvStartOrPause = findViewById(R.id.tv_start_or_pause);
         // 终止雕刻
         tvStop = findViewById(R.id.tv_stop);
-
-
     }
 
     /**
@@ -196,16 +247,22 @@ public class EngraveActivity extends AppCompatActivity {
         syncData();
         // 初始化文件进程
 //        fileSender = FileSenderListener.getInstance();
-        // 图像预览地址
-        String imagePath = getIntent().getStringExtra("imagePath");
+        // 根据机器设置布局
+        machineName = getIntent().getStringExtra("machineName");
+        // 接收图像预览地址
+        imagePath = getIntent().getStringExtra("imagePath");
+        // 设置预览图像
         if (imagePath.isEmpty() || imagePath.equals("")) {
             Glide.with(getApplicationContext()).load(R.mipmap.ic_unknow_404).into(ivPreview);
         } else {
             Log.d(TAG, "imagePath=" + imagePath);
             Glide.with(getApplicationContext()).load(imagePath).into(ivPreview);
         }
-        // 文件地址
-        String filePath = getIntent().getStringExtra("filePath");
+        // 雕刻次数
+        totalEngraveCount = getIntent().getIntExtra("totalEngraveCount", 1);
+        Log.d(TAG, "totalEngraveCount=" + totalEngraveCount);
+        // 接收文件地址
+        filePath = getIntent().getStringExtra("filePath");
         Log.d(TAG, "filePath=" + filePath);
 //        fileSender.setGcodeFile(new File(filePath));
         File file = new File(filePath);
@@ -246,7 +303,6 @@ public class EngraveActivity extends AppCompatActivity {
                 maskView.setLayoutParams(params);
             }
         });
-
 
         // 获取保存的危险警报震动提醒实例值
         isOpenVibrateAlert = sharedPref.getBoolean(getString(R.string.preference_vibrate_alert), true);
@@ -292,20 +348,50 @@ public class EngraveActivity extends AppCompatActivity {
                     Toast.makeText(EngraveActivity.this, "未能获取机器状态，请重试", Toast.LENGTH_SHORT).show();
                 } else {
                     // Wi-Fi
-                    if (connectType.equals("AP")) {
+                    if (connectType.equals("AP") || connectType.equals("STA")) {
                         // 机器状态为IDLE 认为机器是空闲状态
                         if (machineStatus.equals(Constants.MACHINE_STATUS_IDLE)) {
-                            // 发送离线雕刻命令
-                            sendJogCommand("$SD/Run=/" + tvFilename.getText());
-                            // 开始时间
-                            startTime = SystemClock.elapsedRealtime();
-                            // 设置定时器，每1000毫秒（1秒）更新一次
-                            elapsedTimeHandler.postDelayed(runnableElapsedTime, 1000);
+                            BaseDialog.showCustomDialog(EngraveActivity.this,
+                                    "温馨提示", "您确定要开始运行机器吗？",
+                                    "确定", "取消",
+                                    v1 -> {
+                                        // 发送离线雕刻命令
+                                        sendJogCommand("$SD/Run=/" + tvFilename.getText());
+                                        // 开始时间
+                                        startTime = SystemClock.elapsedRealtime();
+
+                                        pausedElapsedTime = 0;
+                                        isPaused = false;
+
+                                        // 设置定时器，每1000毫秒（1秒）更新一次
+                                        elapsedTimeHandler.postDelayed(runnableElapsedTime, 1000);
+
+                                    },
+                                    v1 -> {
+                                        Log.d(TAG, "用户点击取消");
+                                    });
                         } else if (machineStatus.contains(Constants.MACHINE_STATUS_HOLD)) {  // 机器状态为HOLD 认为机器是暂停中
-                            sendJogCommand("~");
+                            BaseDialog.showCustomDialog(EngraveActivity.this,
+                                    "温馨提示", "您确定要开始运行机器吗？",
+                                    "确定", "取消",
+                                    v1 -> {
+                                        sendJogCommand("~");
+
+                                        // 重新设置 startTime
+                                        startTime = SystemClock.elapsedRealtime() - pausedElapsedTime;
+                                        isPaused = false;
+                                        elapsedTimeHandler.postDelayed(runnableElapsedTime, 1000);
+                                    },
+                                    v1 -> {
+                                        Log.d(TAG, "用户点击取消");
+                                    });
                         } else if (machineStatus.equals(Constants.MACHINE_STATUS_RUN)) { // 机器状态为RUN 认为机器是雕刻中
                             // 暂停雕刻
                             sendJogCommand("!");
+
+                            // 停止计时器
+                            isPaused = true;
+                            elapsedTimeHandler.removeCallbacks(runnableElapsedTime);
                         }
                     } else {
                         // BT
@@ -319,25 +405,33 @@ public class EngraveActivity extends AppCompatActivity {
         tvStop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String connectType = sharedPref.getString(getString(R.string.preference_connect_type), "AP");
-                if (machineStatus.equals("") || machineStatus.isEmpty()) {
-                    Toast.makeText(EngraveActivity.this, "未能获取机器状态，请重试", Toast.LENGTH_SHORT).show();
-                } else {
-                    // Wi-Fi
-                    if (connectType.equals("AP")) {
-                        // 终止雕刻
-                        sendJogCommand("\u0018");
-                        // 销毁时移除所有回调和消息
-                        elapsedTimeHandler.removeCallbacks(runnableElapsedTime);
-                    } else {
-                        // BT
-                    }
-                    // 停止雕刻的逻辑
-                    isStreaming = false;
-                    progressHandler.removeCallbacks(progressRunnable); // 停止进度更新线程
-                    updateProgressBar(100); // 设置进度条为100%
-                }
+                BaseDialog.showCustomDialog(EngraveActivity.this,
+                        "温馨提示", "您确定要停止机器吗？您的雕刻作品将不会被保存",
+                        "确定", "取消",
+                        v1 -> {
+                            String connectType = sharedPref.getString(getString(R.string.preference_connect_type), "AP");
+                            if (machineStatus.equals("") || machineStatus.isEmpty()) {
+                                Toast.makeText(EngraveActivity.this, "未能获取机器状态，请重试", Toast.LENGTH_SHORT).show();
+                            } else {
+                                // Wi-Fi
+                                if (connectType.equals("AP") || connectType.equals("STA")) {
+                                    // 终止雕刻
+                                    sendJogCommand("\u0018");
+                                    // 销毁时移除所有回调和消息
+                                    elapsedTimeHandler.removeCallbacks(runnableElapsedTime);
+                                } else {
+                                    // BT
+                                }
+                                // 停止雕刻的逻辑
+                                isStreaming = false;
+                                progressHandler.removeCallbacks(progressRunnable); // 停止进度更新线程
+                                updateProgressBar(100); // 设置进度条为100%
+                            }
 
+                        },
+                        v1 -> {
+                            Log.d(TAG, "用户点击取消");
+                        });
             }
         });
     }
@@ -349,9 +443,6 @@ public class EngraveActivity extends AppCompatActivity {
         @Override
         public void run() {
             if (isStreaming) {
-//                int currentLine = fileSender.getRowsSent();
-//                int totalLines = fileSender.getRowsInFile();
-//                int progress = (int) (((float) currentLine / totalLines) * 100);
                 updateProgressBar(currentProgress);
 
                 // 如果还在雕刻，继续更新
@@ -382,7 +473,6 @@ public class EngraveActivity extends AppCompatActivity {
      * 同步数据
      */
     private void syncData() {
-
         // 使用自定义布局创建 AlertDialog
         LayoutInflater inflater = LayoutInflater.from(this);
         View dialogView = inflater.inflate(R.layout.dialog_transform, null);
@@ -405,23 +495,26 @@ public class EngraveActivity extends AppCompatActivity {
     private Runnable runnableElapsedTime = new Runnable() {
         @Override
         public void run() {
-            // 计算耗时
-            elapsedTime = SystemClock.elapsedRealtime() - startTime;
+            if (!isPaused) {
+                // 计算耗时
+                elapsedTime = SystemClock.elapsedRealtime() - startTime;
+                pausedElapsedTime = elapsedTime; // 更新为最新的暂停时刻
 
-            // 格式化耗时
-            String formattedElapsedTime = formatElapsedTime(elapsedTime);
+                // 格式化耗时
+                String formattedElapsedTime = formatElapsedTime(elapsedTime);
 
-            // 更新UI（确保在主线程中更新UI）
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Log.d(TAG, "耗时：" + elapsedTime + "毫秒");
-                    tvExpenditureTime.setText(formattedElapsedTime);
-                }
-            });
+                // 更新UI（确保在主线程中更新UI）
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.d(TAG, "耗时：" + elapsedTime + "毫秒");
+                        tvExpenditureTime.setText(formattedElapsedTime);
+                    }
+                });
 
-            // 再次设置定时器
-            elapsedTimeHandler.postDelayed(this, 1000);
+                // 再次设置定时器
+                elapsedTimeHandler.postDelayed(this, 1000);
+            }
         }
     };
 
@@ -488,12 +581,8 @@ public class EngraveActivity extends AppCompatActivity {
      */
     private void sendJogCommand(String command) {
         Log.d(TAG, "command=" + command);
-        NettyClient.getInstance(new Handler(new Handler.Callback() {
-            @Override
-            public boolean handleMessage(@NonNull Message msg) {
-                return false;
-            }
-        })).sendMsgToServer((command + "\r\n").getBytes(StandardCharsets.UTF_8), null);
+        WebSocketManager webSocketManager = WebSocketManager.getInstance();
+        webSocketManager.send(command);
     }
 
 
@@ -516,40 +605,78 @@ public class EngraveActivity extends AppCompatActivity {
                 String[] parts = event.getMessage().substring(1, event.getMessage().toString().length() - 1).split("\\|");
                 Log.d(TAG, "status=" + parts[0] + " Mpos=" + parts[1] + " Wpos=" + parts[2] + " Fs=" + parts[3]);
 
+                // 设置机器状态
                 lastMachineStatus = machineStatus; // 在更新前记录旧状态
                 machineStatus = parts[0];          // 更新当前状态
+                tvMachineStatus.setText(machineStatus);
+                // 设置状态颜色
+                if (machineStatus.equals(Constants.MACHINE_STATUS_IDLE)) {
+                    tvMachineStatus.setTextColor(Color.parseColor("#000000"));
+                    tvStartOrPause.setText("开始雕刻");
+                } else if (machineStatus.contains(Constants.MACHINE_STATUS_HOLD)) {
+                    tvMachineStatus.setTextColor(Color.parseColor("#c42b1c"));
+                    tvStartOrPause.setText("开始雕刻");
+                } else if (machineStatus.equals(Constants.MACHINE_STATUS_ALARM)) {
+                    tvMachineStatus.setTextColor(Color.parseColor("#fd8400"));
+                } else if (machineStatus.equals(Constants.MACHINE_STATUS_RUN)) {
+                    tvMachineStatus.setTextColor(Color.parseColor("#1e853a"));
+                    tvStartOrPause.setText("暂停雕刻");
+                }
+
+                // 设置工件坐标
+                String[] WposParts = parts[2].substring(5, parts[2].length()).split(",");
+                Log.d(TAG, "Wpos X=" + WposParts[0] + " Y=" + WposParts[1] + " Z=" + WposParts[2]);
+                tvWposX.setText("X：" + WposParts[0]);
+                tvWposY.setText("Y：" + WposParts[1]);
+                tvWposZ.setText("Z：" + WposParts[2]);
+
 
                 // 检查是否从 Run -> Idle，并且进度没到100
-                if (lastMachineStatus.equals(Constants.MACHINE_STATUS_RUN) && machineStatus.equals(Constants.MACHINE_STATUS_IDLE) && currentProgress < 100) {
+                if (lastMachineStatus.equals(Constants.MACHINE_STATUS_RUN) && machineStatus.equals(Constants.MACHINE_STATUS_IDLE) && currentProgress <= 100) {
                     Log.d(TAG, "检测到状态由Run变为Idle，即从工作状态到空闲状态，但进度未满，强制设为100");
                     updateProgressBar(100);
-                    Toast.makeText(EngraveActivity.this, "雕刻完成", Toast.LENGTH_SHORT).show();
+                    // 销毁时移除所有回调和消息
                     elapsedTimeHandler.removeCallbacks(runnableElapsedTime);
-                    currentProgress = 100; // 更新当前进度
+                    // 更新当前进度
+                    currentProgress = 100;
+
+                    // 雕刻完成
+                    Toast.makeText(EngraveActivity.this, "雕刻完成，共计 " + totalEngraveCount + " 次", Toast.LENGTH_LONG).show();
+                    // 跳转雕刻完成页面
+                    Intent intent = new Intent(EngraveActivity.this, FinishEngraveActivity.class);
+                    intent.putExtra("machineName", machineName);
+                    intent.putExtra("imagePath", imagePath);
+                    intent.putExtra("filePath", filePath);
+                    intent.putExtra("totalEngraveCount", totalEngraveCount);
+                    // 启动跳转
+                    startActivity(intent);
+                    // 关闭当前页面
+                    finish();
                 }
 
                 for (String part : parts) {
                     if (part.startsWith("FS")) {
-                        String[] speedAndLaserLevel = part.substring(3, part.length() - 1).split(",");
-                        tvSpeed.setText(speedAndLaserLevel[0]);
-                        tvLaserlevel.setText(String.valueOf(Integer.valueOf(speedAndLaserLevel[1]) / 10));
+                        String[] speedAndLaserLevel = part.substring(3, part.length()).split(",");
+                        tvSpeed.setText("F：" + speedAndLaserLevel[0]);
+                        tvLaserlevel.setText("S：" + Integer.valueOf(speedAndLaserLevel[1]) / 10);
                     }
 
                     if (part.startsWith("SD")) {
                         String[] progressStrings = part.substring(3, part.length() - 1).split(",");
                         Float progress = Float.valueOf(progressStrings[0]);
-
+                        Log.d(TAG, "progress=" + progress);
                         int roundedProgress = Math.round(progress);
-
                         currentProgress = roundedProgress; // 更新当前进度记录
                         updateProgressBar(roundedProgress);
 
+                        // 计算当前是第几次雕刻
+                        int currentEngraveCount = Math.min(
+                                (int) Math.floor(progress / (100f / totalEngraveCount)) + 1,
+                                totalEngraveCount
+                        );
 
-                        if (roundedProgress == 100) {
-                            Toast.makeText(EngraveActivity.this, "雕刻完成", Toast.LENGTH_SHORT).show();
-                            // 销毁时移除所有回调和消息
-                            elapsedTimeHandler.removeCallbacks(runnableElapsedTime);
-                        }
+                        // 更新UI显示
+                        tvEngraveCount.setText("第" + currentEngraveCount + "次/" + totalEngraveCount + "次");
                     }
 
                 }
@@ -559,24 +686,39 @@ public class EngraveActivity extends AppCompatActivity {
                     return; // 不是当前页面，直接 return
                 }
 
-                if (event.getMessage().contains("MSG:Safe door err!") && machineStatus.equals(Constants.MACHINE_STATUS_RUN)) {
-                    // TODO 开门弹窗
+                if (event.getMessage().contains("MSG:Safe door err") && machineStatus.equals(Constants.MACHINE_STATUS_RUN)) { // 开门警告弹窗打开
+                    // TODO 开门警告弹窗
                     showDialogDoorWarning();
                     if (isOpenVibrateAlert) {
                         vibratePhone(this, vibrateAlertTime * 1000);
                     }
-                } else if (event.getMessage().contains("MSG:Flame err!") && machineStatus.equals(Constants.MACHINE_STATUS_RUN)) {
-                    // TODO 火焰弹窗
+                } else if (event.getMessage().contains("MSG:Safe door reset") && machineStatus.contains(Constants.MACHINE_STATUS_HOLD)) { // 开门警告弹窗关闭
+                    // 隐藏开门警告弹窗
+                    dialogDoorWarning.dismiss();
+                    // TODO 记录日志
+
+                } else if (event.getMessage().contains("MSG:Flame err") && machineStatus.equals(Constants.MACHINE_STATUS_RUN)) { // 火焰警告弹窗打开
+                    // TODO 火焰警告弹窗
                     showDialogFireWarning();
                     if (isOpenVibrateAlert) {
                         vibratePhone(this, vibrateAlertTime * 1000);
                     }
-                } else if (event.getMessage().contains("MSG:Probe err!") && machineStatus.equals(Constants.MACHINE_STATUS_RUN)) {
-                    // TODO 倾斜弹窗
+                } else if (event.getMessage().contains("MSG:Safe Flame reset") && machineStatus.contains(Constants.MACHINE_STATUS_HOLD)) { // 火焰警告弹窗关闭
+                    // 隐藏火焰警告弹窗
+                    dialogFireWarning.dismiss();
+                    // TODO 记录日志
+
+                } else if (event.getMessage().contains("MSG:Tilt sensor") && machineStatus.equals(Constants.MACHINE_STATUS_RUN)) { // 倾斜警告弹窗打开
+                    // TODO 倾斜警告弹窗
                     showDialogProbeWarning();
                     if (isOpenVibrateAlert) {
                         vibratePhone(this, vibrateAlertTime * 1000);
                     }
+                } else if (event.getMessage().contains("MSG:Safe Probe reset") && machineStatus.contains(Constants.MACHINE_STATUS_HOLD)) { // 倾斜警告弹窗关闭
+                    // 隐藏倾斜警告弹窗
+                    dialogProbeWarning.dismiss();
+                    // TODO 记录日志
+
                 }
             }
         }
@@ -586,93 +728,93 @@ public class EngraveActivity extends AppCompatActivity {
      * 开门风险提示弹窗
      */
     private void showDialogDoorWarning() {
-        Dialog dialog = new Dialog(this, R.style.CustomDialog);
-        dialog.setContentView(R.layout.dialog_door_warning);
+        dialogDoorWarning = new Dialog(this, R.style.CustomDialog);
+        dialogDoorWarning.setContentView(R.layout.dialog_door_warning);
         // 设置窗口背景为透明，以显示圆角效果
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        if (dialogDoorWarning.getWindow() != null) {
+            dialogDoorWarning.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
         // 确认
-        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
+        TextView tvDialogRiskWarningConfirm = dialogDoorWarning.findViewById(R.id.tv_dialog_door_warning_confirm);
         // 确定
         tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // 隐藏弹窗
-                if (dialog.isShowing()) {
-                    dialog.dismiss();
+                if (dialogDoorWarning.isShowing()) {
+                    dialogDoorWarning.dismiss();
                 }
             }
         });
         // 设置Dialog的宽高
-        if (dialog.getWindow() != null) {
+        if (dialogDoorWarning.getWindow() != null) {
             // 设置弹窗宽度为屏幕的80%，高度自适应
-            dialog.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+            dialogDoorWarning.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
         }
         // 显示 Dialog
-        dialog.show();
+        dialogDoorWarning.show();
     }
 
     /**
      * 火焰风险提示弹窗
      */
     private void showDialogFireWarning() {
-        Dialog dialog = new Dialog(this, R.style.CustomDialog);
-        dialog.setContentView(R.layout.dialog_fire_warning);
+        dialogFireWarning = new Dialog(this, R.style.CustomDialog);
+        dialogFireWarning.setContentView(R.layout.dialog_fire_warning);
         // 设置窗口背景为透明，以显示圆角效果
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        if (dialogFireWarning.getWindow() != null) {
+            dialogFireWarning.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
         // 确认
-        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
+        TextView tvDialogRiskWarningConfirm = dialogFireWarning.findViewById(R.id.tv_dialog_door_warning_confirm);
         // 确定
         tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // 隐藏弹窗
-                if (dialog.isShowing()) {
-                    dialog.dismiss();
+                if (dialogFireWarning.isShowing()) {
+                    dialogFireWarning.dismiss();
                 }
             }
         });
         // 设置Dialog的宽高
-        if (dialog.getWindow() != null) {
+        if (dialogFireWarning.getWindow() != null) {
             // 设置弹窗宽度为屏幕的80%，高度自适应
-            dialog.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+            dialogFireWarning.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
         }
         // 显示 Dialog
-        dialog.show();
+        dialogFireWarning.show();
     }
 
     /**
      * 倾斜风险提示弹窗
      */
     private void showDialogProbeWarning() {
-        Dialog dialog = new Dialog(this, R.style.CustomDialog);
-        dialog.setContentView(R.layout.dialog_probe_warning);
+        dialogProbeWarning = new Dialog(this, R.style.CustomDialog);
+        dialogProbeWarning.setContentView(R.layout.dialog_probe_warning);
         // 设置窗口背景为透明，以显示圆角效果
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        if (dialogProbeWarning.getWindow() != null) {
+            dialogProbeWarning.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
         // 确认
-        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
+        TextView tvDialogRiskWarningConfirm = dialogProbeWarning.findViewById(R.id.tv_dialog_door_warning_confirm);
         // 确定
         tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // 隐藏弹窗
-                if (dialog.isShowing()) {
-                    dialog.dismiss();
+                if (dialogProbeWarning.isShowing()) {
+                    dialogProbeWarning.dismiss();
                 }
             }
         });
         // 设置Dialog的宽高
-        if (dialog.getWindow() != null) {
+        if (dialogProbeWarning.getWindow() != null) {
             // 设置弹窗宽度为屏幕的80%，高度自适应
-            dialog.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+            dialogProbeWarning.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
         }
         // 显示 Dialog
-        dialog.show();
+        dialogProbeWarning.show();
     }
 
     /**
@@ -715,6 +857,7 @@ public class EngraveActivity extends AppCompatActivity {
         animator.setDuration(500); // 设置动画持续时间
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
+
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
                 // 计算动画中的当前高度
                 int animatedHeight = (int) valueAnimator.getAnimatedValue();
@@ -725,6 +868,4 @@ public class EngraveActivity extends AppCompatActivity {
         });
         animator.start();
     }
-
-
 }

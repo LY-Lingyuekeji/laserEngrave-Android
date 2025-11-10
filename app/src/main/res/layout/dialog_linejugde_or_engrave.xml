@@ -34,10 +34,72 @@
         android:src="@mipmap/ic_linejugde_tips"
         android:scaleType="centerCrop"/>
 
+    <!-- 雕刻次数 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:text="雕刻次数："
+            android:textColor="@color/colorBlack"
+            android:textSize="16sp"
+            android:gravity="center"
+            />
+
+        <TextView
+            android:id="@+id/tv_engrave_num_sub"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/bg_green_1e853a_r100"
+            android:text="-"
+            android:textColor="@color/colorWhite"
+            android:textSize="24sp"
+            android:gravity="center"/>
+
+        <EditText
+            android:id="@+id/et_engrave_num"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/bg_gray_999999_r30"
+            android:textSize="24sp"
+            android:textColor="@color/colorWhite"
+            android:hint="1"
+            android:textColorHint="@color/colorWhite"
+            android:gravity="center"/>
+
+
+
+
+
+        <TextView
+            android:id="@+id/tv_engrave_num_add"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/bg_green_1e853a_r100"
+            android:text="+"
+            android:textColor="@color/colorWhite"
+            android:textSize="24sp"
+            android:gravity="center"/>
+
+
+    </LinearLayout>
+
+    <!-- 预览范围或雕刻 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="35dp"
         android:gravity="center"
         android:orientation="horizontal">
 

@@ -58,6 +58,7 @@ import in.co.gorest.grblcontroller.listeners.MachineStatusListener;
 import in.co.gorest.grblcontroller.model.Constants;
 import in.co.gorest.grblcontroller.model.EffectBean;
 import in.co.gorest.grblcontroller.model.PictureBean;
+import in.co.gorest.grblcontroller.model.ScanDirection;
 import in.co.gorest.grblcontroller.util.FileManager;
 import in.co.gorest.grblcontroller.util.FileUploader;
 import in.co.gorest.grblcontroller.util.FileUtils;
@@ -532,7 +533,7 @@ public class WorkTabFragment extends BaseFragment {
                     public void subscribe(final ObservableEmitter<String> e) throws Exception {
                         switch (effect) {
                             case 0://灰度图
-                                finalBitmap = ImageProcess.convertToGreyImage(initedBitmap, initedBitmap.getWidth(), initedBitmap.getHeight(), 1, 1.35f, 1.8f, 1.0f);
+                                finalBitmap = ImageProcess.convertToGreyImage(initedBitmap, initedBitmap.getWidth(), initedBitmap.getHeight(), 1);
                                 break;
                             case 1://黑白图
                                 finalBitmap = ImageProcess.convertToBlackWhiteImage(initedBitmap, initedBitmap.getWidth(), initedBitmap.getHeight(), 1, sharp);
@@ -609,45 +610,45 @@ public class WorkTabFragment extends BaseFragment {
 
         File finalBitmapFile = ImgUtil.saveBitmap("2_finalBitmap_" + System.currentTimeMillis() + ".png", finalBitmap);
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Image2Gcode image2Gcode = new Image2Gcode();
-                Bitmap adjustBitmap = ImageProcess.imageResize(finalBitmap, Integer.valueOf(editWidth.getText().toString()), Integer.valueOf(editHeight.getText().toString()), resols);
-                strcontent = image2Gcode.image2Gcode(adjustBitmap, resols, Integer.valueOf(editSpeed.getText().toString()) * 10, Integer.valueOf(editDepth.getText().toString()) * 10, 0, 0);
-                FileUtils.writeTxtToFile(strcontent, GrblController.getInstance().getExternalFilesDir(null) + "/laser/", System.currentTimeMillis() + ".nc", new GcodeResults() {
-                    @Override
-                    public void onGcodeResults(String results, File file) {
-                        Log.d(TAG, "file:" + file.getPath());
-                        dialogTips.dismiss();
-                        dialogSecond.dismiss();
-                        // 装载文件
-                        String connectType = sharedPref.getString(getString(R.string.connect_type), "AP");
-                        fileSender.setGcodeFile(new File(file.getPath()));
-                        if ("BT".equals(connectType)) {
-                            if (fileSender.getGcodeFile().exists()) {
-                                fileSender.setElapsedTime("00:00:00");
-                                new FileSenderTabFragment.ReadFileAsyncTask().execute(fileSender.getGcodeFile());
-                                sharedPref.edit().putString(getString(R.string.most_recent_selected_file), fileSender.getGcodeFile().getAbsolutePath()).apply();
-                            } else {
-                                EventBus.getDefault().post(new UiToastEvent(getString(R.string.text_file_not_found), true, true));
-                            }
-                        } else {
-                           EventBus.getDefault().post(new APModelUploadEvent(file.getPath().toString()));
-                        }
-
-                        // 跳转文件装载页面
-                        EventBus.getDefault().post(new ViewPagerItemEvent(1));
-
-                    }
-
-                    @Override
-                    public void onGcodeResults(List<String> gcode) {
-
-                    }
-                });
-            }
-        }).start();
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                Image2Gcode image2Gcode = new Image2Gcode();
+//                Bitmap adjustBitmap = ImageProcess.imageResize(finalBitmap, Integer.valueOf(editWidth.getText().toString()), Integer.valueOf(editHeight.getText().toString()), resols);
+//                strcontent = image2Gcode.image2GcodeForCNC(adjustBitmap, 30,30, Integer.valueOf(editSpeed.getText().toString()) * 10, Integer.valueOf(editDepth.getText().toString()) * 10, 0, 0);
+//                FileUtils.writeTxtToFile(strcontent, GrblController.getInstance().getExternalFilesDir(null) + "/laser/", System.currentTimeMillis() + ".nc", new GcodeResults() {
+//                    @Override
+//                    public void onGcodeResults(String results, File file) {
+//                        Log.d(TAG, "file:" + file.getPath());
+//                        dialogTips.dismiss();
+//                        dialogSecond.dismiss();
+//                        // 装载文件
+//                        String connectType = sharedPref.getString(getString(R.string.connect_type), "AP");
+//                        fileSender.setGcodeFile(new File(file.getPath()));
+//                        if ("BT".equals(connectType)) {
+//                            if (fileSender.getGcodeFile().exists()) {
+//                                fileSender.setElapsedTime("00:00:00");
+//                                new FileSenderTabFragment.ReadFileAsyncTask().execute(fileSender.getGcodeFile());
+//                                sharedPref.edit().putString(getString(R.string.most_recent_selected_file), fileSender.getGcodeFile().getAbsolutePath()).apply();
+//                            } else {
+//                                EventBus.getDefault().post(new UiToastEvent(getString(R.string.text_file_not_found), true, true));
+//                            }
+//                        } else {
+//                           EventBus.getDefault().post(new APModelUploadEvent(file.getPath().toString()));
+//                        }
+//
+//                        // 跳转文件装载页面
+//                        EventBus.getDefault().post(new ViewPagerItemEvent(1));
+//
+//                    }
+//
+//                    @Override
+//                    public void onGcodeResults(List<String> gcode) {
+//
+//                    }
+//                });
+//            }
+//        }).start();
     }
 
 

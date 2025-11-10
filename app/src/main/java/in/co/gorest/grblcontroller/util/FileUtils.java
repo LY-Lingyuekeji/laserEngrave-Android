@@ -14,12 +14,14 @@ import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.util.Log;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -68,6 +70,63 @@ public class FileUtils {
         }.start();
 
     }
+
+
+    public static void writeTxtToFileNew(
+            final List<String> strcontent,
+            final String filePath,
+            final String fileName,
+            final GcodeResults gcodeResults) {
+
+        new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                BufferedWriter writer = null;
+                try {
+                    // 生成文件夹路径
+                    makeFilePath(filePath, fileName);
+
+                    String strFilePath = filePath + "/" + fileName;
+                    File file = new File(strFilePath);
+
+                    // 如果文件已存在则删除
+                    if (file.exists()) {
+                        file.delete();
+                    }
+
+                    // 使用 BufferedWriter 更高效
+                    writer = new BufferedWriter(new FileWriter(file, false));
+                    for (String line : strcontent) {
+                        writer.write(line);
+                        writer.write("\r\n"); // 或 writer.newLine(); 视平台而定
+                    }
+
+                    writer.flush();
+
+                    if (gcodeResults != null) {
+                        gcodeResults.onGcodeResults(strFilePath, file);
+                    }
+
+                    Log.e("spm", "File size: " + file.length());
+
+                } catch (Exception e) {
+                    if (gcodeResults != null) {
+                        gcodeResults.onGcodeResults("Error", null);
+                    }
+                    Log.e("spm", "Error on write File: " + e);
+                } finally {
+                    try {
+                        if (writer != null) writer.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }.start();
+    }
+
+
 
     public static String saveBitmap(Bitmap bitmap, String sdCardDir, String tmplName) {
         String lutePath = "";

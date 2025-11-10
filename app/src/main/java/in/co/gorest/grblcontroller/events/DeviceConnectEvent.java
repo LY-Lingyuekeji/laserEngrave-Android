@@ -2,37 +2,47 @@ package in.co.gorest.grblcontroller.events;
 
 public class DeviceConnectEvent {
 
-    private String type;
-    private String name;
-    private String address;
+    private String connectType;
+    private String machineName;
+    private String wifiName;
+    private String ipAddress;
 
-    public DeviceConnectEvent(String type, String name, String address) {
-        this.type = type;
-        this.name = name;
-        this.address = address;
+    public DeviceConnectEvent(String connectType, String machineName, String wifiName, String ipAddress) {
+        this.connectType = connectType;
+        this.machineName = machineName;
+        this.wifiName = wifiName;
+        this.ipAddress = ipAddress;
     }
 
-    public String getType() {
-        return type;
+    public String getIpAddress() {
+        return ipAddress;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setIpAddress(String ipAddress) {
+        this.ipAddress = ipAddress;
     }
 
-    public String getName() {
-        return name;
+    public String getWifiName() {
+        return wifiName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setWifiName(String wifiName) {
+        this.wifiName = wifiName;
     }
 
-    public String getAddress() {
-        return address;
+    public String getMachineName() {
+        return machineName;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setMachineName(String machineName) {
+        this.machineName = machineName;
+    }
+
+    public String getConnectType() {
+        return connectType;
+    }
+
+    public void setConnectType(String connectType) {
+        this.connectType = connectType;
     }
 }

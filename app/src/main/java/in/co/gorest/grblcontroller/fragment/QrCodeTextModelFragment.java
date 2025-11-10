@@ -35,8 +35,9 @@ import in.co.gorest.grblcontroller.BuildConfig;
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.activity.EditActivity;
 import in.co.gorest.grblcontroller.util.ImgUtil;
+import in.co.gorest.grblcontroller.util.QRCodeProvider;
 
-public class QrCodeTextModelFragment extends Fragment {
+public class QrCodeTextModelFragment extends Fragment implements QRCodeProvider {
     // 用于日志记录的标签
     private final static String TAG = QrCodeTextModelFragment.class.getSimpleName();
     // 二维码
@@ -213,4 +214,15 @@ public class QrCodeTextModelFragment extends Fragment {
         }
         imageView.setImageBitmap(bitmap);
     }
+
+    @Override
+    public Bitmap getQRCodeBitmap() {
+        if (ivQrCode.getDrawable() == null) return null;
+        ivQrCode.setDrawingCacheEnabled(true);
+        ivQrCode.buildDrawingCache();
+        Bitmap bitmap = Bitmap.createBitmap(ivQrCode.getDrawingCache());
+        ivQrCode.setDrawingCacheEnabled(false);
+        return bitmap;
+    }
+
 }

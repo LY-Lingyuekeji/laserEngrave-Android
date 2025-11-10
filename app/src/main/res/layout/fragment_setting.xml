@@ -6,7 +6,7 @@
     android:orientation="vertical"
     tools:context=".fragment.SettingFragment">
 
-
+    <!-- 顶部图片 -->
     <ImageView
         android:layout_width="240dp"
         android:layout_height="26dp"
@@ -14,6 +14,7 @@
         android:layout_marginTop="10dp"
         android:src="@drawable/home_top_logo" />
 
+    <!-- 使用指南 && 常见问题 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="150dp"
@@ -23,6 +24,7 @@
         android:orientation="horizontal"
         android:padding="15dp">
 
+        <!-- 使用指南 -->
         <LinearLayout
             android:id="@+id/ll_setting_guide"
             android:layout_width="0dp"
@@ -49,6 +51,7 @@
 
         </LinearLayout>
 
+        <!-- 常见问题 -->
         <LinearLayout
             android:id="@+id/ll_setting_question"
             android:layout_width="0dp"
@@ -76,9 +79,9 @@
 
         </LinearLayout>
 
-
     </LinearLayout>
 
+    <!-- 操作模式 -->
     <RelativeLayout
         android:id="@+id/rl_setting_model"
         android:layout_width="match_parent"
@@ -126,6 +129,7 @@
 
     </RelativeLayout>
 
+    <!-- 语言 -->
     <RelativeLayout
         android:id="@+id/rl_setting_language"
         android:layout_width="match_parent"
@@ -172,6 +176,36 @@
 
     </RelativeLayout>
 
+    <!-- 历史记录 -->
+    <RelativeLayout
+        android:id="@+id/rl_setting_history"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="15dp"
+        android:background="@drawable/bg_white_ffffff_r20"
+        android:padding="15dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:text="历史记录"
+            android:textColor="@color/colorBlack"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_arrow_right" />
+
+
+    </RelativeLayout>
+
+    <!-- 用户协议 -->
     <RelativeLayout
         android:id="@+id/rl_setting_agreement"
         android:layout_width="match_parent"
@@ -200,6 +234,7 @@
 
     </RelativeLayout>
 
+    <!-- 清除缓存 -->
     <RelativeLayout
         android:id="@+id/rl_setting_clean"
         android:layout_width="match_parent"
@@ -246,6 +281,7 @@
 
     </RelativeLayout>
 
+    <!-- 设置 -->
     <RelativeLayout
         android:id="@+id/rl_setting_settings"
         android:layout_width="match_parent"
@@ -275,6 +311,7 @@
 
     </RelativeLayout>
 
+    <!-- 关于 -->
     <RelativeLayout
         android:id="@+id/rl_setting_about"
         android:layout_width="match_parent"
@@ -341,6 +378,36 @@
                 />
 
         </LinearLayout>
+
+
+    </RelativeLayout>
+
+    <!-- 历史记录 -->
+    <RelativeLayout
+        android:id="@+id/rl_setting_test"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="15dp"
+        android:background="@drawable/bg_white_ffffff_r20"
+        android:padding="15dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:text="测试测试"
+            android:textColor="@color/colorBlack"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_arrow_right" />
 
 
     </RelativeLayout>

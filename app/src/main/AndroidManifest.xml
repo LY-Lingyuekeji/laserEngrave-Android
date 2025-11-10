@@ -87,6 +87,7 @@
             android:screenOrientation="portrait"
             android:supportsPictureInPicture="false"
             android:theme="@style/AppTheme.NoActionBar"
+            android:launchMode="singleTop"
             tools:targetApi="n"
             tools:ignore="LockedOrientationActivity,NonResizeableActivity" />
 
@@ -248,6 +249,13 @@
             tools:ignore="NonResizeableActivity" />
 
         <activity
+            android:name=".activity.FinishEngraveActivity"
+            android:resizeableActivity="false"
+            android:supportsPictureInPicture="false"
+            android:theme="@style/AppTheme.NoActionBar"
+            tools:ignore="NonResizeableActivity" />
+
+        <activity
             android:name=".activity.TelnetConnectionActivity"
             android:resizeableActivity="false"
             android:screenOrientation="portrait"
@@ -308,6 +316,24 @@
             tools:ignore="LockedOrientationActivity,NonResizeableActivity"/>
 
         <activity
+            android:name=".activity.EngraveHistoryActivity"
+            android:resizeableActivity="false"
+            android:screenOrientation="portrait"
+            android:supportsPictureInPicture="false"
+            android:theme="@style/AppTheme.NoActionBar"
+            tools:targetApi="n"
+            tools:ignore="LockedOrientationActivity,NonResizeableActivity"/>
+
+        <activity
+            android:name=".activity.DeviceConnectRecordActivity"
+            android:resizeableActivity="false"
+            android:screenOrientation="portrait"
+            android:supportsPictureInPicture="false"
+            android:theme="@style/AppTheme.NoActionBar"
+            tools:targetApi="n"
+            tools:ignore="LockedOrientationActivity,NonResizeableActivity"/>
+
+        <activity
             android:name=".activity.AgreementActivity"
             android:resizeableActivity="false"
             android:screenOrientation="portrait"
@@ -325,10 +351,8 @@
             tools:targetApi="n"
             tools:ignore="LockedOrientationActivity,NonResizeableActivity"/>
 
-
-
         <activity
-            android:name=".activity.STAModelActivity"
+            android:name=".activity.STAModelAddActivity"
             android:resizeableActivity="false"
             android:screenOrientation="portrait"
             android:supportsPictureInPicture="false"
@@ -337,7 +361,7 @@
             tools:ignore="LockedOrientationActivity,NonResizeableActivity"/>
 
         <activity
-            android:name=".activity.STAConnectStepActivity"
+            android:name=".activity.STAModelDirectConnectedActivity"
             android:resizeableActivity="false"
             android:screenOrientation="portrait"
             android:supportsPictureInPicture="false"
@@ -345,14 +369,14 @@
             tools:targetApi="n"
             tools:ignore="LockedOrientationActivity,NonResizeableActivity"/>
 
-        <!--        <activity-->
-        <!--            android:name=".activity.CheckStaModelActivity"-->
-        <!--            android:resizeableActivity="false"-->
-        <!--            android:screenOrientation="portrait"-->
-        <!--            android:supportsPictureInPicture="false"-->
-        <!--            android:theme="@style/AppTheme.NoActionBar"-->
-        <!--            tools:targetApi="n"-->
-        <!--            tools:ignore="LockedOrientationActivity,NonResizeableActivity"/>-->
+        <activity
+            android:name=".activity.STAModelConfigurationActivity"
+            android:resizeableActivity="false"
+            android:screenOrientation="portrait"
+            android:supportsPictureInPicture="false"
+            android:theme="@style/AppTheme.NoActionBar"
+            tools:targetApi="n"
+            tools:ignore="LockedOrientationActivity,NonResizeableActivity"/>
 
         <activity
             android:name=".activity.MachineValueSettingActivity"
@@ -373,6 +397,41 @@
             tools:targetApi="n"
             tools:ignore="LockedOrientationActivity,NonResizeableActivity"/>
 
+        <activity
+            android:name=".activity.TestActivity"
+            android:resizeableActivity="false"
+            android:screenOrientation="portrait"
+            android:supportsPictureInPicture="false"
+            android:theme="@style/AppTheme.NoActionBar"
+            tools:targetApi="n"
+            tools:ignore="LockedOrientationActivity,NonResizeableActivity"/>
+
+        <activity
+            android:name=".TestBluetoothActivity"
+            android:resizeableActivity="false"
+            android:screenOrientation="portrait"
+            android:supportsPictureInPicture="false"
+            android:theme="@style/AppTheme.NoActionBar"
+            tools:targetApi="n"
+            tools:ignore="LockedOrientationActivity,NonResizeableActivity" />
+
+        <activity
+            android:name=".TestAiActivity"
+            android:resizeableActivity="false"
+            android:screenOrientation="portrait"
+            android:supportsPictureInPicture="false"
+            android:theme="@style/AppTheme.NoActionBar"
+            tools:targetApi="n"
+            tools:ignore="LockedOrientationActivity,NonResizeableActivity" />
+
+        <activity
+            android:name=".PuzzleActivity"
+            android:resizeableActivity="false"
+            android:screenOrientation="portrait"
+            android:supportsPictureInPicture="false"
+            android:theme="@style/AppTheme.NoActionBar"
+            tools:targetApi="n"
+            tools:ignore="LockedOrientationActivity,NonResizeableActivity" />
 
         <activity
             android:name=".BluetoothConnectionActivity"

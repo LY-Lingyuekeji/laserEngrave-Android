@@ -70,8 +70,6 @@ public class TelnetConnectionActivity extends BaseActivity {
 
         connectType = sharedPref.getString(getString(R.string.connect_type), "AP");
 
-
-
         wifiManager = (WifiManager) getApplicationContext().getSystemService(Context.WIFI_SERVICE);
 
 

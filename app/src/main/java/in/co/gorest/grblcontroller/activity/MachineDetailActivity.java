@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.net.ConnectivityManager;
 import android.net.Network;
@@ -16,7 +17,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.os.Message;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.text.TextUtils;
@@ -36,7 +36,6 @@ import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
@@ -44,22 +43,16 @@ import com.bumptech.glide.Glide;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
+import in.co.gorest.grblcontroller.base.BaseDialog;
 import in.co.gorest.grblcontroller.events.DeviceConnectEvent;
 import in.co.gorest.grblcontroller.events.ServiceMessageEvent;
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 import in.co.gorest.grblcontroller.model.Constants;
-import in.co.gorest.grblcontroller.util.NettyClient;
+import in.co.gorest.grblcontroller.util.WebSocketManager;
 
 public class MachineDetailActivity extends AppCompatActivity {
     // 用于日志记录的标签
@@ -100,6 +93,8 @@ public class MachineDetailActivity extends AppCompatActivity {
     private TextView tvMachineDetailModuleToggle;
     // 模组切换 spinner
     private Spinner spinnerMachineDetailLaserModule;
+    // 一键抬升Z轴
+    private TextView tvMachineDetailZup;
     // 火焰传感器 RelativeLayout
     private RelativeLayout rlMachineDetailFireModule;
     // 火焰传感器 Switch
@@ -112,10 +107,14 @@ public class MachineDetailActivity extends AppCompatActivity {
     private RelativeLayout rlMachineDetailSlantModule;
     // 倾斜检测传感器 Switch
     private Switch switchMachineDetailSlantModule;
-    // 红十字激光预览 RelativeLayout
+    // 红十字激光 RelativeLayout
     private RelativeLayout rlMachineDetailRtlaserModule;
-    // 红十字激光预览 Switch
+    // 红十字激光 Switch
     private Switch switchMachineDetailRtlaserModule;
+    // 照明灯 RelativeLayout
+    private RelativeLayout rlMachineDetailLedModule;
+    // 照明灯 Switch
+    private Switch switchMachineDetailLedModule;
     // 气泵功能 RelativeLayout
     private RelativeLayout rlMachineDetailAirModule;
     // 气泵功能 Switch
@@ -124,21 +123,32 @@ public class MachineDetailActivity extends AppCompatActivity {
     private RelativeLayout rlMachineDetailExternalScreen;
     // 外接屏幕功能 Switch
     private Switch switchMachineDetailExternalScreen;
+    // 锁定XYZ轴电机 RelativeLayout
+    private RelativeLayout rlMachineDetailLockMotor;
+    // 锁定XYZ轴电机 Switch
+    private Switch switchMachineDetailLockMotor;
+
     // 断开连接
     private TextView tvMachineDetailDisconnect;
     // 重置设备
     private TextView tvMachineDetailReset;
 
     // Spinner Laser数据源
-    List<String> laserOptions = Arrays.asList("LdT-3W", "LdT4-10W", "LdT4-20W");
+    List<String> laserOptions = Arrays.asList("LdT-3W", "LdT4-10W", "LdT4-20W", "LdT4-1064nm-2W");
     // Spinner CNC数据源
     List<String> cncOptions = Arrays.asList("Cd-100W", "Cd-150W", "Cd-500W");
     // 是否选中
     private boolean isChecked = false;
 
     // 需要查询的命令
-    private final String[] commands = {"$YRR", "$103", "$43", "$48","$42", "$40", "$47"};
+    private final String[] commands = {"$I", "$45", "$103", "$43", "$48","$42", "$40", "$39", "$47", "$1"};
 
+    // 门警告弹窗
+    private Dialog dialogDoorWarning;
+    // 火焰警告弹窗
+    private Dialog dialogFireWarning;
+    // 倾斜警告弹窗
+    private Dialog dialogProbeWarning;
     // 是否震动提醒
     private boolean isOpenVibrateAlert;
     // 震动提醒持续时长
@@ -149,6 +159,9 @@ public class MachineDetailActivity extends AppCompatActivity {
     // 全局变量
     private String yrrValue = null;
     private String val103 = null;
+
+    // WebSocket
+    private WebSocketManager webSocketManager;
 
 
     // 启用矢量图支持，确保在应用中可以正确显示矢量图形
@@ -232,6 +245,8 @@ public class MachineDetailActivity extends AppCompatActivity {
         tvMachineDetailModuleToggle = findViewById(R.id.tv_machine_detail_module_toggle);
         // spinner
         spinnerMachineDetailLaserModule = findViewById(R.id.spinner_machine_detail_laser_module);
+        // 一键抬升Z轴
+        tvMachineDetailZup = findViewById(R.id.tv_machine_detail_zup);
         // 火焰传感器 RelativeLayout
         rlMachineDetailFireModule = findViewById(R.id.rl_machine_detail_fire_module);
         // 火焰传感器 Switch
@@ -244,10 +259,14 @@ public class MachineDetailActivity extends AppCompatActivity {
         rlMachineDetailSlantModule = findViewById(R.id.rl_machine_detail_slant_module);
         // 倾斜检测传感器 Switch
         switchMachineDetailSlantModule = findViewById(R.id.switch_machine_detail_slant_module);
-        // 红十字激光预览 RelativeLayout
+        // 红十字激光 RelativeLayout
         rlMachineDetailRtlaserModule = findViewById(R.id.rl_machine_detail_rtlaser_module);
-        // 红十字激光预览 switch
+        // 红十字激光 switch
         switchMachineDetailRtlaserModule = findViewById(R.id.switch_machine_detail_rtlaser_module);
+        // 红十字激光 RelativeLayout
+        rlMachineDetailLedModule = findViewById(R.id.rl_machine_detail_led_module);
+        // 红十字激光 switch
+        switchMachineDetailLedModule = findViewById(R.id.switch_machine_detail_led_module);
         // 气泵功能 RelativeLayout
         rlMachineDetailAirModule = findViewById(R.id.rl_machine_detail_air_module);
         // 气泵功能 switch
@@ -256,6 +275,10 @@ public class MachineDetailActivity extends AppCompatActivity {
         rlMachineDetailExternalScreen = findViewById(R.id.rl_machine_detail_external_screen);
         // 外接屏幕功能 switch
         switchMachineDetailExternalScreen = findViewById(R.id.switch_machine_detail_external_screen);
+        // 锁定XYZ轴电机 RelativeLayout
+        rlMachineDetailLockMotor = findViewById(R.id.rl_machine_detail_lock_motor);
+        // 锁定XYZ轴电机 switch
+        switchMachineDetailLockMotor = findViewById(R.id.switch_machine_detail_lock_motor);
         // 断开连接
         tvMachineDetailDisconnect = findViewById(R.id.tv_machine_detail_disconnect);
         // 重置设备
@@ -268,6 +291,7 @@ public class MachineDetailActivity extends AppCompatActivity {
     private void initData() {
         // 获取机器名称
         String machineName = getIntent().getStringExtra("machineName");
+        String sdDetails = getIntent().getStringExtra("sdDetails");
         // 设置机器名称
         if (machineName.isEmpty() || "".equals(machineName)) {
             Log.d(TAG, "未能获取设备名称");
@@ -318,19 +342,34 @@ public class MachineDetailActivity extends AppCompatActivity {
                 rlMachineDetailSlantModule.setVisibility(View.GONE);
                 // 隐藏红十字激光功能
                 rlMachineDetailRtlaserModule.setVisibility(View.GONE);
+                // 隐藏照明灯功能
+                rlMachineDetailLedModule.setVisibility(View.GONE);
                 // 隐藏气泵功能
                 rlMachineDetailAirModule.setVisibility(View.GONE);
                 // 隐藏外接屏幕功能
                 rlMachineDetailExternalScreen.setVisibility(View.GONE);
+                // 隐藏锁定XYZ电机功能
+                rlMachineDetailLockMotor.setVisibility(View.GONE);
             }
         }
 
+        if (sdDetails.isEmpty() || "".equals(sdDetails)) {
+            Log.d(TAG, "未能获取设备名称");
+            Toast.makeText(MachineDetailActivity.this, "未能获取设备名称", Toast.LENGTH_SHORT).show();
+            tvMachineDetailName.setText("UnKnown");
+        } else {
+            tvMachineDetailSd.setText(sdDetails);
+        }
+
+
         // 连接状态
-        boolean isConnected = NettyClient.getInstance().getConnectStatus();
+        webSocketManager = WebSocketManager.getInstance();
+        boolean isConnected = webSocketManager.isConnected();
         Log.d(TAG, "机器连接状态：" + isConnected);
         if (isConnected) {
             // 设置机器状态
             tvMachineDetailStatus.setText("已连接");
+            tvMachineDetailStatus.setBackgroundResource(R.drawable.bg_green_1e853a_r100);
             // 发送命令查询状态
             for (String cmd : commands) {
                 sendCommand(cmd);
@@ -340,10 +379,8 @@ public class MachineDetailActivity extends AppCompatActivity {
                 final String cmd = commands[i];
                 handler.postDelayed(() -> {
                     sendCommand(cmd);
-                    queryStatus(); // 发送完一个命令就立即查询状态
-                }, i * 500);
+                }, i * 1000);
             }
-
         } else {
             // 设置机器状态
             tvMachineDetailStatus.setText("未连接");
@@ -415,12 +452,9 @@ public class MachineDetailActivity extends AppCompatActivity {
             }
         }
 
-
-
         // 获取保存的气泵开关实例值
         boolean isOpenAir = sharedPref.getBoolean(getString(R.string.preference_air_module), false);
         switchMachineDetailAirModule.setChecked(isOpenAir);
-
 
         // 获取保存的危险警报震动提醒实例值
         isOpenVibrateAlert = sharedPref.getBoolean(getString(R.string.preference_vibrate_alert), true);
@@ -447,19 +481,19 @@ public class MachineDetailActivity extends AppCompatActivity {
                 // 根据被选中的 RadioButton 的 ID 执行相应操作
                 switch (checkedId) {
                     case R.id.rb_machine_detail_xyz:
-                        sendCommand("$YRR=0");
+                        sendCommand("45=0");
                         sendCommand("$103=80");
                         break;
                     case R.id.rb_machine_detail_yyr_threelevel:
-                        sendCommand("$YRR=1");
+                        sendCommand("$45=1");
                         sendCommand("$103=80");
                         break;
                     case R.id.rb_machine_detail_yyr_non_polar:
-                        sendCommand("$YRR=1");
+                        sendCommand("$45=1");
                         sendCommand("$103=50.931");
                         break;
                     case R.id.rb_machine_detail_yrc:
-                        sendCommand("$YRR=1");
+                        sendCommand("$45=1");
                         break;
                 }
             }
@@ -483,6 +517,22 @@ public class MachineDetailActivity extends AppCompatActivity {
             }
         });
 
+        // 一键抬升Z轴
+        tvMachineDetailZup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                BaseDialog.showCustomDialog(MachineDetailActivity.this,
+                        "温馨提示", "即将为您一键抬升Z轴至最大高度，以便您更换激光或拆卸雕刻地板！\r\n\r\n请问是否继续？",
+                        "确定", "取消",
+                        v1 -> {
+                            sendCommand("$J=G90 Z50 F700");
+                        },
+                        v1 -> {
+                            Log.d(TAG, "用户点击取消");
+                        });
+            }
+        });
+
         // 火焰传感器
         switchMachineDetailFireModule.setOnCheckedChangeListener(fireModuleListener);
 
@@ -495,8 +545,14 @@ public class MachineDetailActivity extends AppCompatActivity {
         // 红十字激光
         switchMachineDetailRtlaserModule.setOnCheckedChangeListener(laserRtListener);
 
+        // 照明灯
+        switchMachineDetailLedModule.setOnCheckedChangeListener(ledModuleListener);
+
         // 外接屏幕
         switchMachineDetailExternalScreen.setOnCheckedChangeListener(externalScreenListener);
+
+        // 锁定XYZ电机
+        switchMachineDetailLockMotor.setOnCheckedChangeListener(lockMotorListener);
 
         // 气泵功能
         switchMachineDetailAirModule.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -518,12 +574,12 @@ public class MachineDetailActivity extends AppCompatActivity {
         tvMachineDetailDisconnect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // 断开NettyClient
-                NettyClient.getInstance().disconnect();
+                // 断开
+                webSocketManager.disconnect();
                 // 断开 Wi-Fi
                 disconnectWifi();
                 // 发送EventBus事件
-                EventBus.getDefault().post(new DeviceConnectEvent("disconnect", "null", "null"));
+                EventBus.getDefault().post(new DeviceConnectEvent("disconnect", "null", "null", "null"));
                 // 关闭页面
                 finish();
             }
@@ -689,23 +745,6 @@ public class MachineDetailActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    /**
-     * 查询状态结果
-     */
-    public void queryStatus() {
-        NettyClient.getInstance(new Handler(new Handler.Callback() {
-            @Override
-            public boolean handleMessage(@NonNull Message msg) {
-                String response = (String) msg.obj;
-                Log.d(TAG, "Received: " + response);
-
-                if (response != null) {
-                    processResponse(response.trim());
-                }
-                return false;
-            }
-        }));
-    }
 
     /**
      * 发送命令
@@ -713,9 +752,8 @@ public class MachineDetailActivity extends AppCompatActivity {
      * @param command
      */
     private void sendCommand(String command) {
-        String fullCommand = command + "\r\n";
-        Log.d(TAG, "Sending: " + fullCommand);
-        NettyClient.getInstance(null).sendMsgToServer(fullCommand.getBytes(StandardCharsets.UTF_8), null);
+        Log.d(TAG, "Sending: " + command);
+        webSocketManager.send(command);
     }
 
     /**
@@ -733,7 +771,7 @@ public class MachineDetailActivity extends AppCompatActivity {
         // 处理整体错误信息（如 response = "error:3"）
         if (response.startsWith("error:")) {
             Toast.makeText(MachineDetailActivity.this, "设备返回错误：" + response + "，请联系客服处理", Toast.LENGTH_SHORT).show();
-            return; // 直接退出，不再处理下面的逻辑
+
         }
 
         // 拆分多行数据
@@ -750,10 +788,9 @@ public class MachineDetailActivity extends AppCompatActivity {
                     String key = parts[0].trim(); // 变量名，如 "$43"
                     String value = parts[1].trim(); // 对应的值
 
-
                     // 根据不同的传感器类型调用更新方法
                     switch (key) {
-                        case "$YRR":
+                        case "$45":
                             yrrValue = value;
                             break;
                         case "$103":
@@ -771,8 +808,14 @@ public class MachineDetailActivity extends AppCompatActivity {
                         case "$40": // 红十字激光传感器
                             updateLaserRt(value);
                             break;
+                        case "$39": // 照明灯
+                            updateLedSensor(value);
+                            break;
                         case "$47": // 外接屏幕功能传感器
                             updateExternalScreen(value);
+                            break;
+                        case "$1": // 锁定XYZ电机功能
+                            updateLockMotor(value);
                             break;
                         default:
                             break; // 忽略其他数据
@@ -791,17 +834,17 @@ public class MachineDetailActivity extends AppCompatActivity {
 
     // 这里要查询$YRR和$103 $YRR=0 && $103=80---XY轴常规   $YRR=1 && $103=80---三档旋转轴  $YRR=1 && $103=50.931---无极旋转轴  $YRR=1 卡盘转轴
     private void handleYRRAnd103(String yrr, String v103) {
-        Log.d(TAG, "处理 YRR=" + yrr + ", $103=" + v103);
+        Log.d(TAG, "处理 $45=" + yrr + ", $103=" + v103);
         if ("1".equals(yrr)) {
             if ("80.000".equals(v103)) {
-                Log.d(TAG, "YRR=1 且 $103=80，设置选中三档旋转轴");
+                Log.d(TAG, "$45=1 且 $103=80，设置选中三档旋转轴");
                 rbMachineDetailYyrThreelevel.setChecked(true);
             } else if ("50.931".equals(v103)){
-                Log.d(TAG, "YRR=1 且 $103=50.931，设置选中无极旋转轴");
+                Log.d(TAG, "$45=1 且 $103=50.931，设置选中无极旋转轴");
                 rbMachineDetailYyrNonpolar.setChecked(true);
             }
         } else {
-            Log.d(TAG, "YRR=0");
+            Log.d(TAG, "$45=0");
             if ("80.000".equals(val103)) {
                 rbMachineDetailXyz.setChecked(true);
             } else {
@@ -862,8 +905,6 @@ public class MachineDetailActivity extends AppCompatActivity {
 
         // 3. 重新绑定监听器
         switchMachineDetailSlantModule.setOnCheckedChangeListener(slantModuleListener);
-
-
         Log.d(TAG, "倾斜传感器状态已更新: " + isOpenSlantModule);
     }
 
@@ -886,6 +927,24 @@ public class MachineDetailActivity extends AppCompatActivity {
     }
 
     /**
+     * 更新照明灯传感器
+     *
+     * @param value 接收的值
+     */
+    private void updateLedSensor(String value) {
+        boolean isOpenLedModule = !value.equals("0");
+        // 1. 先移除监听器，防止触发回调
+        switchMachineDetailLedModule.setOnCheckedChangeListener(null);
+
+        // 2. 更新 Switch 选中状态
+        switchMachineDetailLedModule.setChecked(isOpenLedModule);
+
+        // 3. 重新绑定监听器
+        switchMachineDetailLedModule.setOnCheckedChangeListener(ledModuleListener);
+        Log.d(TAG, "照明灯传感器状态已更新: " + isOpenLedModule);
+    }
+
+    /**
      * 更新外接屏幕功能传感器
      *
      * @param value 接收的值
@@ -900,9 +959,27 @@ public class MachineDetailActivity extends AppCompatActivity {
 
         // 3. 重新绑定监听器
         switchMachineDetailExternalScreen.setOnCheckedChangeListener(externalScreenListener);
-
         Log.d(TAG, "外接屏幕功能传感器状态已更新: " + isOpenExternalScreen);
     }
+
+    /**
+     * 更新锁定XYZ轴电机功能
+     *
+     * @param value 接收的值
+     */
+    private void updateLockMotor(String value) {
+        boolean isOpenLockMotor = "255".equals(value);
+        // 1. 先移除监听器，防止触发回调
+        switchMachineDetailLockMotor.setOnCheckedChangeListener(null);
+
+        // 2. 更新 Switch 选中状态
+        switchMachineDetailLockMotor.setChecked(isOpenLockMotor);
+
+        // 3. 重新绑定监听器
+        switchMachineDetailLockMotor.setOnCheckedChangeListener(lockMotorListener);
+        Log.d(TAG, "锁定XYZ轴电机功能状态已更新: " + isOpenLockMotor);
+    }
+
 
 
     /**
@@ -966,6 +1043,21 @@ public class MachineDetailActivity extends AppCompatActivity {
     };
 
     /**
+     * 照明灯传感器状态监听
+     */
+    private final CompoundButton.OnCheckedChangeListener ledModuleListener = new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            Log.d(TAG, "isOpenLedModule=" + isChecked);
+            if (isChecked) {
+                sendCommand("$39=1");
+            } else {
+                sendCommand("$39=0");
+            }
+        }
+    };
+
+    /**
      * 外接屏幕功能传感器状态监听
      */
     private final CompoundButton.OnCheckedChangeListener externalScreenListener = new CompoundButton.OnCheckedChangeListener() {
@@ -980,40 +1072,20 @@ public class MachineDetailActivity extends AppCompatActivity {
         }
     };
 
-
-
     /**
-     * 检查是否符合 SD 卡空间信息格式
-     *
-     * @param data 源数据
-     * @return 布尔值
+     * 锁定XYZ轴电机功能状态监听
      */
-    private boolean isValidSdCardData(String data) {
-        String regex = "\\[SD Free:(\\d+\\.\\d+ \\w+) Used:(\\d+\\.\\d+ \\w+) Total:(\\d+\\.\\d+ \\w+)\\]";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(data);
-        return matcher.find();  // 如果匹配到至少一个符合格式的项，返回 true
-    }
-
-    /**
-     * 解析 SD 卡空间信息并显示到界面
-     *
-     * @param data 数据
-     */
-    private void parseSdCardData(String data) {
-        String regex = "\\[SD Free:(\\d+\\.\\d+ \\w+) Used:(\\d+\\.\\d+ \\w+) Total:(\\d+\\.\\d+ \\w+)\\]";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(data);
-
-        if (matcher.find()) {
-            String free = matcher.group(1);
-            String used = matcher.group(2);
-            String total = matcher.group(3);
-
-            // 设置数据到 TextView
-            tvMachineDetailSd.setText("可用：" + free);
+    private final CompoundButton.OnCheckedChangeListener lockMotorListener = new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            Log.d(TAG, "isOpenLockMotor=" + isChecked);
+            if (isChecked) {
+                sendCommand("$1=255");
+            } else {
+                sendCommand("$1=250");
+            }
         }
-    }
+    };
 
 
     /**
@@ -1046,6 +1118,8 @@ public class MachineDetailActivity extends AppCompatActivity {
                     tvMachineDetailStatus.setBackgroundResource(R.drawable.bg_red_c42b1c_r100);
                     tvMachineDetailStatus.setText("警告");
                 }
+
+                processResponse(event.getMessage());
             } else {
 
                 if (topActivity != this) {
@@ -1053,24 +1127,101 @@ public class MachineDetailActivity extends AppCompatActivity {
                     return; // 不是当前页面，直接 return
                 }
 
-                if (event.getMessage().contains("MSG:Safe door err!") && tvMachineDetailStatus.getText().equals("工作中")) {
-                    // TODO 开门弹窗
+                if (event.getMessage().contains("MSG:Safe door err") && tvMachineDetailStatus.getText().equals("工作中")) { // 开门警告弹窗打开
+                    // TODO 开门警告弹窗
                     showDialogDoorWarning();
                     if (isOpenVibrateAlert) {
                         vibratePhone(this, vibrateAlertTime * 1000);
                     }
-                } else if (event.getMessage().contains("MSG:Flame err!") && tvMachineDetailStatus.getText().equals("工作中")) {
-                    // TODO 火焰弹窗
+                } else if (event.getMessage().contains("MSG:Safe door reset") && tvMachineDetailStatus.getText().equals("暂停")) { // 开门警告弹窗关闭
+                    // 隐藏开门警告弹窗
+                    dialogDoorWarning.dismiss();
+                    // TODO 记录日志
+
+                } else if (event.getMessage().contains("MSG:Flame err") && tvMachineDetailStatus.getText().equals("工作中")) { // 火焰警告弹窗打开
+                    // TODO 火焰警告弹窗
                     showDialogFireWarning();
                     if (isOpenVibrateAlert) {
                         vibratePhone(this, vibrateAlertTime * 1000);
                     }
-                } else if (event.getMessage().contains("MSG:Probe err!") && tvMachineDetailStatus.getText().equals("工作中")) {
-                    // TODO 倾斜弹窗
+                } else if (event.getMessage().contains("MSG:Safe Flame reset") && tvMachineDetailStatus.getText().equals("暂停")) { // 火焰警告弹窗关闭
+                    // 隐藏火焰警告弹窗
+                    dialogFireWarning.dismiss();
+                    // TODO 记录日志
+
+                } else if (event.getMessage().contains("MSG:Tilt sensor") && tvMachineDetailStatus.getText().equals("工作中")) { // 倾斜警告弹窗打开
+                    // TODO 倾斜警告弹窗
                     showDialogProbeWarning();
                     if (isOpenVibrateAlert) {
                         vibratePhone(this, vibrateAlertTime * 1000);
                     }
+                } else if (event.getMessage().contains("MSG:Safe Probe reset") && tvMachineDetailStatus.getText().equals("暂停")) { // 倾斜警告弹窗关闭
+                    // 隐藏倾斜警告弹窗
+                    dialogProbeWarning.dismiss();
+                    // TODO 记录日志
+
+                } else if (event.getMessage().contains("MSG:Using machine")) {
+                    for (String line : event.getMessage().split("\n")) {
+                        if (line.contains("[MSG:Using machine:")) {
+                            int lastColon = line.lastIndexOf(':');
+                            int endBracket = line.lastIndexOf(']');
+                            if (lastColon != -1 && endBracket != -1 && lastColon < endBracket) {
+                                String result = line.substring(lastColon + 1, endBracket);
+                                Log.d(TAG, "版本: " + result); // 输出: 版本
+                                // 设置固件版本
+                                tvMachineDetailFirmware.setText(result);
+                            }
+                        }
+                    }
+                } else if (event.getMessage().contains("[SD Free:")) {
+                    for (String line : event.getMessage().split("\n")) {
+                        if (line.startsWith("[SD Free:")) {
+                            String free = null, total = null;
+
+                            // 提取 SD Free
+                            int freeStart = line.indexOf("SD Free:") + "SD Free:".length();
+                            int freeEnd = line.indexOf("Used:", freeStart);
+                            free = line.substring(freeStart, freeEnd).trim();
+
+                            // 提取 Total
+                            int totalStart = line.indexOf("Total:") + "Total:".length();
+                            int totalEnd = line.indexOf("]", totalStart);
+                            total = line.substring(totalStart, totalEnd);
+
+                            Log.d(TAG, "SD Free: " + free);
+                            Log.d(TAG, "Total: " + total);
+                            // 设置SD卡容量
+                            tvMachineDetailSd.setText(free + " / " + total);
+
+                            // Free容量转换为 MB
+                            double freeMB = 0;
+                            if (free != null) {
+                                if (free.endsWith("GB")) {
+                                    double gb = Double.parseDouble(free.replace("GB", "").trim());
+                                    freeMB = gb * 1024;
+                                } else if (free.endsWith("MB")) {
+                                    freeMB = Double.parseDouble(free.replace("MB", "").trim());
+                                }
+                            }
+
+                            // 弹窗提示
+                            if (freeMB < 100) {
+                                BaseDialog.showCustomDialog(MachineDetailActivity.this,
+                                        "存储空间不足",
+                                        "检测到SD卡剩余空间小于100MB\r\n\r\n避免出现异常情况，请清理后再操作。",
+                                        "清理", "取消",
+                                        v -> {
+                                            // TODO 跳转文件页面
+                                            startActivity(new Intent(this, FileActivity.class));
+                                        },
+                                        v -> {
+                                            Log.d(TAG, "用户点击取消");
+                                        });
+                            }
+                        }
+                    }
+                } else {
+                    processResponse(event.getMessage());
                 }
             }
 
@@ -1081,93 +1232,93 @@ public class MachineDetailActivity extends AppCompatActivity {
      * 开门风险提示弹窗
      */
     private void showDialogDoorWarning() {
-        Dialog dialog = new Dialog(this, R.style.CustomDialog);
-        dialog.setContentView(R.layout.dialog_door_warning);
+        dialogDoorWarning = new Dialog(this, R.style.CustomDialog);
+        dialogDoorWarning.setContentView(R.layout.dialog_door_warning);
         // 设置窗口背景为透明，以显示圆角效果
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        if (dialogDoorWarning.getWindow() != null) {
+            dialogDoorWarning.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
         // 确认
-        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
+        TextView tvDialogRiskWarningConfirm = dialogDoorWarning.findViewById(R.id.tv_dialog_door_warning_confirm);
         // 确定
         tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // 隐藏弹窗
-                if (dialog.isShowing()) {
-                    dialog.dismiss();
+                if (dialogDoorWarning.isShowing()) {
+                    dialogDoorWarning.dismiss();
                 }
             }
         });
         // 设置Dialog的宽高
-        if (dialog.getWindow() != null) {
+        if (dialogDoorWarning.getWindow() != null) {
             // 设置弹窗宽度为屏幕的80%，高度自适应
-            dialog.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+            dialogDoorWarning.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
         }
         // 显示 Dialog
-        dialog.show();
+        dialogDoorWarning.show();
     }
 
     /**
      * 火焰风险提示弹窗
      */
     private void showDialogFireWarning() {
-        Dialog dialog = new Dialog(this, R.style.CustomDialog);
-        dialog.setContentView(R.layout.dialog_fire_warning);
+        dialogFireWarning = new Dialog(this, R.style.CustomDialog);
+        dialogFireWarning.setContentView(R.layout.dialog_fire_warning);
         // 设置窗口背景为透明，以显示圆角效果
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        if (dialogFireWarning.getWindow() != null) {
+            dialogFireWarning.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
         // 确认
-        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
+        TextView tvDialogRiskWarningConfirm = dialogFireWarning.findViewById(R.id.tv_dialog_door_warning_confirm);
         // 确定
         tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // 隐藏弹窗
-                if (dialog.isShowing()) {
-                    dialog.dismiss();
+                if (dialogFireWarning.isShowing()) {
+                    dialogFireWarning.dismiss();
                 }
             }
         });
         // 设置Dialog的宽高
-        if (dialog.getWindow() != null) {
+        if (dialogFireWarning.getWindow() != null) {
             // 设置弹窗宽度为屏幕的80%，高度自适应
-            dialog.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+            dialogFireWarning.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
         }
         // 显示 Dialog
-        dialog.show();
+        dialogFireWarning.show();
     }
 
     /**
      * 倾斜风险提示弹窗
      */
     private void showDialogProbeWarning() {
-        Dialog dialog = new Dialog(this, R.style.CustomDialog);
-        dialog.setContentView(R.layout.dialog_probe_warning);
+        dialogProbeWarning = new Dialog(this, R.style.CustomDialog);
+        dialogProbeWarning.setContentView(R.layout.dialog_probe_warning);
         // 设置窗口背景为透明，以显示圆角效果
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        if (dialogProbeWarning.getWindow() != null) {
+            dialogProbeWarning.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
         // 确认
-        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
+        TextView tvDialogRiskWarningConfirm = dialogProbeWarning.findViewById(R.id.tv_dialog_door_warning_confirm);
         // 确定
         tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // 隐藏弹窗
-                if (dialog.isShowing()) {
-                    dialog.dismiss();
+                if (dialogProbeWarning.isShowing()) {
+                    dialogProbeWarning.dismiss();
                 }
             }
         });
         // 设置Dialog的宽高
-        if (dialog.getWindow() != null) {
+        if (dialogProbeWarning.getWindow() != null) {
             // 设置弹窗宽度为屏幕的80%，高度自适应
-            dialog.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+            dialogProbeWarning.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
         }
         // 显示 Dialog
-        dialog.show();
+        dialogProbeWarning.show();
     }
 
     /**

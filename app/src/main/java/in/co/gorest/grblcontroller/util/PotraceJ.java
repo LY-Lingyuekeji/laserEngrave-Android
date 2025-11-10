@@ -1802,7 +1802,7 @@ public class PotraceJ
     /// <param name="Width">Width of the exportd cvg-File</param>
     /// <param name="Height">Height of the exportd cvg-File</param>
     /// <returns></returns>
-    public static ArrayList<String> Export2GCode(ArrayList<ArrayList<Curve>> list, int height, double scale, int feedrate, String lOn, String lOff, String skipcmd, float x, float y)
+    public static ArrayList<String> Export2GCode(ArrayList<ArrayList<Curve>> list, int height, double scale, int feedrate, String lOn, String lOff, String skipcmd, float x, float y, boolean isAir, int zDown)
     {
         ArrayList<String> rv = new ArrayList<String>();
 
@@ -1816,12 +1816,22 @@ public class PotraceJ
         rv.add("F" + feedrate + "\r\n");
         lOn = "M3";
 
+        if (isAir) {
+            rv.add("M8\r\n");
+        }
+
+        rv.add("G21 G91 Z-"+ zDown + " F" + feedrate + "\r\n");
+        rv.add("G90\r\n");
+
         for (ArrayList<Curve> Curves : list)
         {
             rv.addAll(GetPathGC(Curves, height, lOn, lOff, scale, skipcmd));
         }
 
         rv.add("M5\r\n");
+        rv.add("M9\r\n");
+        rv.add("G21 G91 Z"+ zDown + " F" + feedrate + "\r\n");
+        rv.add("G90\r\n");
         //rv.add("G0 X0 Y0\r\n");
         // 回到原点
         String line = "";

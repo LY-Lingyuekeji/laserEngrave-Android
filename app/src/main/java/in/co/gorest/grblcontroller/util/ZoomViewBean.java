@@ -7,6 +7,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import java.util.List;
 import in.co.gorest.grblcontroller.model.EffectBean;
+import in.co.gorest.grblcontroller.model.ScanDirection;
 
 public class ZoomViewBean {
     private RelativeLayout.LayoutParams params;
@@ -16,6 +17,14 @@ public class ZoomViewBean {
 
     private int speedLevel = 100;
     private int laserLevel = 20;
+    // 扫描方向
+    private ScanDirection scanDirection;
+
+    // 是否开启气泵
+    private boolean isAir = false;
+
+    // 下沉距离
+    private int zDown = 0;
 
     private boolean isSpeedSet = false;
     private boolean isLaserSet = false;
@@ -270,5 +279,29 @@ public class ZoomViewBean {
 
     public void setOperationMode(int operationMode) {
         this.operationMode = operationMode;
+    }
+
+    public void setScanDirection(ScanDirection direction) {
+        this.scanDirection = direction;
+    }
+
+    public ScanDirection getScanDirection() {
+        return this.scanDirection;
+    }
+
+    public boolean isAir() {
+        return isAir;
+    }
+
+    public void setAir(boolean air) {
+        isAir = air;
+    }
+
+    public int getzDown() {
+        return zDown;
+    }
+
+    public void setzDown(int zDown) {
+        this.zDown = zDown;
     }
 }

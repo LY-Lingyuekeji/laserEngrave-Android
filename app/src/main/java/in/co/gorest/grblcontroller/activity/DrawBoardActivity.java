@@ -27,16 +27,21 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.databinding.DataBindingUtil;
+
 import com.king.drawboard.view.DrawBoardView;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+
 import in.co.gorest.grblcontroller.BuildConfig;
 import in.co.gorest.grblcontroller.GrblController;
 import in.co.gorest.grblcontroller.R;
@@ -47,6 +52,7 @@ import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 import in.co.gorest.grblcontroller.model.Constants;
 import in.co.gorest.grblcontroller.util.ImgUtil;
 import in.co.gorest.grblcontroller.util.NettyClient;
+import in.co.gorest.grblcontroller.util.WebSocketManager;
 
 public class DrawBoardActivity extends AppCompatActivity implements ColorChooseBottomSheetFragment.OnColorSelectedListener, SizeChooseBottomSheetFragment.OnSizeSelectedListener {
     // 用于日志记录的标签
@@ -65,8 +71,6 @@ public class DrawBoardActivity extends AppCompatActivity implements ColorChooseB
     private LinearLayout llContainer;
     // 画板
     private DrawBoardView drawBoardView;
-    // 绘画模式
-    private TextView tvDrawMode;
     // 路径
     private LinearLayout llPath;
     // 直线
@@ -77,8 +81,6 @@ public class DrawBoardActivity extends AppCompatActivity implements ColorChooseB
     private LinearLayout llOval;
     // 圆形
     private LinearLayout llCircle;
-    // 马赛克
-    private LinearLayout llMosic;
     // 橡皮擦
     private LinearLayout llEraser;
     // 颜色
@@ -94,11 +96,16 @@ public class DrawBoardActivity extends AppCompatActivity implements ColorChooseB
     // 清除
     private LinearLayout llClean;
 
+    // 门警告弹窗
+    private Dialog dialogDoorWarning;
+    // 火焰警告弹窗
+    private Dialog dialogFireWarning;
+    // 倾斜警告弹窗
+    private Dialog dialogProbeWarning;
     // 是否震动提醒
     private boolean isOpenVibrateAlert;
     // 震动提醒持续时长
     private int vibrateAlertTime;
-
 
 
     // 启用矢量图支持，确保在应用中可以正确显示矢量图形
@@ -161,8 +168,6 @@ public class DrawBoardActivity extends AppCompatActivity implements ColorChooseB
         llContainer = findViewById(R.id.ll_container);
         // 画板
         drawBoardView = findViewById(R.id.drawBoardView);
-        // 绘画模式
-        tvDrawMode = findViewById(R.id.tv_draw_mode);
         // 路径
         llPath = findViewById(R.id.ll_path);
         // 直线
@@ -173,8 +178,6 @@ public class DrawBoardActivity extends AppCompatActivity implements ColorChooseB
         llOval = findViewById(R.id.ll_oval);
         // 圆形
         llCircle = findViewById(R.id.ll_circle);
-        // 马赛克
-        llMosic = findViewById(R.id.ll_mosic);
         // 橡皮擦
         llEraser = findViewById(R.id.ll_eraser);
         // 颜色
@@ -205,31 +208,28 @@ public class DrawBoardActivity extends AppCompatActivity implements ColorChooseB
         // 绘画模式
         switch (drawBoardView.getDrawMode()) {
             case 1:
-                tvDrawMode.setText("路径");
-                break;
-            case 2:
-                tvDrawMode.setText("点");
+                // 路径
+                llPath.setBackgroundResource(R.drawable.bg_green_1e853a_r10);
                 break;
             case 3:
-                tvDrawMode.setText("线");
+                // 直线
+                llLine.setBackgroundResource(R.drawable.bg_green_1e853a_r10);
                 break;
             case 4:
-                tvDrawMode.setText("矩形");
+                // 矩形
+                llRectangle.setBackgroundResource(R.drawable.bg_green_1e853a_r10);
                 break;
             case 5:
-                tvDrawMode.setText("椭圆");
+                // 椭圆
+                llOval.setBackgroundResource(R.drawable.bg_green_1e853a_r10);
                 break;
             case 6:
-                tvDrawMode.setText("圆");
-                break;
-            case 7:
-                tvDrawMode.setText("文本");
+                // 圆形
+                llCircle.setBackgroundResource(R.drawable.bg_green_1e853a_r10);
                 break;
             case 9:
-                tvDrawMode.setText("橡皮擦");
-                break;
-            case 10:
-                tvDrawMode.setText("马赛克");
+                // 橡皮擦
+                llEraser.setBackgroundResource(R.drawable.bg_green_1e853a_r10);
                 break;
         }
 
@@ -288,22 +288,14 @@ public class DrawBoardActivity extends AppCompatActivity implements ColorChooseB
                     intent.putExtra("imagePath", imagePath);
                     intent.putExtra("filePath", filePath);
                     startActivity(intent);
-                } else if (tvMachineStatusTips.getText().equals("暂停")){
+                } else if (tvMachineStatusTips.getText().equals("暂停")) {
                     // 解除暂停
-                    NettyClient.getInstance(new Handler(new Handler.Callback() {
-                        @Override
-                        public boolean handleMessage(@NonNull Message msg) {
-                            return false;
-                        }
-                    })).sendMsgToServer(("\u0018" + "\r\n").getBytes(StandardCharsets.UTF_8), null);
-                } else if (tvMachineStatusTips.getText().equals("警告")){
+                    WebSocketManager webSocketManager = WebSocketManager.getInstance();
+                    webSocketManager.send("\u0018");
+                } else if (tvMachineStatusTips.getText().equals("警告")) {
                     // 解除警告
-                    NettyClient.getInstance(new Handler(new Handler.Callback() {
-                        @Override
-                        public boolean handleMessage(@NonNull Message msg) {
-                            return false;
-                        }
-                    })).sendMsgToServer(("$X" + "\r\n").getBytes(StandardCharsets.UTF_8), null);
+                    WebSocketManager webSocketManager = WebSocketManager.getInstance();
+                    webSocketManager.send("$X");
                 } else {
                     Log.d(TAG, "无效点击");
                 }
@@ -317,6 +309,8 @@ public class DrawBoardActivity extends AppCompatActivity implements ColorChooseB
             public void onClick(View v) {
                 // 设置模式为路径
                 drawBoardView.setDrawMode(DrawBoardView.DrawMode.DRAW_PATH);
+                // 更新按钮样式
+                updateButtonStyle();
             }
         });
 
@@ -326,6 +320,8 @@ public class DrawBoardActivity extends AppCompatActivity implements ColorChooseB
             public void onClick(View v) {
                 // 设置模式为直线
                 drawBoardView.setDrawMode(DrawBoardView.DrawMode.DRAW_LINE);
+                // 更新按钮样式
+                updateButtonStyle();
             }
         });
 
@@ -335,6 +331,8 @@ public class DrawBoardActivity extends AppCompatActivity implements ColorChooseB
             public void onClick(View v) {
                 // 设置模式为矩形
                 drawBoardView.setDrawMode(DrawBoardView.DrawMode.DRAW_RECT);
+                // 更新按钮样式
+                updateButtonStyle();
             }
         });
 
@@ -344,6 +342,8 @@ public class DrawBoardActivity extends AppCompatActivity implements ColorChooseB
             public void onClick(View v) {
                 // 设置模式为椭圆
                 drawBoardView.setDrawMode(DrawBoardView.DrawMode.DRAW_OVAL);
+                // 更新按钮样式
+                updateButtonStyle();
             }
         });
 
@@ -353,17 +353,11 @@ public class DrawBoardActivity extends AppCompatActivity implements ColorChooseB
             public void onClick(View v) {
                 // 设置模式为圆形
                 drawBoardView.setDrawMode(DrawBoardView.DrawMode.DRAW_CIRCLE);
+                // 更新按钮样式
+                updateButtonStyle();
             }
         });
 
-        // 马赛克
-        llMosic.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // 设置模式为马赛克
-                drawBoardView.setDrawMode(DrawBoardView.DrawMode.MOSAIC);
-            }
-        });
 
         // 橡皮擦
         llEraser.setOnClickListener(new View.OnClickListener() {
@@ -371,6 +365,8 @@ public class DrawBoardActivity extends AppCompatActivity implements ColorChooseB
             public void onClick(View v) {
                 // 设置模式为橡皮擦
                 drawBoardView.setDrawMode(DrawBoardView.DrawMode.ERASER);
+                // 更新按钮样式
+                updateButtonStyle();
             }
         });
 
@@ -466,6 +462,52 @@ public class DrawBoardActivity extends AppCompatActivity implements ColorChooseB
 
     }
 
+    /**
+     * 更新按钮样式
+     */
+    private void updateButtonStyle() {
+        // 路径
+        llPath.setBackgroundResource(R.drawable.bg_gray_999999_r10);
+        // 直线
+        llLine.setBackgroundResource(R.drawable.bg_gray_999999_r10);
+        // 矩形
+        llRectangle.setBackgroundResource(R.drawable.bg_gray_999999_r10);
+        // 椭圆
+        llOval.setBackgroundResource(R.drawable.bg_gray_999999_r10);
+        // 圆形
+        llCircle.setBackgroundResource(R.drawable.bg_gray_999999_r10);
+        // 橡皮擦
+        llEraser.setBackgroundResource(R.drawable.bg_gray_999999_r10);
+
+        // 绘画模式
+        switch (drawBoardView.getDrawMode()) {
+            case 1:
+                // 路径
+                llPath.setBackgroundResource(R.drawable.bg_green_1e853a_r10);
+                break;
+            case 3:
+                // 直线
+                llLine.setBackgroundResource(R.drawable.bg_green_1e853a_r10);
+                break;
+            case 4:
+                // 矩形
+                llRectangle.setBackgroundResource(R.drawable.bg_green_1e853a_r10);
+                break;
+            case 5:
+                // 椭圆
+                llOval.setBackgroundResource(R.drawable.bg_green_1e853a_r10);
+                break;
+            case 6:
+                // 圆形
+                llCircle.setBackgroundResource(R.drawable.bg_green_1e853a_r10);
+                break;
+            case 9:
+                // 橡皮擦
+                llEraser.setBackgroundResource(R.drawable.bg_green_1e853a_r10);
+                break;
+        }
+    }
+
 
     /**
      * ServiceMessageEvent
@@ -498,30 +540,45 @@ public class DrawBoardActivity extends AppCompatActivity implements ColorChooseB
                     tvMachineStatusTips.setBackgroundResource(R.drawable.bg_red_c42b1c_r100);
                     tvMachineStatusTips.setText("警告");
                 }
-            } else{
+            } else {
                 if (topActivity != this) {
                     Log.d(TAG, "当前 Activity 不是顶层，不弹窗");
                     return; // 不是当前页面，直接 return
                 }
 
-                if (event.getMessage().contains("MSG:Safe door err!")  && tvMachineStatusTips.getText().equals("工作中")) {
-                    // TODO 开门弹窗
+                if (event.getMessage().contains("MSG:Safe door err") && tvMachineStatusTips.getText().equals("工作中")) { // 开门警告弹窗打开
+                    // TODO 开门警告弹窗
                     showDialogDoorWarning();
                     if (isOpenVibrateAlert) {
                         vibratePhone(this, vibrateAlertTime * 1000);
                     }
-                } else if (event.getMessage().contains("MSG:Flame err!")  && tvMachineStatusTips.getText().equals("工作中")) {
-                    // TODO 火焰弹窗
+                } else if (event.getMessage().contains("MSG:Safe door reset") && tvMachineStatusTips.getText().equals("暂停")) { // 开门警告弹窗关闭
+                    // 隐藏开门警告弹窗
+                    dialogDoorWarning.dismiss();
+                    // TODO 记录日志
+
+                } else if (event.getMessage().contains("MSG:Flame err") && tvMachineStatusTips.getText().equals("工作中")) { // 火焰警告弹窗打开
+                    // TODO 火焰警告弹窗
                     showDialogFireWarning();
                     if (isOpenVibrateAlert) {
                         vibratePhone(this, vibrateAlertTime * 1000);
                     }
-                } else if (event.getMessage().contains("MSG:Probe err!")  && tvMachineStatusTips.getText().equals("工作中")) {
-                    // TODO 倾斜弹窗
+                } else if (event.getMessage().contains("MSG:Safe Flame reset") && tvMachineStatusTips.getText().equals("暂停")) { // 火焰警告弹窗关闭
+                    // 隐藏火焰警告弹窗
+                    dialogFireWarning.dismiss();
+                    // TODO 记录日志
+
+                } else if (event.getMessage().contains("MSG:Tilt sensor") && tvMachineStatusTips.getText().equals("工作中")) { // 倾斜警告弹窗打开
+                    // TODO 倾斜警告弹窗
                     showDialogProbeWarning();
                     if (isOpenVibrateAlert) {
                         vibratePhone(this, vibrateAlertTime * 1000);
                     }
+                } else if (event.getMessage().contains("MSG:Safe Probe reset") && tvMachineStatusTips.getText().equals("暂停")) { // 倾斜警告弹窗关闭
+                    // 隐藏倾斜警告弹窗
+                    dialogProbeWarning.dismiss();
+                    // TODO 记录日志
+
                 }
             }
 
@@ -532,98 +589,99 @@ public class DrawBoardActivity extends AppCompatActivity implements ColorChooseB
      * 开门风险提示弹窗
      */
     private void showDialogDoorWarning() {
-        Dialog dialog = new Dialog(this, R.style.CustomDialog);
-        dialog.setContentView(R.layout.dialog_door_warning);
+        dialogDoorWarning = new Dialog(this, R.style.CustomDialog);
+        dialogDoorWarning.setContentView(R.layout.dialog_door_warning);
         // 设置窗口背景为透明，以显示圆角效果
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        if (dialogDoorWarning.getWindow() != null) {
+            dialogDoorWarning.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
         // 确认
-        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
+        TextView tvDialogRiskWarningConfirm = dialogDoorWarning.findViewById(R.id.tv_dialog_door_warning_confirm);
         // 确定
         tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // 隐藏弹窗
-                if (dialog.isShowing()) {
-                    dialog.dismiss();
+                if (dialogDoorWarning.isShowing()) {
+                    dialogDoorWarning.dismiss();
                 }
             }
         });
         // 设置Dialog的宽高
-        if (dialog.getWindow() != null) {
+        if (dialogDoorWarning.getWindow() != null) {
             // 设置弹窗宽度为屏幕的80%，高度自适应
-            dialog.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+            dialogDoorWarning.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
         }
         // 显示 Dialog
-        dialog.show();
+        dialogDoorWarning.show();
     }
 
     /**
      * 火焰风险提示弹窗
      */
     private void showDialogFireWarning() {
-        Dialog dialog = new Dialog(this, R.style.CustomDialog);
-        dialog.setContentView(R.layout.dialog_fire_warning);
+        dialogFireWarning = new Dialog(this, R.style.CustomDialog);
+        dialogFireWarning.setContentView(R.layout.dialog_fire_warning);
         // 设置窗口背景为透明，以显示圆角效果
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        if (dialogFireWarning.getWindow() != null) {
+            dialogFireWarning.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
         // 确认
-        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
+        TextView tvDialogRiskWarningConfirm = dialogFireWarning.findViewById(R.id.tv_dialog_door_warning_confirm);
         // 确定
         tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // 隐藏弹窗
-                if (dialog.isShowing()) {
-                    dialog.dismiss();
+                if (dialogFireWarning.isShowing()) {
+                    dialogFireWarning.dismiss();
                 }
             }
         });
         // 设置Dialog的宽高
-        if (dialog.getWindow() != null) {
+        if (dialogFireWarning.getWindow() != null) {
             // 设置弹窗宽度为屏幕的80%，高度自适应
-            dialog.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+            dialogFireWarning.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
         }
         // 显示 Dialog
-        dialog.show();
+        dialogFireWarning.show();
     }
 
     /**
      * 倾斜风险提示弹窗
      */
     private void showDialogProbeWarning() {
-        Dialog dialog = new Dialog(this, R.style.CustomDialog);
-        dialog.setContentView(R.layout.dialog_probe_warning);
+        dialogProbeWarning = new Dialog(this, R.style.CustomDialog);
+        dialogProbeWarning.setContentView(R.layout.dialog_probe_warning);
         // 设置窗口背景为透明，以显示圆角效果
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+        if (dialogProbeWarning.getWindow() != null) {
+            dialogProbeWarning.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
         // 确认
-        TextView tvDialogRiskWarningConfirm = dialog.findViewById(R.id.tv_dialog_door_warning_confirm);
+        TextView tvDialogRiskWarningConfirm = dialogProbeWarning.findViewById(R.id.tv_dialog_door_warning_confirm);
         // 确定
         tvDialogRiskWarningConfirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // 隐藏弹窗
-                if (dialog.isShowing()) {
-                    dialog.dismiss();
+                if (dialogProbeWarning.isShowing()) {
+                    dialogProbeWarning.dismiss();
                 }
             }
         });
         // 设置Dialog的宽高
-        if (dialog.getWindow() != null) {
+        if (dialogProbeWarning.getWindow() != null) {
             // 设置弹窗宽度为屏幕的80%，高度自适应
-            dialog.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
+            dialogProbeWarning.getWindow().setLayout((int) (this.getResources().getDisplayMetrics().widthPixels * 0.8), ViewGroup.LayoutParams.WRAP_CONTENT);
         }
         // 显示 Dialog
-        dialog.show();
+        dialogProbeWarning.show();
     }
 
     /**
      * 震动提醒
-     * @param context 上下文
+     *
+     * @param context      上下文
      * @param milliseconds 震动时长
      */
     public void vibratePhone(Context context, long milliseconds) {

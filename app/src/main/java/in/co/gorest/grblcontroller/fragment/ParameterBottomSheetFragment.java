@@ -11,16 +11,21 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import in.co.gorest.grblcontroller.R;
 import in.co.gorest.grblcontroller.activity.MaterialLibraryActivity;
 import in.co.gorest.grblcontroller.adapters.LaserMaterialAdapter;
@@ -28,6 +33,7 @@ import in.co.gorest.grblcontroller.events.MaterialSelectedEvent;
 import in.co.gorest.grblcontroller.helpers.EnhancedSharedPreferences;
 import in.co.gorest.grblcontroller.model.LaserParameter;
 import in.co.gorest.grblcontroller.model.Material;
+import in.co.gorest.grblcontroller.model.ScanDirection;
 
 public class ParameterBottomSheetFragment extends BottomSheetDialogFragment implements LaserMaterialAdapter.OnItemSelectedListener, ParameterOperationModeBottomSheetFragment.OnOperationModeSelectedListener {
 
@@ -51,6 +57,19 @@ public class ParameterBottomSheetFragment extends BottomSheetDialogFragment impl
     private LinearLayout llParameterLaserLevel;
     // 激光功率
     private TextView tvParameterLaserLevel;
+    // 雕刻次数（整体）
+    private LinearLayout llParameterEngraveCount;
+    // 雕刻次数
+    private TextView tvParameterEngraveCount;
+    // 扫描间隙（整体）
+    private LinearLayout llParameterScanningGap;
+    // 扫描间隙
+    private TextView tvParameterScanningGap;
+    // 扫描方向（整体）
+    private LinearLayout llParameterScanningOrientation;
+    // 扫描方向
+    private TextView tvParameterScanningOrientation;
+
     // 雕刻速度（整体）
     private LinearLayout llParameterSpeedLevel;
     // 雕刻速度
@@ -65,6 +84,9 @@ public class ParameterBottomSheetFragment extends BottomSheetDialogFragment impl
     // 定义加工模式，默认为雕刻
     private String selectedOperationMode = "engraving";
 
+    // 雕刻次数
+    private int totalEngraveCount = 1;
+
     // 设置适配器
     LaserMaterialAdapter adapter;
 
@@ -74,7 +96,7 @@ public class ParameterBottomSheetFragment extends BottomSheetDialogFragment impl
 
     // 定义一个接口，用于传递数据
     public interface OnLaserParametersSelectedListener {
-        void onLaserParametersSelected(int targetIndex, int power, int speed);
+        void onLaserParametersSelected(int targetIndex, int power, int speed, float resols, ScanDirection scanDirection, int totalEngraveCount, boolean isAir, int zDown);
     }
 
     // 创建一个接口实例变量
@@ -167,6 +189,18 @@ public class ParameterBottomSheetFragment extends BottomSheetDialogFragment impl
         llParameterEngraveOrCutting = view.findViewById(R.id.ll_parameter_engrave_or_cutting);
         // 加工类型
         tvParameterEngraveOrCutting = view.findViewById(R.id.tv_parameter_engrave_or_cutting);
+        // 雕刻次数（整体）
+        llParameterEngraveCount = view.findViewById(R.id.ll_parameter_engrave_count);
+        // 雕刻次数
+        tvParameterEngraveCount = view.findViewById(R.id.tv_parameter_engrave_count);
+        // 扫描间隙（整体）
+        llParameterScanningGap = view.findViewById(R.id.ll_parameter_scanning_gap);
+        // 扫描间隙
+        tvParameterScanningGap = view.findViewById(R.id.tv_parameter_scanning_gap);
+        // 扫描方向（整体）
+        llParameterScanningOrientation = view.findViewById(R.id.ll_parameter_scanning_orientation);
+        // 扫描方向
+        tvParameterScanningOrientation = view.findViewById(R.id.tv_parameter_scanning_orientation);
         // 激光功率（整体）
         llParameterLaserLevel = view.findViewById(R.id.ll_parameter_laser_level);
         // 激光功率
@@ -186,13 +220,25 @@ public class ParameterBottomSheetFragment extends BottomSheetDialogFragment impl
     private void initData() {
         // 获取传递的 tag
         String tag = getTag();
-        if ("isCutting".equals(tag)) {
-            // 处理切割模式
-            llParameterOperationMode.setVisibility(View.VISIBLE);
-        } else if ("isEngraving".equals(tag)) {
-            // 处理雕刻模式
-            llParameterOperationMode.setVisibility(View.GONE);
+        if (tag != null) {
+            String[] parts = tag.split("\\|");
+            String deviceType = "";
+            String mode = "";
+            if (parts.length == 2) {
+                deviceType = parts[0];  // CNC / Laser
+                mode = parts[1];        // isCutting / isEngraving
+            }
+
+            if ("isCutting".equals(mode)) {
+                // 处理切割模式
+                llParameterOperationMode.setVisibility(View.VISIBLE);
+            } else if ("isEngraving".equals(mode)) {
+                // 处理雕刻模式
+                llParameterOperationMode.setVisibility(View.GONE);
+            }
         }
+
+
 
         // 设置加工类型
         if (selectedOperationMode.equals("engraving")) {
@@ -243,185 +289,304 @@ public class ParameterBottomSheetFragment extends BottomSheetDialogFragment impl
         laserParameters = new ArrayList<>();
 
         /************************************* 胶合板(2mm) *************************************/
-        // 胶合板(2mm)
-        laserParameters.add(new LaserParameter("胶合板(2mm)", "LdT-3W", 3000, 80, "engraving"));
         // 胶合板(2mm) 雕刻
-        laserParameters.add(new LaserParameter("胶合板(2mm)", "LdT4-10W", 7000, 50, "engraving"));
-        laserParameters.add(new LaserParameter("胶合板(2mm)", "LdT4-20W", 7000, 30, "engraving"));
+        laserParameters.add(new LaserParameter("胶合板(2mm)", "LdT-3W", 3000, 80, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("胶合板(2mm)", "LdT4-10W", 7000, 50, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("胶合板(2mm)", "LdT4-20W", 7000, 30, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("胶合板(2mm)", "Cd-100W", 7000, 30, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
         // 胶合板(2mm) 切割
-        laserParameters.add(new LaserParameter("胶合板(2mm)", "LdT4-10W", 500, 100, "cutting"));
-        laserParameters.add(new LaserParameter("胶合板(2mm)", "LdT4-20W", 700, 90, "cutting"));
+        laserParameters.add(new LaserParameter("胶合板(2mm)", "LdT-3W", 500, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, true, 0));
+        laserParameters.add(new LaserParameter("胶合板(2mm)", "LdT4-10W", 500, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, true, 0));
+        laserParameters.add(new LaserParameter("胶合板(2mm)", "LdT4-20W", 700, 90, "cutting", 0.05f, ScanDirection.HORIZONTAL, true, 0));
+//        laserParameters.add(new LaserParameter("胶合板(2mm)", "LdT4-1064nm-2W", 700, 90, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
 
         /************************************* 胶合板(5mm) *************************************/
-        // 胶合板(5mm)
-        laserParameters.add(new LaserParameter("胶合板(5mm)", "LdT-3W", 3000, 80, "engraving"));
         // 胶合板(5mm) 雕刻
-        laserParameters.add(new LaserParameter("胶合板(5mm)", "LdT4-10W", 7000, 50, "engraving"));
-        laserParameters.add(new LaserParameter("胶合板(5mm)", "LdT4-20W", 7000, 30, "engraving"));
+        laserParameters.add(new LaserParameter("胶合板(5mm)", "LdT-3W", 3000, 80, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("胶合板(5mm)", "LdT4-10W", 7000, 50, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("胶合板(5mm)", "LdT4-20W", 7000, 30, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("胶合板(5mm)", "LdT4-1064nm-2W", 7000, 30, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
         // 胶合板(5mm) 切割
-        laserParameters.add(new LaserParameter("胶合板(5mm)", "LdT4-10W", 250, 100, "cutting"));
-        laserParameters.add(new LaserParameter("胶合板(5mm)", "LdT4-20W", 300, 90, "cutting"));
+        laserParameters.add(new LaserParameter("胶合板(5mm)", "LdT-3W", 250, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, true, 2));
+        laserParameters.add(new LaserParameter("胶合板(5mm)", "LdT4-10W", 250, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, true, 2));
+        laserParameters.add(new LaserParameter("胶合板(5mm)", "LdT4-20W", 300, 90, "cutting", 0.05f, ScanDirection.HORIZONTAL, true, 2));
+//        laserParameters.add(new LaserParameter("胶合板(5mm)", "LdT4-1064nm-2W", 300, 90, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
 
         /************************************* 胶合板(8mm) *************************************/
-        // 胶合板(8mm)
-        laserParameters.add(new LaserParameter("胶合板(8mm)", "LdT-3W", 3000, 80, "engraving"));
         // 胶合板(8mm) 雕刻
-        laserParameters.add(new LaserParameter("胶合板(8mm)", "LdT4-10W", 7000, 50, "engraving"));
-        laserParameters.add(new LaserParameter("胶合板(8mm)", "LdT4-20W", 7000, 30, "engraving"));
+        laserParameters.add(new LaserParameter("胶合板(8mm)", "LdT-3W", 3000, 80, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("胶合板(8mm)", "LdT4-10W", 7000, 50, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("胶合板(8mm)", "LdT4-20W", 7000, 30, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("胶合板(8mm)", "LdT4-1064nm-2W", 7000, 30, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
         // 胶合板(8mm) 切割
-        laserParameters.add(new LaserParameter("胶合板(8mm)", "LdT4-10W", 100, 100, "cutting"));
-        laserParameters.add(new LaserParameter("胶合板(8mm)", "LdT4-20W", 150, 100, "cutting"));
+//        laserParameters.add(new LaserParameter("胶合板(8mm)", "LdT-3W", 100, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("胶合板(8mm)", "LdT4-10W", 100, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, true, 8));
+        laserParameters.add(new LaserParameter("胶合板(8mm)", "LdT4-20W", 230, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, true, 8));
+//        laserParameters.add(new LaserParameter("胶合板(8mm)", "LdT4-1064nm-2W", 150, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
 
         /************************************* 纸板(2mm) *************************************/
-        // 纸板(2mm)
-        laserParameters.add(new LaserParameter("纸板(2mm)", "LdT-3W", 3000, 80, "engraving"));
         // 纸板(2mm) 雕刻
-        laserParameters.add(new LaserParameter("纸板(2mm)", "LdT4-10W", 10000, 60, "engraving"));
-        laserParameters.add(new LaserParameter("纸板(2mm)", "LdT4-20W", 15000, 50, "engraving"));
+        laserParameters.add(new LaserParameter("纸板(2mm)", "LdT-3W", 3000, 80, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("纸板(2mm)", "LdT4-10W", 10000, 60, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("纸板(2mm)", "LdT4-20W", 15000, 40, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("纸板(2mm)", "LdT4-1064nm-2W", 15000, 50, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
         // 纸板(2mm) 切割
-        laserParameters.add(new LaserParameter("纸板(2mm)", "LdT4-10W", 500, 100, "cutting"));
-        laserParameters.add(new LaserParameter("纸板(2mm)", "LdT4-20W", 500, 90, "cutting"));
+//        laserParameters.add(new LaserParameter("纸板(2mm)", "LdT-3W", 500, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("纸板(2mm)", "LdT4-10W", 500, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, true, 0));
+        laserParameters.add(new LaserParameter("纸板(2mm)", "LdT4-20W", 500, 90, "cutting", 0.05f, ScanDirection.HORIZONTAL, true, 0));
+//        laserParameters.add(new LaserParameter("纸板(2mm)", "LdT4-1064nm-2W", 500, 90, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
 
         /************************************* 牛皮纸(250g) *************************************/
-        // 牛皮纸(250g)
-        laserParameters.add(new LaserParameter("牛皮纸(250g)", "LdT-3W", 3000, 80, "engraving"));
         // 牛皮纸(250g)) 雕刻
-        laserParameters.add(new LaserParameter("牛皮纸(250g)", "LdT4-10W", 10000, 70, "engraving"));
-        laserParameters.add(new LaserParameter("牛皮纸(250g)", "LdT4-20W", 20000, 70, "engraving"));
+        laserParameters.add(new LaserParameter("牛皮纸(250g)", "LdT-3W", 3000, 80, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("牛皮纸(250g)", "LdT4-10W", 20000, 70, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("牛皮纸(250g)", "LdT4-20W", 20000, 50, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("牛皮纸(250g)", "LdT4-1064nm-2W", 20000, 70, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
         // 牛皮纸(250g) 切割
-        laserParameters.add(new LaserParameter("牛皮纸(250g)", "LdT4-10W", 300, 90, "cutting"));
-        laserParameters.add(new LaserParameter("牛皮纸(250g)", "LdT4-20W", 300, 70, "cutting"));
+//        laserParameters.add(new LaserParameter("牛皮纸(250g)", "LdT-3W", 300, 90, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("牛皮纸(250g)", "LdT4-10W", 300, 90, "cutting", 0.05f, ScanDirection.HORIZONTAL, true, 0));
+        laserParameters.add(new LaserParameter("牛皮纸(250g)", "LdT4-20W", 300, 70, "cutting", 0.05f, ScanDirection.HORIZONTAL, true, 0));
+//        laserParameters.add(new LaserParameter("牛皮纸(250g)", "LdT4-1064nm-2W", 300, 70, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
 
         /************************************* 平安树叶 *************************************/
-        // 平安树叶
-        laserParameters.add(new LaserParameter("平安树叶", "LdT-3W", 8000, 100, "engraving"));
-        laserParameters.add(new LaserParameter("平安树叶", "LdT4-10W", 22000, 60, "engraving"));
-        laserParameters.add(new LaserParameter("平安树叶", "LdT4-20W", 22000, 40, "engraving"));
+        // 平安树叶 雕刻
+        laserParameters.add(new LaserParameter("平安树叶", "LdT-3W", 8000, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("平安树叶", "LdT4-10W", 22000, 60, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("平安树叶", "LdT4-20W", 22000, 40, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("平安树叶", "LdT4-1064nm-2W", 22000, 40, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+
+        // 平安树叶 切割
+//        laserParameters.add(new LaserParameter("平安树叶", "LdT-3W", 300, 90, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("平安树叶", "LdT4-10W", 300, 90, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("平安树叶", "LdT4-20W", 300, 70, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("平安树叶", "LdT4-1064nm-2W", 300, 70, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
 
 
         /************************************* 不锈钢 *************************************/
-        // 不锈钢
-        laserParameters.add(new LaserParameter("不锈钢", "LdT-3W", 4000, 100, "engraving"));
-        laserParameters.add(new LaserParameter("不锈钢", "LdT4-10W", 600, 100, "engraving"));
-        laserParameters.add(new LaserParameter("不锈钢", "LdT4-20W", 800, 100, "engraving"));
+        // 不锈钢 雕刻
+        laserParameters.add(new LaserParameter("不锈钢", "LdT-3W", 4000, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("不锈钢", "LdT4-10W", 600, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("不锈钢", "LdT4-20W", 1800, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("不锈钢", "LdT4-1064nm-2W", 3000, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+
+        // 不锈钢 切割
+//        laserParameters.add(new LaserParameter("不锈钢", "LdT-3W", 300, 90, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("不锈钢", "LdT4-10W", 300, 90, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("不锈钢", "LdT4-20W", 300, 70, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("不锈钢", "LdT4-1064nm-2W", 300, 70, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+
 
         /************************************* 金属漆面 *************************************/
-        // 金属漆面
-        laserParameters.add(new LaserParameter("金属漆面", "LdT-3W", 5000, 100, "engraving"));
-        laserParameters.add(new LaserParameter("金属漆面", "LdT4-10W", 600, 100, "engraving"));
-        laserParameters.add(new LaserParameter("金属漆面", "LdT4-20W", 800, 100, "engraving"));
+        // 金属漆面 雕刻
+        laserParameters.add(new LaserParameter("金属漆面", "LdT-3W", 5000, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("金属漆面", "LdT4-10W", 600, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("金属漆面", "LdT4-20W", 1800, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("金属漆面", "LdT4-1064nm-2W", 5000, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
 
+        // 金属漆面 切割
+//        laserParameters.add(new LaserParameter("金属漆面", "LdT-3W", 300, 90, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("金属漆面", "LdT4-10W", 300, 90, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("金属漆面", "LdT4-20W", 300, 70, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("金属漆面", "LdT4-1064nm-2W", 300, 70, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
 
         /************************************* 皮革(1mm) *************************************/
-        // 皮革(1mm)
-        laserParameters.add(new LaserParameter("皮革(1mm)", "LdT-3W", 3000, 80, "engraving"));
         // 皮革(1mm) 雕刻
-        laserParameters.add(new LaserParameter("皮革(1mm)", "LdT4-10W", 10000, 50, "engraving"));
-        laserParameters.add(new LaserParameter("皮革(1mm)", "LdT4-20W", 15000, 40, "engraving"));
+        laserParameters.add(new LaserParameter("皮革(1mm)", "LdT-3W", 3000, 80, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("皮革(1mm)", "LdT4-10W", 10000, 50, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("皮革(1mm)", "LdT4-20W", 15000, 40, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("皮革(1mm)", "LdT4-1064nm-2W", 3000, 80, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
         // 皮革(1mm) 切割
-        laserParameters.add(new LaserParameter("皮革(1mm)", "LdT4-10W", 600, 100, "cutting"));
-        laserParameters.add(new LaserParameter("皮革(1mm)", "LdT4-20W", 500, 90, "cutting"));
+        laserParameters.add(new LaserParameter("皮革(1mm)", "LdT-3W", 600, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, true, 0));
+        laserParameters.add(new LaserParameter("皮革(1mm)", "LdT4-10W", 600, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, true, 0));
+        laserParameters.add(new LaserParameter("皮革(1mm)", "LdT4-20W", 500, 90, "cutting", 0.05f, ScanDirection.HORIZONTAL, true, 0));
+//        laserParameters.add(new LaserParameter("皮革(1mm)", "LdT4-1064nm-2W", 500, 90, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
 
         /************************************* PVC/塑料 *************************************/
-        // PVC/塑料
-        laserParameters.add(new LaserParameter("PVC/塑料", "LdT-3W", 4000, 100, "engraving"));
         // PVC/塑料 雕刻
-        laserParameters.add(new LaserParameter("PVC/塑料", "LdT4-10W", 10000, 70, "engraving"));
-        laserParameters.add(new LaserParameter("PVC/塑料", "LdT4-20W", 15000, 70, "engraving"));
+        laserParameters.add(new LaserParameter("PVC/塑料", "LdT-3W", 4000, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("PVC/塑料", "LdT4-10W", 10000, 70, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("PVC/塑料", "LdT4-20W", 15000, 60, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("PVC/塑料", "LdT4-1064nm-2W", 4000, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
         // PVC/塑料 切割
-        laserParameters.add(new LaserParameter("PVC/塑料", "LdT4-10W", 600, 100, "cutting"));
-        laserParameters.add(new LaserParameter("PVC/塑料", "LdT4-20W", 800, 100, "cutting"));
+//        laserParameters.add(new LaserParameter("PVC/塑料", "LdT-3W", 600, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("PVC/塑料", "LdT4-10W", 600, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, true, 0));
+        laserParameters.add(new LaserParameter("PVC/塑料", "LdT4-20W", 800, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, true, 0));
+//        laserParameters.add(new LaserParameter("PVC/塑料", "LdT4-1064nm-2W", 800, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
 
         /************************************* PVC/塑料 *************************************/
-        // 黑色亚克力
-        laserParameters.add(new LaserParameter("黑色亚克力", "LdT-3W", 4000, 100, "engraving"));
         // 黑色亚克力 雕刻
-        laserParameters.add(new LaserParameter("黑色亚克力", "LdT4-10W", 10000, 70, "engraving"));
-        laserParameters.add(new LaserParameter("黑色亚克力", "LdT4-20W", 15000, 70, "engraving"));
+        laserParameters.add(new LaserParameter("黑色亚克力", "LdT-3W", 4000, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("黑色亚克力", "LdT4-10W", 10000, 70, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("黑色亚克力", "LdT4-20W", 15000, 70, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("黑色亚克力", "LdT4-1064nm-2W", 4000, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
         // 黑色亚克力 切割
-        laserParameters.add(new LaserParameter("黑色亚克力", "LdT4-10W", 150, 100, "cutting"));
-        laserParameters.add(new LaserParameter("黑色亚克力", "LdT4-20W", 300, 100, "cutting"));
+//        laserParameters.add(new LaserParameter("黑色亚克力", "LdT-3W", 150, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("黑色亚克力", "LdT4-10W", 150, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, true, 2));
+        laserParameters.add(new LaserParameter("黑色亚克力", "LdT4-20W", 200, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, true, 2));
+//        laserParameters.add(new LaserParameter("黑色亚克力", "LdT4-1064nm-2W", 300, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
 
         /************************************* 橡胶印章 *************************************/
-        // 橡胶印章
-        laserParameters.add(new LaserParameter("橡胶印章", "LdT-3W", 4000, 100, "engraving"));
-        laserParameters.add(new LaserParameter("橡胶印章", "LdT4-10W", 5000, 70, "engraving"));
-        laserParameters.add(new LaserParameter("橡胶印章", "LdT4-20W", 8000, 70, "engraving"));
+        // 橡胶印章 雕刻
+        laserParameters.add(new LaserParameter("橡胶印章", "LdT-3W", 4000, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("橡胶印章", "LdT4-10W", 5000, 70, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("橡胶印章", "LdT4-20W", 8000, 70, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("橡胶印章", "LdT4-1064nm-2W", 8000, 70, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+
+        // 橡胶印章 切割
+//        laserParameters.add(new LaserParameter("橡胶印章", "LdT-3W", 150, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("橡胶印章", "LdT4-10W", 150, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("橡胶印章", "LdT4-20W", 200, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("橡胶印章", "LdT4-1064nm-2W", 300, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
 
         /************************************* MDF板 *************************************/
-        // MDF板
-        laserParameters.add(new LaserParameter("MDF板", "LdT-3W", 1200, 100, "engraving"));
-        laserParameters.add(new LaserParameter("MDF板", "LdT4-10W", 10000, 70, "engraving"));
-        laserParameters.add(new LaserParameter("MDF板", "LdT4-20W", 15000, 70, "engraving"));
+        // MDF板 雕刻
+        laserParameters.add(new LaserParameter("MDF板", "LdT-3W", 1200, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("MDF板", "LdT4-10W", 10000, 70, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("MDF板", "LdT4-20W", 15000, 60, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("MDF板", "LdT4-1064nm-2W", 15000, 70, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+
+        // MDF板 切割
+//        laserParameters.add(new LaserParameter("MDF板", "LdT-3W", 150, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("MDF板", "LdT4-10W", 150, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("MDF板", "LdT4-20W", 200, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("MDF板", "LdT4-1064nm-2W", 300, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
 
         /************************************* 竹子 *************************************/
-        // 竹子
-        laserParameters.add(new LaserParameter("竹子", "LdT-3W", 4000, 100, "engraving"));
-        laserParameters.add(new LaserParameter("竹子", "LdT4-10W", 8000, 70, "engraving"));
-        laserParameters.add(new LaserParameter("竹子", "LdT4-20W", 10000, 70, "engraving"));
+        // 竹子 雕刻
+        laserParameters.add(new LaserParameter("竹子", "LdT-3W", 4000, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("竹子", "LdT4-10W", 8000, 70, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("竹子", "LdT4-20W", 10000, 70, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("竹子", "LdT4-1064nm-2W", 10000, 70, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+
+        // MDF板 切割
+//        laserParameters.add(new LaserParameter("MDF板", "LdT-3W", 150, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("MDF板", "LdT4-10W", 150, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("MDF板", "LdT4-20W", 200, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("MDF板", "LdT4-1064nm-2W", 300, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
 
         /************************************* 软磁贴片 *************************************/
-        // 软磁贴片
-        laserParameters.add(new LaserParameter("软磁贴片", "LdT-3W", 4000, 100, "engraving"));
-        laserParameters.add(new LaserParameter("软磁贴片", "LdT4-10W", 5000, 70, "engraving"));
-        laserParameters.add(new LaserParameter("软磁贴片", "LdT4-20W", 8000, 70, "engraving"));
+        // 软磁贴片 雕刻
+        laserParameters.add(new LaserParameter("软磁贴片", "LdT-3W", 4000, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("软磁贴片", "LdT4-10W", 5000, 70, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("软磁贴片", "LdT4-20W", 8000, 70, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("软磁贴片", "LdT4-1064nm-2W", 8000, 70, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+
+        // 软磁贴片 切割
+//        laserParameters.add(new LaserParameter("软磁贴片", "LdT-3W", 150, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("软磁贴片", "LdT4-10W", 150, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("软磁贴片", "LdT4-20W", 200, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("软磁贴片", "LdT4-1064nm-2W", 300, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
 
         /************************************* 食物 *************************************/
-        // 食物
-        laserParameters.add(new LaserParameter("食物", "LdT-3W", 4000, 100, "engraving"));
-        laserParameters.add(new LaserParameter("食物", "LdT4-10W", 10000, 70, "engraving"));
-        laserParameters.add(new LaserParameter("食物", "LdT4-20W", 15000, 70, "engraving"));
+        // 食物 雕刻
+        laserParameters.add(new LaserParameter("食物", "LdT-3W", 4000, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("食物", "LdT4-10W", 10000, 80, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("食物", "LdT4-20W", 15000, 70, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("食物", "LdT4-1064nm-2W", 15000, 70, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+
+        // 食物 切割
+//        laserParameters.add(new LaserParameter("软磁贴片", "LdT-3W", 150, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("软磁贴片", "LdT4-10W", 150, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("软磁贴片", "LdT4-20W", 200, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("软磁贴片", "LdT4-1064nm-2W", 300, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+
 
         /************************************* 玻璃 *************************************/
-        // 玻璃
-        laserParameters.add(new LaserParameter("玻璃", "LdT-3W", 1800, 100, "engraving"));
-        laserParameters.add(new LaserParameter("玻璃", "LdT4-10W", 600, 90, "engraving"));
-        laserParameters.add(new LaserParameter("玻璃", "LdT4-20W", 800, 90, "engraving"));
+        // 玻璃 雕刻
+        laserParameters.add(new LaserParameter("玻璃", "LdT-3W", 1800, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("玻璃", "LdT4-10W", 600, 90, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("玻璃", "LdT4-20W", 800, 90, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("玻璃", "LdT4-1064nm-2W", 800, 90, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+
+        // 玻璃 切割
+//        laserParameters.add(new LaserParameter("玻璃", "LdT-3W", 150, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("玻璃", "LdT4-10W", 150, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("玻璃", "LdT4-20W", 200, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("玻璃", "LdT4-1064nm-2W", 300, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
 
         /************************************* 布料 *************************************/
-        // 布料
-        laserParameters.add(new LaserParameter("布料", "LdT-3W", 4000, 100, "engraving"));
         // 布料 雕刻
-        laserParameters.add(new LaserParameter("布料", "LdT4-10W", 7000, 50, "engraving"));
-        laserParameters.add(new LaserParameter("布料", "LdT4-20W", 7000, 30, "engraving"));
+        laserParameters.add(new LaserParameter("布料", "LdT-3W", 4000, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("布料", "LdT4-10W", 7000, 50, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("布料", "LdT4-20W", 7000, 30, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("布料", "LdT4-1064nm-2W", 7000, 30, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+
         // 布料 切割
-        laserParameters.add(new LaserParameter("布料", "LdT4-10W", 600, 100, "cutting"));
-        laserParameters.add(new LaserParameter("布料", "LdT4-20W", 300, 90, "cutting"));
+//        laserParameters.add(new LaserParameter("布料", "LdT-3W", 600, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("布料", "LdT4-10W", 600, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, true, 2));
+        laserParameters.add(new LaserParameter("布料", "LdT4-20W", 300, 90, "cutting", 0.05f, ScanDirection.HORIZONTAL, true, 2));
+//        laserParameters.add(new LaserParameter("布料", "LdT4-1064nm-2W", 300, 90, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
 
         /************************************* 陶瓷 *************************************/
-        // 陶瓷
-        laserParameters.add(new LaserParameter("陶瓷", "LdT-3W", 1800, 100, "engraving"));
-        laserParameters.add(new LaserParameter("陶瓷", "LdT4-10W", 7000, 70, "engraving"));
-        laserParameters.add(new LaserParameter("陶瓷", "LdT4-20W", 7000, 50, "engraving"));
+        // 陶瓷 雕刻
+        laserParameters.add(new LaserParameter("陶瓷", "LdT-3W", 1800, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("陶瓷", "LdT4-10W", 7000, 70, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("陶瓷", "LdT4-20W", 7000, 50, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("陶瓷", "LdT4-1064nm-2W", 7000, 50, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
 
+        // 陶瓷 切割
+//        laserParameters.add(new LaserParameter("布料", "LdT-3W", 600, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("布料", "LdT4-10W", 600, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("布料", "LdT4-20W", 300, 90, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("布料", "LdT4-1064nm-2W", 300, 90, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
 
         /************************************* 黄铜 *************************************/
         // 黄铜
-        laserParameters.add(new LaserParameter("黄铜", "LdT-3W", 1800, 100, "engraving"));
-        laserParameters.add(new LaserParameter("黄铜", "LdT4-10W", 7000, 70, "engraving"));
-        laserParameters.add(new LaserParameter("黄铜", "LdT4-20W", 7000, 50, "engraving"));
+//        laserParameters.add(new LaserParameter("黄铜", "LdT-3W", 1800, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("黄铜", "LdT4-10W", 7000, 70, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("黄铜", "LdT4-20W", 7000, 50, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("黄铜", "LdT4-1064nm-2W", 4000, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+
+        // 陶瓷 切割
+//        laserParameters.add(new LaserParameter("黄铜", "LdT-3W", 600, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("黄铜", "LdT4-10W", 600, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("黄铜", "LdT4-20W", 300, 90, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("黄铜", "LdT4-1064nm-2W", 300, 90, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
 
         /************************************* 纯铝 *************************************/
-        // 纯铝
-        laserParameters.add(new LaserParameter("纯铝", "LdT-3W", 1800, 100, "engraving"));
-        laserParameters.add(new LaserParameter("纯铝", "LdT4-10W", 7000, 70, "engraving"));
-        laserParameters.add(new LaserParameter("纯铝", "LdT4-20W", 7000, 50, "engraving"));
+        // 纯铝 雕刻
+//        laserParameters.add(new LaserParameter("纯铝", "LdT-3W", 1800, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("纯铝", "LdT4-10W", 7000, 70, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("纯铝", "LdT4-20W", 7000, 50, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("纯铝", "LdT4-1064nm-2W", 10000, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+
+        // 纯铝 切割
+//        laserParameters.add(new LaserParameter("纯铝", "LdT-3W", 600, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("纯铝", "LdT4-10W", 600, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("纯铝", "LdT4-20W", 300, 90, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("纯铝", "LdT4-1064nm-2W", 300, 90, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
 
         /************************************* 电路铜板 *************************************/
         // 电路铜板
-        laserParameters.add(new LaserParameter("电路铜板", "LdT-3W", 1800, 100, "engraving"));
-        laserParameters.add(new LaserParameter("电路铜板", "LdT4-10W", 7000, 70, "engraving"));
-        laserParameters.add(new LaserParameter("电路铜板", "LdT4-20W", 7000, 50, "engraving"));
+//        laserParameters.add(new LaserParameter("电路铜板", "LdT-3W", 1800, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("电路铜板", "LdT4-10W", 7000, 70, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("电路铜板", "LdT4-20W", 7000, 50, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("电路铜板", "LdT4-1064nm-2W", 1500, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+
+        // 电路铜板 切割
+//        laserParameters.add(new LaserParameter("电路铜板", "LdT-3W", 600, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("电路铜板", "LdT4-10W", 600, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("电路铜板", "LdT4-20W", 300, 90, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("电路铜板", "LdT4-1064nm-2W", 300, 90, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
 
         /************************************* 板岩 *************************************/
         // 板岩
-        laserParameters.add(new LaserParameter("板岩", "LdT-3W", 1500, 100, "engraving"));
-        laserParameters.add(new LaserParameter("板岩", "LdT4-10W", 6000, 100, "engraving"));
-        laserParameters.add(new LaserParameter("板岩", "LdT4-20W", 10000, 100, "engraving"));
+//        laserParameters.add(new LaserParameter("板岩", "LdT-3W", 1500, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("板岩", "LdT4-10W", 6000, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+        laserParameters.add(new LaserParameter("板岩", "LdT4-20W", 10000, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("板岩", "LdT4-1064nm-2W", 10000, 100, "engraving", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+
+        // 板岩 切割
+//        laserParameters.add(new LaserParameter("板岩", "LdT-3W", 600, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("板岩", "LdT4-10W", 600, 100, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("板岩", "LdT4-20W", 300, 90, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
+//        laserParameters.add(new LaserParameter("板岩", "LdT4-1064nm-2W", 300, 90, "cutting", 0.05f, ScanDirection.HORIZONTAL, false, 0));
 
         // 查找并设置推荐的功率和速度
         setRecommendedLaserParameters("胶合板(2mm)");
 
+        // 雕刻次数
+        tvParameterEngraveCount.setText(totalEngraveCount + "");
 
     }
 
@@ -445,6 +610,65 @@ public class ParameterBottomSheetFragment extends BottomSheetDialogFragment impl
                 ParameterOperationModeBottomSheetFragment parameterOperationModeBottomSheetFragment = new ParameterOperationModeBottomSheetFragment();
                 parameterOperationModeBottomSheetFragment.setListener(ParameterBottomSheetFragment.this);
                 parameterOperationModeBottomSheetFragment.show(getParentFragmentManager(), selectedOperationMode);
+            }
+        });
+
+        // 雕刻次数
+        llParameterEngraveCount.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EngraveCountBottomSheetFragment engraveCountBottomSheetFragment = new EngraveCountBottomSheetFragment();
+                engraveCountBottomSheetFragment.setOnEngraveCountSelectedListener(new EngraveCountBottomSheetFragment.OnEngraveCountSelectedListener() {
+                    @Override
+                    public void onEngraveCountSelected(String engraveCount) {
+                        // 这里你可以接收选中的名称，并在 Fragment 中做处理
+                        Log.d(TAG, "Selected EngraveCount=" + engraveCount);
+                        // 设置雕刻次数
+                        tvParameterEngraveCount.setText(engraveCount);
+
+                        totalEngraveCount = Integer.valueOf(engraveCount);
+                    }
+                });
+                engraveCountBottomSheetFragment.show(getParentFragmentManager(), "");
+
+            }
+        });
+
+        // 扫描间隙
+        llParameterScanningGap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ScanningGapBottomSheetFragment scanningGapBottomSheetFragment = new ScanningGapBottomSheetFragment();
+                scanningGapBottomSheetFragment.setOnScanningGapSelectedListener(new ScanningGapBottomSheetFragment.OnScanningGapSelectedListener() {
+                    @Override
+                    public void onScanningGapSelected(String scanningGap) {
+                        // 这里你可以接收选中的名称，并在 Fragment 中做处理
+                        Log.d(TAG, "Selected scanningGap=" + scanningGap);
+                        // 设置扫描间隙
+                        tvParameterScanningGap.setText(scanningGap);
+                    }
+                });
+                scanningGapBottomSheetFragment.show(getParentFragmentManager(), "");
+
+            }
+        });
+
+        // 扫描方向
+        llParameterScanningOrientation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ScanningOrientationBottomSheetFragment scanningOrientationBottomSheetFragment = new ScanningOrientationBottomSheetFragment();
+                scanningOrientationBottomSheetFragment.setOnScanningOrientationSelectedListener(new ScanningOrientationBottomSheetFragment.OnScanningOrientationSelectedListener() {
+                    @Override
+                    public void onScanningOrientationSelected(ScanDirection direction) {
+                        // 这里你可以接收选中的名称，并在 Fragment 中做处理
+                        Log.d(TAG, "Selected direction=" + direction);
+                        // 设置扫描方向
+                        tvParameterScanningOrientation.setText(getDirectionName(direction));
+                    }
+                });
+                scanningOrientationBottomSheetFragment.show(getParentFragmentManager(), "");
+
             }
         });
 
@@ -480,7 +704,7 @@ public class ParameterBottomSheetFragment extends BottomSheetDialogFragment impl
                         tvParameterSpeedLevel.setText(speedLevel);
                     }
                 });
-                speedLevelBottomSheetFragment.show(getParentFragmentManager(), "");
+                speedLevelBottomSheetFragment.show(getParentFragmentManager(), selectedOperationMode);
             }
         });
 
@@ -492,12 +716,19 @@ public class ParameterBottomSheetFragment extends BottomSheetDialogFragment impl
                 // 获取激光功率和速度
                 int power = Integer.parseInt(tvParameterLaserLevel.getText().toString().replace("%", ""));
                 int speed = Integer.parseInt(tvParameterSpeedLevel.getText().toString().replace("mm/min", ""));
+                float gap = Float.parseFloat(tvParameterScanningGap.getText().toString());
+                ScanDirection scanDirection = getScanDirectionFromText(tvParameterScanningOrientation.getText().toString());
 
-                Log.d(TAG, "targetIndex=" + targetIndex + "------power=" + power + "------speed=" + speed);
+                boolean isAir  = sharedPref.getBoolean(getString(R.string.preference_recommended_air), false);
+                int zDown  = sharedPref.getInt(getString(R.string.preference_recommended_zdown), 0);
+
+                Log.d(TAG, "targetIndex=" + targetIndex + "------power=" + power + "------speed=" + speed
+                        + "------gap=" + gap + "------scanDirection=" + scanDirection
+                        + "------totalEngraveCount=" + totalEngraveCount + "------isAir=" + isAir + "------zDown=" + zDown);
 
                 // 通过接口回调传递数据给 Activity
                 if (listener != null) {
-                    listener.onLaserParametersSelected(targetIndex, power, speed);
+                    listener.onLaserParametersSelected(targetIndex, power, speed, gap, scanDirection, totalEngraveCount, isAir, zDown);
                 }
 
                 // 关闭当前的底部弹窗
@@ -528,10 +759,20 @@ public class ParameterBottomSheetFragment extends BottomSheetDialogFragment impl
                 // 设置推荐的功率和速度
                 tvParameterLaserLevel.setText(parameter.getRecommendedPower() + "%");
                 tvParameterSpeedLevel.setText(parameter.getRecommendedSpeed() + "mm/min");
+                tvParameterScanningGap.setText(String.valueOf(parameter.getRecommendedGap()));
+
+                // 设置扫描方向
+                ScanDirection direction = parameter.getScanDirection();
+                tvParameterScanningOrientation.setText(getDirectionName(direction));
+
 
                 // TODO 保存功率和速度
                 sharedPref.edit().putInt(getString(R.string.preference_recommended_power), parameter.getRecommendedPower()).apply();
                 sharedPref.edit().putInt(getString(R.string.preference_recommended_speed), parameter.getRecommendedSpeed()).apply();
+                sharedPref.edit().putFloat(getString(R.string.preference_recommended_scanning_gap), parameter.getRecommendedGap()).apply();
+                sharedPref.edit().putInt(getString(R.string.preference_recommended_scanning_orientation), direction.ordinal()).apply();
+                sharedPref.edit().putBoolean(getString(R.string.preference_recommended_air), parameter.isAir()).apply();
+                sharedPref.edit().putInt(getString(R.string.preference_recommended_zdown), parameter.getzDown()).apply();
 
                 isSupported = true;
 
@@ -571,6 +812,35 @@ public class ParameterBottomSheetFragment extends BottomSheetDialogFragment impl
         }
     }
 
+    private ScanDirection getScanDirectionFromText(String text) {
+        switch (text) {
+            case "横向":
+                return ScanDirection.HORIZONTAL;
+            case "纵向":
+                return ScanDirection.VERTICAL;
+            case "左上→右下":
+                return ScanDirection.DIAGONAL_LD_RU;
+            case "左下→右上":
+                return ScanDirection.DIAGONAL_LU_RD;
+            default:
+                return ScanDirection.HORIZONTAL; // 默认兜底处理
+        }
+    }
+
+    private String getDirectionName(ScanDirection direction) {
+        switch (direction) {
+            case HORIZONTAL:
+                return "横向";
+            case VERTICAL:
+                return "纵向";
+            case DIAGONAL_LD_RU:
+                return "左上→右下";
+            case DIAGONAL_LU_RD:
+                return "左下→右上";
+            default:
+                return "未知";
+        }
+    }
 
     /**
      * MaterialSelectedEvent
